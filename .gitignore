@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Node / Next.js
+node_modules/
+.next/
+frontend/.next/
+frontend/out/
+
+# Env and secrets
+.env
+!.env.example
+
+# Local models and legacy scaffold
+backend/models/
+backend/models;C/
+_legacy/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+
+# Claude project config left over from experiments
+.claude/launch.json
