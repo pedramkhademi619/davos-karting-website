@@ -22,7 +22,4 @@ class AssistantInteraction:
     user_id: uuid.UUID | None = None
     question_text: str | None = None
     answer_text: str | None = None
-    # The semantic cache entry this answer was served from (a hit) or produced (a miss that was cached).
-    cache_entry_id: uuid.UUID | None = None
-    served_from_cache: bool = False
     helpful: bool | None = field(default=None, compare=False)

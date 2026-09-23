@@ -33,10 +33,12 @@ flowchart TD
   M --> GU{grounding guard}
   GU -- leak / no citation / NO_ANSWER --> R2
   GU --> A[answer + cited sources only]
-  A -. in the background, only if no cited source is a policy .-> CS[(store in the semantic cache<br/>+ remember the turn)]
+  A -. in the background .-> CS[(remember the turn)]
 ```
 
-The semantic cache, the conversation memory and the intent reset are described in [SEMANTIC_CACHE.md](SEMANTIC_CACHE.md).
+A local semantic answer cache (sentence-transformer embeddings + pgvector) was tried and removed 2026-09-23: the embedding
+model competed for CPU/RAM with the rest of the process and degraded ordinary answers. Its code is kept on the
+`feature/semantic-cache` git branch for reference, not on `main`. The conversation memory and the intent reset stay.
 
 Why the "small knowledge base" branch exists: a trigram gate needs the customer's words to overlap the published text. With a
 real provider, casual phrasing ("می‌خوام برای آخر هفته یه نوبت بگیرم") scored 0.21 against the booking entry (gate 0.3) and English
@@ -138,7 +140,7 @@ Put these in the repository's `.env` (never commit it; the key stays on the serv
 | `AI_TOKEN_LIMIT_PARAM` | `max_tokens` (default) or `max_completion_tokens` for providers that require it |
 | `AI_DAILY_TOKEN_BUDGET` | shared daily budget, default 400000. A question costs roughly 1-5k tokens (the whole knowledge base is sent), so raise it if the site is busy |
 | `AI_TIMEOUT_SECONDS`, `AI_MAX_CONCURRENCY`, `AI_MAX_OUTPUT_TOKENS` | timeout (12), concurrent calls (8), reply cap (400) |
-| `SEMANTIC_CACHE_*`, `EMBEDDING_*`, `CONVERSATION_CONTEXT_*` | the local answer cache and conversation memory: see [SEMANTIC_CACHE.md](SEMANTIC_CACHE.md) |
+| `CONVERSATION_CONTEXT_*` | the short follow-up memory (Redis) |
 | `ASSISTANT_PERSONA_FILE`, `ASSISTANT_KNOWLEDGE_DIR` | set by `docker-compose.yml` to the mounted `backend/prompts` and `backend/knowledge` |
 
 The assistant is enabled only when base URL, key **and** model are all set; otherwise it runs in fallback mode (related links and the

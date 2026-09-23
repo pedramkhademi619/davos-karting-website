@@ -9,7 +9,6 @@ PostgreSQL, Redis, Celery). The web app and admin panel are **not built yet** (s
 | --- | --- | 
 | Customer login (mobile + SMS OTP), server-side sessions, CSRF, device list / logout | implemented, tested |
 | FAQ assistant (retrieval-grounded AI, Persian search, guardrails, budgets, fallback) and its chat box on the site | implemented, tested; tried by hand against one real provider (see [docs/AI_ASSISTANT.md](docs/AI_ASSISTANT.md)) |
-| Semantic answer cache + conversation memory (local embedding model, pgvector, Redis) | implemented, tested; the real model measured on ~100 questions, not on real traffic (see [docs/SEMANTIC_CACHE.md](docs/SEMANTIC_CACHE.md)) |
 | Loyalty: append-only points ledger, tiers, deterministic discount engine | implemented, tested (no admin UI, no coupon/referral storage yet) |
 | Payments: state machine, Zarinpal adapter, callback verification, reconciliation | implemented, tested against the documented contract; **live sandbox not verified** |
 | Booking integration: signed webhooks, replay/duplicate/out-of-order handling, verified return page | implemented, tested; OIDC SSO handoff **not implemented** |
@@ -33,9 +32,6 @@ docker compose up --build       # postgres, redis, migrate (one-shot), api, work
 * API directly: `http://127.0.0.1:8000/api/docs` (development only; Swagger UI loads its scripts from a CDN, so it needs internet)
   - readiness: `http://127.0.0.1:8000/api/v1/health/ready`
 * To read OTP codes locally set `DEV_SMS_ECHO_ENABLED=true` in `.env` (rejected in production).
-* To switch on the local answer cache (no API involved; the API image then weighs 2.1 GB and uses about 0.8 GB of memory), fetch
-  the embedding model's files once with `docker compose --profile tools run --rm fetch-embedding-model`; without them the cache
-  stays off and the assistant works as before. Details: [docs/SEMANTIC_CACHE.md](docs/SEMANTIC_CACHE.md).
 * To switch the site's chat assistant on, set `AI_BASE_URL`, `AI_API_KEY` and `AI_MODEL` in `.env` and run `docker compose up -d api`.
   Its tone lives in `backend/prompts/assistant_persona.txt` and its facts in `backend/knowledge/*.txt` (both editable, Persian
   guide in `backend/knowledge/README.md`). Details: [docs/AI_ASSISTANT.md](docs/AI_ASSISTANT.md).

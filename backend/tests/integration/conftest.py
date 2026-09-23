@@ -22,18 +22,14 @@ from sqlalchemy.pool import NullPool
 
 from davos.composition.application_container import ApplicationContainer
 from davos.modules.assistant.adapters.budget.in_memory_ai_budget import InMemoryAiBudget
-from davos.modules.assistant.adapters.persistence.pg_knowledge_digest import PgKnowledgeDigest
-from davos.modules.assistant.adapters.persistence.semantic_cache_entry_model import EMBEDDING_DIMENSIONS
 from davos.modules.notifications.adapters.sms.recording_sms_gateway import RecordingSmsGateway
 from davos.platform.persistence.base import Base
-from davos.platform.persistence.engine_factory import create_session_factory
 from davos.platform.persistence.model_registry import register_all_models
 from davos.platform.rate_limiting.in_memory_rate_limiter import InMemoryRateLimiter
 from davos.platform.settings.app_environment import AppEnvironment
 from davos.platform.settings.app_settings import AppSettings
 from tests.fakes.fixed_clock import FixedClock
 from tests.fakes.fixed_order_quotes import FixedOrderQuotes
-from tests.fakes.hashing_embedding import HashingEmbedding
 from tests.fakes.scripted_ai_chat import ScriptedAiChat
 from tests.fakes.scripted_payment_gateway import ScriptedPaymentGateway
 from tests.support.booking_webhooks import SECRET as BOOKING_SECRET
@@ -147,35 +143,4 @@ def container(
         ai_budget=InMemoryAiBudget(daily_limit=1_000_000, clock=clock),
         payment_gateway=gateway,
         order_quotes=quotes,
-    )
-
-
-@pytest.fixture
-def embedding() -> HashingEmbedding:
-    return HashingEmbedding(dimension=EMBEDDING_DIMENSIONS)
-
-
-@pytest.fixture
-def cached_container(
-    test_settings: AppSettings,
-    engine: AsyncEngine,
-    clock: FixedClock,
-    ai_chat: ScriptedAiChat,
-    embedding: HashingEmbedding,
-) -> ApplicationContainer:
-    # ttl 0: the knowledge digest is recomputed for every question, so an edit is noticed at once in a test.
-    digest = PgKnowledgeDigest(create_session_factory(engine), ttl_seconds=0)
-    return ApplicationContainer(
-        settings=test_settings.model_copy(update={"ai_model": "test-model"}),
-        engine=engine,
-        redis=None,
-        clock=clock,
-        rate_limiter=InMemoryRateLimiter(clock),
-        sms_gateway=RecordingSmsGateway(),
-        ai_chat=ai_chat,
-        ai_budget=InMemoryAiBudget(daily_limit=1_000_000, clock=clock),
-        payment_gateway=ScriptedPaymentGateway(),
-        order_quotes=FixedOrderQuotes(),
-        embedding=embedding,
-        knowledge_digest=digest,
     )

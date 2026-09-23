@@ -16,7 +16,6 @@ from davos.modules.assistant.application.ports.conversation_context_port import 
 from davos.modules.assistant.application.ports.interaction_log_port import InteractionLogPort
 from davos.modules.assistant.application.ports.knowledge_search_port import KnowledgeSearchPort
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
-from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
 from davos.modules.assistant.application.use_cases.ask_assistant_command import AskAssistantCommand
 from davos.modules.assistant.domain.entities.assistant_interaction import AssistantInteraction
 from davos.modules.assistant.domain.enums.answer_outcome import AnswerOutcome
@@ -37,7 +36,6 @@ from davos.modules.assistant.domain.value_objects.question import Question
 from davos.modules.assistant.domain.value_objects.resolved_query import ResolvedQuery
 from davos.modules.assistant.domain.value_objects.retrieved_passage import RetrievedPassage
 from davos.modules.assistant.domain.value_objects.search_query import SearchQuery
-from davos.modules.assistant.domain.value_objects.semantic_cache_policy import SemanticCachePolicy
 from davos.modules.assistant.domain.value_objects.support_answer import SupportAnswer
 from davos.modules.assistant.domain.value_objects.token_usage import TokenUsage
 from davos.shared_kernel.application.clock import Clock
@@ -48,18 +46,18 @@ logger = logging.getLogger(__name__)
 
 _CHARS_PER_TOKEN = 2  # conservative for Persian; only used to size the budget reservation
 _REMEMBERED_QUESTION_CHARS = 400
+_REMEMBERED_ANSWER_CHARS = 500
 
 
 class AskAssistantUseCase:
-    """Retrieval-grounded answering with layered safety and a semantic cache in front of the model.
+    """Retrieval-grounded answering with layered safety.
 
     Order matters and each step can end the request without calling the model:
     validate -> rate limit -> injection screen -> intent reset -> small talk -> resolve follow-up ->
-    semantic cache -> retrieve -> relevance gate -> budget -> model call -> grounding guard -> cache the answer.
+    quick answer -> retrieve -> relevance gate -> budget -> model call -> grounding guard.
     The model is never asked to guess: without published sources it is not called at all, and every answer it gives
-    must cite one. A bare greeting or thanks gets a fixed friendly reply (nothing to cite, nothing to ask a model), and
-    a question that means what an earlier one meant is answered from the cache with no model call, no retrieval and no
-    tokens. The cache and the conversation memory are optional: without them this is the plain grounded flow.
+    must cite one. A bare greeting or thanks gets a fixed friendly reply (nothing to cite, nothing to ask a model).
+    The conversation memory is optional: without it this is the plain grounded flow.
     """
 
     def __init__(
@@ -73,9 +71,7 @@ class AskAssistantUseCase:
         clock: Clock,
         policy: AssistantPolicy,
         persona: AssistantPersonaPort | None = None,
-        cache: SemanticAnswerCache | None = None,
         context: ConversationContextPort | None = None,
-        cache_policy: SemanticCachePolicy | None = None,
         normalizer: PersianTextNormalizer | None = None,
         screen: PromptInjectionScreen | None = None,
         small_talk: SmallTalkDetector | None = None,
@@ -92,9 +88,7 @@ class AskAssistantUseCase:
         self._clock = clock
         self._policy = policy
         self._persona = persona
-        self._cache = cache
         self._context = context
-        self._cache_policy = cache_policy or SemanticCachePolicy()
         self._normalizer = normalizer or PersianTextNormalizer()
         self._screen = screen or PromptInjectionScreen()
         self._small_talk = small_talk or SmallTalkDetector(self._normalizer)
@@ -152,7 +146,7 @@ class AskAssistantUseCase:
         resolved = self._resolver.resolve(question.text, history)
         quick_passage = await self._quick_passage(self._quick_topics.detect(question.text))
         if quick_passage is not None:
-            # A plain, general question about one topic: the published entry is the answer, with no model and no cache.
+            # A plain, general question about one topic: the published entry is the answer, with no model call.
             await self._remember(command, resolved, quick_passage.text)
             return await self._finish(
                 command,
@@ -162,22 +156,6 @@ class AskAssistantUseCase:
                 passages=[quick_passage],
                 suggest_ticket=False,
             )
-        probe = await self._cache.probe(resolved) if self._cache is not None else None
-        if self._cache is not None and probe is not None:
-            cached = await self._cache.lookup(probe)
-            if cached is not None:
-                await self._remember(command, resolved, cached.text)
-                return await self._finish(
-                    command,
-                    question,
-                    AnswerOutcome.ANSWERED,
-                    cached.text,
-                    passages=[],
-                    suggest_ticket=False,
-                    sources=cached.sources,
-                    cache_entry_id=cached.entry_id,
-                    served_from_cache=True,
-                )
 
         query = SearchQuery.from_text(resolved.text, self._normalizer)
         passages = [] if query.is_empty else await self._select_passages(query)
@@ -239,9 +217,6 @@ class AskAssistantUseCase:
             )
 
         cited = [passages[i - 1] for i in grounding.cited_indices]
-        cache_entry_id = None
-        if self._cache is not None and probe is not None:
-            cache_entry_id = self._cache.schedule_store(probe, query=resolved, answer=grounding.text, cited=cited)
         await self._remember(command, resolved, grounding.text)
         return await self._finish(
             command,
@@ -251,7 +226,6 @@ class AskAssistantUseCase:
             passages=cited,
             suggest_ticket=False,
             usage=completion.usage,
-            cache_entry_id=cache_entry_id,
         )
 
     async def _quick_passage(self, topic: QuickTopic | None) -> RetrievedPassage | None:
@@ -293,7 +267,7 @@ class AskAssistantUseCase:
             return
         turn = ConversationTurn(
             question=resolved.text[-_REMEMBERED_QUESTION_CHARS:],
-            answer=answer[: self._cache_policy.context_max_answer_chars],
+            answer=answer[:_REMEMBERED_ANSWER_CHARS],
         )
         try:
             await self._context.append(command.conversation_id, turn)
@@ -342,13 +316,10 @@ class AskAssistantUseCase:
         passages: list[RetrievedPassage],
         suggest_ticket: bool,
         usage: TokenUsage | None = None,
-        sources: tuple[AnswerSource, ...] | None = None,
-        cache_entry_id: uuid.UUID | None = None,
-        served_from_cache: bool = False,
     ) -> SupportAnswer:
         now = self._clock.now()
         interaction_id = uuid.uuid4()
-        shown = sources if sources is not None else tuple(AnswerSource(title=p.title, url=p.url) for p in passages)
+        shown = tuple(AnswerSource(title=p.title, url=p.url) for p in passages)
         interaction = AssistantInteraction(
             interaction_id=interaction_id,
             occurred_at=now,
@@ -360,8 +331,6 @@ class AskAssistantUseCase:
             user_id=command.user_id if command.consent_to_store else None,
             question_text=question.text if command.consent_to_store else None,
             answer_text=text if command.consent_to_store else None,
-            cache_entry_id=cache_entry_id,
-            served_from_cache=served_from_cache,
         )
         try:
             await self._interactions.record(interaction)
@@ -373,5 +342,4 @@ class AskAssistantUseCase:
             sources=shown,
             suggest_ticket=suggest_ticket,
             interaction_id=interaction_id,
-            from_cache=served_from_cache,
         )

@@ -31,7 +31,6 @@ def test_the_single_scheduler_owns_exactly_the_periodic_jobs() -> None:
     assert {entry["task"] for entry in schedule.values()} == {
         "davos.outbox.relay",
         "davos.assistant.purge_interactions",
-        "davos.assistant.purge_semantic_cache",
     }
 
 

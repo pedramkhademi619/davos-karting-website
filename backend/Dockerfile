@@ -2,20 +2,12 @@
 
 # ---- builder: resolve and install pinned dependencies into an isolated venv --------------------
 FROM python:3.12.7-slim-bookworm AS builder
-# true only for the API image: adds the local embedding model libraries (CPU-only PyTorch, about 1 GB) that the
-# semantic cache needs. The worker, scheduler and migration job stay small.
-ARG EMBEDDINGS=false
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN python -m venv /opt/venv
 ENV PATH=/opt/venv/bin:$PATH
 WORKDIR /build
-COPY requirements.lock requirements-embeddings.lock ./
+COPY requirements.lock ./
 RUN pip install --no-deps -r requirements.lock
-# The +cpu PyTorch wheel is only published on PyTorch's own index; everything else comes from PyPI as before.
-RUN if [ "$EMBEDDINGS" = "true" ]; then \
-      pip install --no-deps --default-timeout=180 --retries 8 \
-        --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-embeddings.lock; \
-    fi
 COPY pyproject.toml ./
 COPY src ./src
 RUN pip install --no-deps .

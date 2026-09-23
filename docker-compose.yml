@@ -79,32 +79,19 @@ services:
 
   api:
     <<: [*backend-image, *hardening]
-    # Only the API image carries the local embedding model libraries (CPU-only PyTorch); the other services stay small.
     image: davos-api:${DAVOS_VERSION:-dev}
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        EMBEDDINGS: "true"
     environment:
       <<: *app-environment
       FORWARDED_ALLOW_IPS: "*"  # the API is reachable only from the proxy on the private edge network
       # Owner-editable assistant content (see backend/knowledge/README.md); mounted read-only from the host below.
       ASSISTANT_PERSONA_FILE: /app/prompts/assistant_persona.txt
       ASSISTANT_KNOWLEDGE_DIR: /app/knowledge
-      # Semantic answer cache. Everything runs on this machine: vectors in Postgres (pgvector), the embedding model as
-      # files in ./backend/models (fetch once: docs/SEMANTIC_CACHE.md). The API never contacts a model repository:
-      # the offline flags below make any attempt fail. Without the model folder the cache simply stays off.
-      SEMANTIC_CACHE_ENABLED: ${SEMANTIC_CACHE_ENABLED:-true}
-      SEMANTIC_CACHE_SIMILARITY_THRESHOLD: ${SEMANTIC_CACHE_SIMILARITY_THRESHOLD:-0.94}
-      EMBEDDING_MODEL_PATH: /models/multilingual-e5-base
-      HF_HUB_OFFLINE: "1"
-      TRANSFORMERS_OFFLINE: "1"
-      HF_HOME: /tmp/hf  # the root file system is read-only; /tmp is a tmpfs
     volumes:
       - ./backend/prompts:/app/prompts:ro
       - ./backend/knowledge:/app/knowledge:ro
-      - ./backend/models:/models:ro
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -112,31 +99,8 @@ services:
         condition: service_healthy
     networks: [edge, backend]
     restart: unless-stopped
-    mem_limit: 2g  # the embedding model alone needs about 1.2 GB
-    cpus: 2.0
+    mem_limit: 512m
     stop_grace_period: 30s
-
-  # The ONE step that touches the internet, run once by hand: it downloads the embedding model's files (a public model
-  # repository, no key, nothing about you is sent) into ./backend/models. Not started by `docker compose up`.
-  #   docker compose --profile tools run --rm fetch-embedding-model
-  fetch-embedding-model:
-    image: davos-api:${DAVOS_VERSION:-dev}
-    profiles: ["tools"]
-    user: root  # the folder is written once; the API later mounts it read-only and runs unprivileged
-    command: ["python", "-m", "davos.tools.fetch_embedding_model", "/models/multilingual-e5-base"]
-    environment:
-      HF_HUB_OFFLINE: "0"
-      TRANSFORMERS_OFFLINE: "0"
-      HF_HOME: /tmp/hf
-    volumes:
-      - ./backend/models:/models
-    networks: [edge]  # the only network of the stack with a route to the internet
-    read_only: true
-    tmpfs:
-      - /tmp
-    security_opt:
-      - no-new-privileges:true
-    restart: "no"
 
   # One-shot, explicit migration job: replicas never migrate on their own start-up.
   migrate:

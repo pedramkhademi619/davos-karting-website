@@ -16,10 +16,6 @@ class InteractionLogPort(ABC):
         """Returns False when the interaction does not exist (or was already purged)."""
 
     @abstractmethod
-    async def cache_entry_of(self, interaction_id: uuid.UUID) -> uuid.UUID | None:
-        """The semantic cache entry linked to this interaction, if any."""
-
-    @abstractmethod
     async def count_in_conversation(self, conversation_id: uuid.UUID) -> int: ...
 
     @abstractmethod

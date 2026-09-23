@@ -59,20 +59,7 @@ class AppSettings(BaseSettings):
     assistant_persona_file: str = ""
     assistant_knowledge_dir: str = ""
 
-    # Semantic answer cache and follow-up memory. All of it runs on this machine: the embedding model is a local folder,
-    # vectors live in PostgreSQL (pgvector), the conversation memory in Redis. The cache switches itself off (and the
-    # assistant works exactly as before) when this is disabled or the model folder is missing.
-    semantic_cache_enabled: bool = False
-    semantic_cache_similarity_threshold: float = 0.94  # measured on the real model: 0.88 confuses different topics
-    semantic_cache_candidates: int = 8
-    semantic_cache_max_age_days: int = 30
-    semantic_cache_excluded_source_types: list[str] = Field(default_factory=lambda: ["policy"])
-    semantic_cache_extra_discriminators: list[str] = Field(default_factory=list)
-    embedding_model_path: str = ""  # folder made by `python -m davos.tools.fetch_embedding_model`
-    embedding_model_name: str = "intfloat/multilingual-e5-base"
-    embedding_dimension: int = 768
-    embedding_threads: int = 2
-    embedding_lru_size: int = 1024
+    # Short follow-up memory ("و برای پنجشنبه؟"), kept in Redis.
     conversation_context_turns: int = 3
     conversation_context_ttl_seconds: int = 1200
 

@@ -36,14 +36,6 @@ def purge_assistant_interactions() -> int:
     return WorkerRuntime.run(job)
 
 
-@celery_app.task(name="davos.assistant.purge_semantic_cache")
-def purge_assistant_semantic_cache() -> int:
-    async def job(container: ApplicationContainer) -> int:
-        return await container.purge_semantic_cache().execute()
-
-    return WorkerRuntime.run(job)
-
-
 @celery_app.task(
     name="davos.events.handle",
     autoretry_for=(Exception,),

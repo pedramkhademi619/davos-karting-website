@@ -53,10 +53,7 @@ module's port onto another's (for example `SmsOtpDelivery` maps identity's `OtpD
 | `PaymentGatewayPort` | contract + `ZarinpalPaymentGateway`; contract tested with recorded shapes, not against the live sandbox |
 | `AIChatPort` | contract + `OpenAICompatibleChatAdapter`, `ResilientAiChat` (breaker + bulkhead), `DisabledAiChat` |
 | `KnowledgeSearchPort` | contract + `PgTrgmKnowledgeSearch` (PostgreSQL `pg_trgm`) |
-| `EmbeddingPort` | contract + `SentenceTransformerEmbedding`: a local sentence-transformers model on the CPU, no network (semantic cache) |
-| `SemanticCachePort` | contract + `PgVectorSemanticCache` (PostgreSQL `pgvector`, HNSW index, cosine distance) |
 | `ConversationContextPort` | contract + `RedisConversationContext` (a few turns, minutes) and `InMemoryConversationContext` |
-| `KnowledgeDigestPort`, `BackgroundRunnerPort` | contracts + `PgKnowledgeDigest`, `AsyncioBackgroundRunner` |
 | `BookingGatewayPort` | **not implemented** (webhook receiving is; server-to-server inquiry/reconciliation polling is not) |
 | `IdentityHandoffPort` | **not implemented** |
 | `ObjectStoragePort` | **not implemented** |

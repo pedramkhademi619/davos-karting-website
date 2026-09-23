@@ -83,19 +83,7 @@ Nothing below is claimed as delivered.
   `docs/AI_ASSISTANT.md`). The persona makes every riding answer end with a request to state age and height when booking by phone,
   but until a rule check that does not depend on the model exists, treat its eligibility answers as advice, not as the rule. That
   is a sample, not an evaluation; there is no regression set, and a persona or knowledge edit needs a fresh manual check.
-* **Semantic answer cache** (`docs/SEMANTIC_CACHE.md`): verified with the real local model, real pgvector and your configured
-  language model, but on about 100 hand-written questions and a handful of live requests, **not on real traffic**, so the hit
-  ratio is unknown. What was measured: the brief's 0.88 threshold wrongly served 15 of 405 different-topic pairs, so the default
-  is 0.94, which serves everyday rewordings and does **not** match true paraphrases in other words (3 of 11), and an unrelated
-  contrast the vocabulary does not know (a new vehicle, an unusual qualifier) is not caught by the signature guard, so add such
-  words to `SEMANTIC_CACHE_EXTRA_DISCRIMINATORS` and re-run `python -m davos.tools.calibrate_semantic_cache`. It keeps the text of
-  questions (anonymous, phone numbers and e-mail addresses excluded) without asking for consent, and an answer can be up to 30
-  days old; answers citing a `policy` source are never cached. There is no admin screen for flagged entries yet (SQL only), two
-  visitors asking a new question at the same instant both reach the model, and the pytest suite uses a fake embedder: the real
-  model is exercised by the calibration tool and by hand, not by an automated test. The API image is 2.1 GB and needs 2 GB of
-  memory (about 750-850 MB used); CI runs PostgreSQL from the upstream Debian `pgvector` image while the stack uses the Alpine
-  build of the same version. `pip check` reports that PyTorch declares a `setuptools` dependency, which the runtime image
-  deliberately does not carry (inference works without it).
+* **Semantic answer cache**: implemented, measured on the real model (details on the `feature/semantic-cache` branch), then **retired 2026-09-23**. Running the local embedding model in the API process competed for CPU/RAM with everything else and degraded ordinary answers, so it was removed from `main`; the code and its docs live only on that branch.
 * **Conversation memory** is short-term and heuristic: the last 3 exchanges for 20 minutes, in Redis, keyed by the widget's
   per-visit id; follow-up detection looks for pointer words, a leading "and" or a message made only of details, and can miss.
 * **Assistant behaviour that is by design but easy to forget**: (conversation memory: see the previous bullet); while the

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from pathlib import Path
 
 import httpx
 from redis.asyncio import Redis
@@ -14,43 +13,29 @@ from davos.composition.adapters.sms_otp_delivery import SmsOtpDelivery
 from davos.modules.assistant.adapters.ai.disabled_ai_chat import DisabledAiChat
 from davos.modules.assistant.adapters.ai.openai_compatible_chat_adapter import OpenAICompatibleChatAdapter
 from davos.modules.assistant.adapters.ai.resilient_ai_chat import ResilientAiChat
-from davos.modules.assistant.adapters.background.asyncio_background_runner import AsyncioBackgroundRunner
 from davos.modules.assistant.adapters.budget.redis_ai_budget import RedisAiBudget
 from davos.modules.assistant.adapters.context.in_memory_conversation_context import InMemoryConversationContext
 from davos.modules.assistant.adapters.context.redis_conversation_context import RedisConversationContext
-from davos.modules.assistant.adapters.embedding.sentence_transformer_embedding import SentenceTransformerEmbedding
 from davos.modules.assistant.adapters.knowledge.text_file_knowledge_source import TextFileKnowledgeSource
-from davos.modules.assistant.adapters.persistence.pg_knowledge_digest import PgKnowledgeDigest
 from davos.modules.assistant.adapters.persistence.pg_trgm_knowledge_search import PgTrgmKnowledgeSearch
-from davos.modules.assistant.adapters.persistence.pg_vector_semantic_cache import PgVectorSemanticCache
 from davos.modules.assistant.adapters.persistence.sqlalchemy_interaction_log import SqlAlchemyInteractionLog
 from davos.modules.assistant.adapters.persistence.sqlalchemy_knowledge_index import SqlAlchemyKnowledgeIndex
 from davos.modules.assistant.adapters.persona.file_assistant_persona import FileAssistantPersona
 from davos.modules.assistant.application.ports.ai_budget_port import AiBudgetPort
 from davos.modules.assistant.application.ports.ai_chat_port import AIChatPort
 from davos.modules.assistant.application.ports.assistant_persona_port import AssistantPersonaPort
-from davos.modules.assistant.application.ports.background_runner_port import BackgroundRunnerPort
 from davos.modules.assistant.application.ports.conversation_context_port import ConversationContextPort
-from davos.modules.assistant.application.ports.embedding_port import EmbeddingPort
-from davos.modules.assistant.application.ports.knowledge_digest_port import KnowledgeDigestPort
-from davos.modules.assistant.application.ports.semantic_cache_port import SemanticCachePort
-from davos.modules.assistant.application.services.answer_fingerprint import AnswerFingerprint
-from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
-from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
 from davos.modules.assistant.application.use_cases.ask_assistant_use_case import AskAssistantUseCase
 from davos.modules.assistant.application.use_cases.index_knowledge_entry_use_case import IndexKnowledgeEntryUseCase
 from davos.modules.assistant.application.use_cases.purge_expired_interactions_use_case import (
     PurgeExpiredInteractionsUseCase,
 )
-from davos.modules.assistant.application.use_cases.purge_semantic_cache_use_case import PurgeSemanticCacheUseCase
 from davos.modules.assistant.application.use_cases.submit_feedback_use_case import SubmitFeedbackUseCase
 from davos.modules.assistant.application.use_cases.sync_knowledge_documents_use_case import (
     SyncKnowledgeDocumentsUseCase,
 )
-from davos.modules.assistant.domain.enums.knowledge_source_type import KnowledgeSourceType
 from davos.modules.assistant.domain.value_objects.assistant_policy import AssistantPolicy
 from davos.modules.assistant.domain.value_objects.persian_text_normalizer import PersianTextNormalizer
-from davos.modules.assistant.domain.value_objects.semantic_cache_policy import SemanticCachePolicy
 from davos.modules.booking.adapters.persistence.sqlalchemy_booking_record_repository import (
     SqlAlchemyBookingRecordRepository,
 )
@@ -142,11 +127,7 @@ class ApplicationContainer:
         order_quotes: OrderQuotePort,
         http_client: httpx.AsyncClient | None = None,
         assistant_persona: AssistantPersonaPort | None = None,
-        embedding: EmbeddingPort | None = None,
         conversation_context: ConversationContextPort | None = None,
-        background_runner: BackgroundRunnerPort | None = None,
-        semantic_cache: SemanticCachePort | None = None,
-        knowledge_digest: KnowledgeDigestPort | None = None,
     ) -> None:
         self.settings = settings
         self.engine = engine
@@ -163,28 +144,19 @@ class ApplicationContainer:
         self._normalizer = PersianTextNormalizer()
         self._assistant_policy = AssistantPolicy(max_output_tokens=settings.ai_max_output_tokens)
         self.session_factory: async_sessionmaker[AsyncSession] = create_session_factory(engine)
-        self._embedding = embedding
-        self._cache_policy = self._semantic_cache_policy(settings)
-        self._background = background_runner or AsyncioBackgroundRunner()
         self._conversation_context: ConversationContextPort = conversation_context or (
             RedisConversationContext(
                 redis,
-                max_turns=self._cache_policy.context_turns,
-                ttl_seconds=self._cache_policy.context_ttl_seconds,
+                max_turns=settings.conversation_context_turns,
+                ttl_seconds=settings.conversation_context_ttl_seconds,
             )
             if redis is not None
             else InMemoryConversationContext(
                 clock,
-                max_turns=self._cache_policy.context_turns,
-                ttl_seconds=self._cache_policy.context_ttl_seconds,
+                max_turns=settings.conversation_context_turns,
+                ttl_seconds=settings.conversation_context_ttl_seconds,
             )
         )
-        self._semantic_cache_store: SemanticCachePort = semantic_cache or PgVectorSemanticCache(self.session_factory)
-        self._knowledge_digest: KnowledgeDigestPort = knowledge_digest or PgKnowledgeDigest(self.session_factory)
-        self._answer_fingerprint = AnswerFingerprint(
-            rules_version=PromptBuilder.rules_version(), model=settings.ai_model
-        )
-        self._answer_cache = self._build_answer_cache()
         self._outbox = OutboxRecorder(serializer=EventSerializer(), clock=clock)
         self._otp_hasher = HmacOtpHasher(settings.otp_hmac_secret.get_secret_value())
         self._tokens = Sha256SessionTokenService()
@@ -195,58 +167,6 @@ class ApplicationContainer:
         # administrators will configure; nothing here is a statement about Davos Karting's actual programme.
         self._tier_ladder = TierLadder(
             [TierRule("Regular", 0), TierRule("Silver", 1000), TierRule("Gold", 5000), TierRule("VIP", 10000)]
-        )
-
-    @staticmethod
-    def _semantic_cache_policy(settings: AppSettings) -> SemanticCachePolicy:
-        excluded = frozenset(KnowledgeSourceType(name) for name in settings.semantic_cache_excluded_source_types)
-        return SemanticCachePolicy(
-            similarity_threshold=settings.semantic_cache_similarity_threshold,
-            candidate_limit=settings.semantic_cache_candidates,
-            max_age_days=settings.semantic_cache_max_age_days,
-            excluded_source_types=excluded,
-            context_turns=settings.conversation_context_turns,
-            context_ttl_seconds=settings.conversation_context_ttl_seconds,
-            extra_discriminator_words=frozenset(settings.semantic_cache_extra_discriminators),
-        )
-
-    @staticmethod
-    def _build_embedding(settings: AppSettings) -> EmbeddingPort | None:
-        """The local embedding model, or None (cache off) when it is disabled or its folder is missing.
-
-        Only the object is made here; the model itself is loaded later, in a background thread of the API process.
-        """
-        if not settings.semantic_cache_enabled:
-            return None
-        if not settings.embedding_model_path or not Path(settings.embedding_model_path).is_dir():
-            logger.warning(
-                "semantic cache is enabled but the embedding model folder %r does not exist; the cache stays off. "
-                "Fetch it once with: docker compose --profile tools run --rm fetch-embedding-model "
-                "(it runs python -m davos.tools.fetch_embedding_model)",
-                settings.embedding_model_path,
-            )
-            return None
-        return SentenceTransformerEmbedding(
-            model_path=settings.embedding_model_path,
-            model_name=settings.embedding_model_name,
-            dimension=settings.embedding_dimension,
-            threads=settings.embedding_threads,
-            lru_size=settings.embedding_lru_size,
-        )
-
-    def _build_answer_cache(self) -> SemanticAnswerCache | None:
-        if self._embedding is None:
-            return None
-        return SemanticAnswerCache(
-            embedding=self._embedding,
-            cache=self._semantic_cache_store,
-            digest=self._knowledge_digest,
-            fingerprint=self._answer_fingerprint,
-            policy=self._cache_policy,
-            clock=self.clock,
-            background=self._background,
-            persona=self._assistant_persona,
-            normalizer=self._normalizer,
         )
 
     @classmethod
@@ -273,7 +193,6 @@ class ApplicationContainer:
             ),
             order_quotes=SandboxOrderQuotePort() if settings.payments_sandbox_orders_enabled else NoOrdersQuotePort(),
             http_client=http_client,
-            embedding=cls._build_embedding(settings),
         )
 
     @staticmethod
@@ -299,20 +218,7 @@ class ApplicationContainer:
             max_concurrency=settings.ai_max_concurrency,
         )
 
-    async def warm_up_semantic_cache(self) -> None:
-        """Loads the embedding model (a few seconds, off the event loop). Until then questions skip the cache."""
-        if self._embedding is not None:
-            await self._embedding.warm_up()
-
-    async def drain_background_work(self) -> None:
-        """Waits for cache writes that were started after answers had gone out (used at shutdown and by tests)."""
-        if isinstance(self._background, AsyncioBackgroundRunner):
-            await self._background.drain()
-
     async def aclose(self) -> None:
-        await self.drain_background_work()
-        if isinstance(self._embedding, SentenceTransformerEmbedding):
-            self._embedding.close()
         if self._http_client is not None:
             await self._http_client.aclose()
         if self.redis is not None:
@@ -381,25 +287,12 @@ class ApplicationContainer:
             clock=self.clock,
             policy=self._assistant_policy,
             persona=self._assistant_persona,
-            cache=self._answer_cache,
             context=self._conversation_context,
-            cache_policy=self._cache_policy,
             normalizer=self._normalizer,
         )
 
     def submit_assistant_feedback(self) -> SubmitFeedbackUseCase:
-        return SubmitFeedbackUseCase(
-            interactions=SqlAlchemyInteractionLog(self.session_factory), cache=self._answer_cache
-        )
-
-    def purge_semantic_cache(self) -> PurgeSemanticCacheUseCase:
-        return PurgeSemanticCacheUseCase(
-            cache=self._semantic_cache_store,
-            digest=self._knowledge_digest,
-            fingerprint=self._answer_fingerprint,
-            clock=self.clock,
-            persona=self._assistant_persona,
-        )
+        return SubmitFeedbackUseCase(interactions=SqlAlchemyInteractionLog(self.session_factory))
 
     def index_knowledge_entry(self) -> IndexKnowledgeEntryUseCase:
         return IndexKnowledgeEntryUseCase(

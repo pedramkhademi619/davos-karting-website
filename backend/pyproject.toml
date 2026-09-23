@@ -134,11 +134,6 @@ extend-immutable-calls = ["fastapi.Depends"]
 module = ["celery.*", "kombu.*"]
 ignore_missing_imports = true
 
-# Only installed in the images that carry the local embedding model (requirements-embeddings.lock), not in the dev venv.
-[[tool.mypy.overrides]]
-module = ["torch.*", "sentence_transformers.*", "huggingface_hub.*"]
-ignore_missing_imports = true
-
 [[tool.mypy.overrides]]
 module = "davos.worker.tasks"
 disallow_untyped_decorators = false  # Celery ships no type information

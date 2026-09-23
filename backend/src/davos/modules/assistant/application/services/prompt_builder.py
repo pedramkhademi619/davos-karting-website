@@ -43,7 +43,7 @@ class PromptBuilder:
 
     @staticmethod
     def rules_version() -> str:
-        """Changes whenever the fixed rules change; part of the semantic cache fingerprint."""
+        """A short fingerprint of the fixed rules text, changing whenever they change."""
         return hashlib.sha256((_INTRO + _STYLE_HEADER + _RULES_TEMPLATE).encode("utf-8")).hexdigest()[:16]
 
     def build(

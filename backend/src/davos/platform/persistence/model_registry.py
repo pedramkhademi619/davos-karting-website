@@ -9,7 +9,6 @@ _MODEL_MODULES = (
     "davos.modules.identity.adapters.persistence.customer_session_model",
     "davos.modules.assistant.adapters.persistence.knowledge_entry_model",
     "davos.modules.assistant.adapters.persistence.assistant_interaction_model",
-    "davos.modules.assistant.adapters.persistence.semantic_cache_entry_model",
     "davos.modules.payments.adapters.persistence.payment_attempt_model",
     "davos.modules.loyalty.adapters.persistence.loyalty_account_model",
     "davos.modules.loyalty.adapters.persistence.points_ledger_entry_model",

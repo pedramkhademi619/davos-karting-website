@@ -69,7 +69,7 @@ async def test_a_plain_question_about_working_hours_is_answered_from_the_publish
     response = await api.post("/api/v1/assistant/ask", json={"question": "ساعت کاری شما چیه؟"})
     body = response.json()
     assert response.status_code == 200
-    assert body["outcome"] == "quick_answer" and body["answer"] == text and body["from_cache"] is False
+    assert body["outcome"] == "quick_answer" and body["answer"] == text
     assert body["sources"] == [{"title": "ساعت کاری", "url": "/contact"}] and ai_chat.calls == 0
 
 

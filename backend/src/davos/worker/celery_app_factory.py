@@ -20,7 +20,6 @@ class CeleryAppFactory:
                 "davos.events.handle": {"queue": DispatcherQueues.CRITICAL},
                 "davos.outbox.relay": {"queue": DispatcherQueues.CRITICAL},
                 "davos.assistant.purge_interactions": {"queue": DispatcherQueues.AI},
-                "davos.assistant.purge_semantic_cache": {"queue": DispatcherQueues.AI},
             },
             # A task is acknowledged only after it finishes, so a crashed worker never loses work.
             task_acks_late=True,
@@ -39,7 +38,6 @@ class CeleryAppFactory:
                     "task": "davos.assistant.purge_interactions",
                     "schedule": 24 * 3600.0,
                 },
-                "purge-semantic-cache": {"task": "davos.assistant.purge_semantic_cache", "schedule": 24 * 3600.0},
             },
         )
 

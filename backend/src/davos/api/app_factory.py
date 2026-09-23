@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -52,12 +51,9 @@ def create_app(settings: AppSettings, container: ApplicationContainer | None = N
         owned = container is None
         app.state.container = container or ApplicationContainer.build(settings)
         await _sync_assistant_knowledge(app.state.container)
-        # The embedding model loads in the background: the API is ready at once, questions skip the cache until it is.
-        warm_up = asyncio.create_task(app.state.container.warm_up_semantic_cache(), name="semantic-cache-warm-up")
         try:
             yield
         finally:
-            warm_up.cancel()
             if owned:
                 await app.state.container.aclose()
 
