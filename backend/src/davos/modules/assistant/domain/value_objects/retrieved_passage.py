@@ -14,3 +14,4 @@ class RetrievedPassage:
     text: str
     url: str
     score: float
+    computed: bool = False  # written by our own rule checks for this very question, not stored knowledge

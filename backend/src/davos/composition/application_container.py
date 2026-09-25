@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from davos.composition.adapters.reservation_order_quote_port import ReservationOrderQuotePort
 from davos.composition.adapters.sandbox_order_quote_port import SandboxOrderQuotePort
+from davos.composition.adapters.schedule_booking_facts import ScheduleBookingFacts
 from davos.composition.adapters.sms_otp_delivery import SmsOtpDelivery
 from davos.modules.administration.adapters.persistence.sqlalchemy_admin_session_repository import (
     SqlAlchemyAdminSessionRepository,
@@ -23,6 +24,7 @@ from davos.modules.administration.application.use_cases.admin_logout_use_case im
 from davos.modules.administration.application.use_cases.authenticate_admin_use_case import AuthenticateAdminUseCase
 from davos.modules.administration.application.use_cases.manage_admins_use_case import ManageAdminsUseCase
 from davos.modules.assistant.adapters.ai.disabled_ai_chat import DisabledAiChat
+from davos.modules.assistant.adapters.ai.fallback_ai_chat import FallbackAiChat
 from davos.modules.assistant.adapters.ai.openai_compatible_chat_adapter import OpenAICompatibleChatAdapter
 from davos.modules.assistant.adapters.ai.resilient_ai_chat import ResilientAiChat
 from davos.modules.assistant.adapters.budget.redis_ai_budget import RedisAiBudget
@@ -203,6 +205,7 @@ class ApplicationContainer:
         )
         self._http_client = http_client
         self._assistant_persona = assistant_persona or FileAssistantPersona(settings.assistant_persona_file)
+        self._booking_facts = ScheduleBookingFacts(self.schedule_settings)
         self._normalizer = PersianTextNormalizer()
         self._assistant_policy = AssistantPolicy(max_output_tokens=settings.ai_max_output_tokens)
         self.session_factory: async_sessionmaker[AsyncSession] = create_session_factory(engine)
@@ -291,26 +294,44 @@ class ApplicationContainer:
 
     @staticmethod
     def _build_ai_chat(settings: AppSettings, http_client: httpx.AsyncClient) -> AIChatPort:
-        adapter = OpenAICompatibleChatAdapter(
-            base_url=settings.ai_base_url,
-            api_key=settings.ai_api_key.get_secret_value(),
-            model=settings.ai_model,
-            http_client=http_client,
-            timeout_seconds=settings.ai_timeout_seconds,
-            token_limit_param=settings.ai_token_limit_param,
-            send_temperature=settings.ai_send_temperature,
+        def model(name: str, token_limit_param: str, send_temperature: bool, min_output_tokens: int) -> AIChatPort:
+            adapter = OpenAICompatibleChatAdapter(
+                base_url=settings.ai_base_url,
+                api_key=settings.ai_api_key.get_secret_value(),
+                model=name,
+                http_client=http_client,
+                timeout_seconds=settings.ai_timeout_seconds,
+                token_limit_param=token_limit_param,
+                send_temperature=send_temperature,
+                min_output_tokens=min_output_tokens,
+            )
+            if not adapter.is_configured:
+                return DisabledAiChat()
+            return ResilientAiChat(
+                adapter,
+                breaker=CircuitBreaker(
+                    failure_threshold=settings.ai_breaker_failure_threshold,
+                    recovery_seconds=settings.ai_breaker_recovery_seconds,
+                    is_failure=ResilientAiChat.counts_as_failure,
+                ),
+                max_concurrency=settings.ai_max_concurrency,
+            )
+
+        primary = model(
+            settings.ai_model,
+            settings.ai_token_limit_param,
+            settings.ai_send_temperature,
+            settings.ai_min_output_tokens,
         )
-        if not adapter.is_configured:
-            return DisabledAiChat()
-        return ResilientAiChat(
-            adapter,
-            breaker=CircuitBreaker(
-                failure_threshold=settings.ai_breaker_failure_threshold,
-                recovery_seconds=settings.ai_breaker_recovery_seconds,
-                is_failure=ResilientAiChat.counts_as_failure,
-            ),
-            max_concurrency=settings.ai_max_concurrency,
+        if not settings.ai_fallback_model or isinstance(primary, DisabledAiChat):
+            return primary
+        backup = model(
+            settings.ai_fallback_model,
+            settings.ai_fallback_token_limit_param,
+            settings.ai_fallback_send_temperature,
+            settings.ai_fallback_min_output_tokens,
         )
+        return FallbackAiChat(primary, backup)
 
     async def aclose(self) -> None:
         if self._http_client is not None:
@@ -383,6 +404,7 @@ class ApplicationContainer:
             persona=self._assistant_persona,
             context=self._conversation_context,
             normalizer=self._normalizer,
+            booking_facts=self._booking_facts,
         )
 
     def submit_assistant_feedback(self) -> SubmitFeedbackUseCase:

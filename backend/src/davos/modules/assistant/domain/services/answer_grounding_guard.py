@@ -13,6 +13,9 @@ _CITATION = re.compile(r"\[(\d{1,2})\]")
 _URL = re.compile(r"(?:https?://|www\.)\S+", re.I)
 _SPACES = re.compile(r"[ \t]{2,}")
 _SPACE_BEFORE_PUNCTUATION = re.compile(r"\s+([.،؛؟!:])")  # what removing "[1]" leaves behind
+# Some models glitch into Chinese, Japanese or Korean mid-sentence; such an answer is not shown as it is.
+_FOREIGN_SCRIPT = re.compile(r"[぀-ヿ㐀-䶿一-鿿가-힯]")
+_LEADING_LABEL = re.compile(r"^(?:پاسخ\s*)?[:：]\s*")  # "پاسخ:" copied from the style examples
 
 
 class AnswerGroundingGuard:
@@ -20,7 +23,8 @@ class AnswerGroundingGuard:
 
     * refuses to show text that leaks the hidden prompt (canary / rule fingerprints),
     * treats an answer without any valid citation as ungrounded and discards it,
-    * removes every URL the model wrote (only sources we retrieved are ever linked).
+    * removes every URL the model wrote (only sources we retrieved are ever linked),
+    * treats text broken by another script (a known model glitch) as not showable, so it gets rewritten.
     """
 
     def __init__(self, *, max_chars: int) -> None:
@@ -35,7 +39,9 @@ class AnswerGroundingGuard:
         if not text or text.upper().startswith(NO_ANSWER_TOKEN):
             return GroundingResult(GroundingKind.NO_ANSWER)
 
-        text = _MARKDOWN_LINK.sub(r"\1", text)
+        if _FOREIGN_SCRIPT.search(text):
+            return GroundingResult(GroundingKind.UNGROUNDED)
+        text = _MARKDOWN_LINK.sub(r"\1", _LEADING_LABEL.sub("", text))
         cited = tuple(sorted({int(n) for n in _CITATION.findall(text) if 1 <= int(n) <= passage_count}))
         if not cited:
             return GroundingResult(GroundingKind.UNGROUNDED)

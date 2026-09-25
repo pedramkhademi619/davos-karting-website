@@ -4,6 +4,7 @@ import logging
 import secrets
 import uuid
 from collections.abc import Callable, Sequence
+from dataclasses import replace
 from datetime import timedelta
 
 from davos.modules.assistant.application.messages import assistant_messages as messages
@@ -11,14 +12,19 @@ from davos.modules.assistant.application.ports.ai_budget_port import AiBudgetPor
 from davos.modules.assistant.application.ports.ai_chat_port import AIChatPort
 from davos.modules.assistant.application.ports.ai_provider_error import AiProviderError
 from davos.modules.assistant.application.ports.assistant_persona_port import AssistantPersonaPort
+from davos.modules.assistant.application.ports.booking_facts_port import BookingFactsPort
+from davos.modules.assistant.application.ports.chat_completion import ChatCompletion
 from davos.modules.assistant.application.ports.chat_completion_request import ChatCompletionRequest
 from davos.modules.assistant.application.ports.conversation_context_port import ConversationContextPort
 from davos.modules.assistant.application.ports.interaction_log_port import InteractionLogPort
 from davos.modules.assistant.application.ports.knowledge_search_port import KnowledgeSearchPort
+from davos.modules.assistant.application.services.booking_facts_passage import BookingFactsPassage
+from davos.modules.assistant.application.services.eligibility_check_service import EligibilityCheckService
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
 from davos.modules.assistant.application.use_cases.ask_assistant_command import AskAssistantCommand
 from davos.modules.assistant.domain.entities.assistant_interaction import AssistantInteraction
 from davos.modules.assistant.domain.enums.answer_outcome import AnswerOutcome
+from davos.modules.assistant.domain.enums.chat_role import ChatRole
 from davos.modules.assistant.domain.enums.grounding_kind import GroundingKind
 from davos.modules.assistant.domain.enums.quick_topic import QuickTopic
 from davos.modules.assistant.domain.services.answer_grounding_guard import AnswerGroundingGuard
@@ -29,8 +35,10 @@ from davos.modules.assistant.domain.services.quick_topic_detector import QuickTo
 from davos.modules.assistant.domain.services.small_talk_detector import SmallTalkDetector
 from davos.modules.assistant.domain.value_objects.answer_source import AnswerSource
 from davos.modules.assistant.domain.value_objects.assistant_policy import AssistantPolicy
+from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
 from davos.modules.assistant.domain.value_objects.chat_message import ChatMessage
 from davos.modules.assistant.domain.value_objects.conversation_turn import ConversationTurn
+from davos.modules.assistant.domain.value_objects.grounding_result import GroundingResult
 from davos.modules.assistant.domain.value_objects.persian_text_normalizer import PersianTextNormalizer
 from davos.modules.assistant.domain.value_objects.question import Question
 from davos.modules.assistant.domain.value_objects.resolved_query import ResolvedQuery
@@ -47,6 +55,12 @@ logger = logging.getLogger(__name__)
 _CHARS_PER_TOKEN = 2  # conservative for Persian; only used to size the budget reservation
 _REMEMBERED_QUESTION_CHARS = 400
 _REMEMBERED_ANSWER_CHARS = 500
+# Sent once when an answer forgot its citations or glitched into another script, instead of throwing it away.
+_CITATION_REPAIR = (
+    "پاسخت شماره منبع نداشت یا نویسه غیرفارسی داشت. همان پاسخ را با همان لحن و فقط به فارسی دوباره بنویس و بعد از "
+    "هر ادعا شماره منبعش را مثل [1] بیاور. "
+    "اگر پاسخ در منابع نیست، فقط NO_ANSWER بنویس."
+)
 
 
 class AskAssistantUseCase:
@@ -54,9 +68,13 @@ class AskAssistantUseCase:
 
     Order matters and each step can end the request without calling the model:
     validate -> rate limit -> injection screen -> intent reset -> small talk -> resolve follow-up ->
-    quick answer -> retrieve -> relevance gate -> budget -> model call -> grounding guard.
+    quick answer -> retrieve -> rule checks -> relevance gate -> budget -> model call -> grounding guard
+    (-> one citation repair).
     The model is never asked to guess: without published sources it is not called at all, and every answer it gives
     must cite one. A bare greeting or thanks gets a fixed friendly reply (nothing to cite, nothing to ask a model).
+    Numbers are compared by code, not by the model: the rule checks for the people in the question (ages, height,
+    day, hour, weights, group size) are added as the last passage and the model only explains them. Kart counts,
+    prices and booking days are the admin panel's live settings, never numbers from a text file.
     The conversation memory is optional: without it this is the plain grounded flow.
     """
 
@@ -78,6 +96,8 @@ class AskAssistantUseCase:
         quick_topics: QuickTopicDetector | None = None,
         resets: IntentResetDetector | None = None,
         resolver: QueryResolver | None = None,
+        checks: EligibilityCheckService | None = None,
+        booking_facts: BookingFactsPort | None = None,
         canary_factory: Callable[[], str] = lambda: secrets.token_hex(8),
     ) -> None:
         self._search = search
@@ -95,6 +115,9 @@ class AskAssistantUseCase:
         self._quick_topics = quick_topics or QuickTopicDetector(self._normalizer)
         self._resets = resets or IntentResetDetector(self._normalizer)
         self._resolver = resolver or QueryResolver()
+        self._checks = checks or EligibilityCheckService()
+        self._booking_facts = booking_facts
+        self._live = BookingFactsPassage()
         self._canary_factory = canary_factory
         self._prompt_builder = PromptBuilder(max_passage_chars=policy.max_passage_chars)
         self._guard = AnswerGroundingGuard(max_chars=policy.max_answer_chars)
@@ -144,7 +167,8 @@ class AskAssistantUseCase:
             )
 
         resolved = self._resolver.resolve(question.text, history)
-        quick_passage = await self._quick_passage(self._quick_topics.detect(question.text))
+        booking = await self._current_booking_facts()
+        quick_passage = await self._quick_passage(self._quick_topics.detect(question.text), booking)
         if quick_passage is not None:
             # A plain, general question about one topic: the published entry is the answer, with no model call.
             await self._remember(command, resolved, quick_passage.text)
@@ -159,6 +183,11 @@ class AskAssistantUseCase:
 
         query = SearchQuery.from_text(resolved.text, self._normalizer)
         passages = [] if query.is_empty else await self._select_passages(query)
+        # Computed passages go last, right before the question: stored knowledge keeps its numbers and the checked
+        # verdict is the text the model reads just before answering.
+        computed = [self._live.passage(booking) if booking is not None and passages else None]
+        computed.append(self._checks.passage(question.text, history, booking))
+        passages = [*passages, *(p for p in computed if p is not None)]
         if not passages:
             return await self._finish(
                 command,
@@ -200,9 +229,13 @@ class AskAssistantUseCase:
             )
 
         await self._budget.settle(reserved, completion.usage.total)
-        grounding = self._guard.evaluate(
-            completion.text, passage_count=len(passages), canary=canary, leak_markers=PromptBuilder.LEAK_MARKERS
-        )
+        usage = completion.usage
+        grounding = self._ground(completion.text, passages, canary)
+        if grounding.kind is GroundingKind.UNGROUNDED:
+            repaired = await self._repair_citations(prompt, completion.text)
+            if repaired is not None:
+                usage = usage + repaired.usage
+                grounding = self._ground(repaired.text, passages, canary)
         if grounding.kind is not GroundingKind.GROUNDED:
             if grounding.kind is GroundingKind.LEAK:
                 logger.warning("assistant output withheld: prompt leak detected")
@@ -213,7 +246,7 @@ class AskAssistantUseCase:
                 messages.INSUFFICIENT_INFORMATION,
                 passages=[],
                 suggest_ticket=True,
-                usage=completion.usage,
+                usage=usage,
             )
 
         cited = [passages[i - 1] for i in grounding.cited_indices]
@@ -225,13 +258,52 @@ class AskAssistantUseCase:
             grounding.text,
             passages=cited,
             suggest_ticket=False,
-            usage=completion.usage,
+            usage=usage,
         )
 
-    async def _quick_passage(self, topic: QuickTopic | None) -> RetrievedPassage | None:
-        """The published entry that answers `topic`; None if no topic or no such entry, and the normal flow follows."""
+    def _ground(self, text: str, passages: Sequence[RetrievedPassage], canary: str) -> GroundingResult:
+        return self._guard.evaluate(
+            text, passage_count=len(passages), canary=canary, leak_markers=PromptBuilder.LEAK_MARKERS
+        )
+
+    async def _repair_citations(self, prompt: tuple[ChatMessage, ...], answer: str) -> ChatCompletion | None:
+        """One extra call asking the model to add the citations it forgot; None when that is not possible now."""
+        messages_ = (*prompt, ChatMessage(ChatRole.ASSISTANT, answer), ChatMessage(ChatRole.USER, _CITATION_REPAIR))
+        reserved = self._estimate_tokens(messages_)
+        if not await self._budget.try_reserve(reserved):
+            return None
+        try:
+            completion = await self._chat.complete(
+                ChatCompletionRequest(messages=messages_, max_output_tokens=self._policy.max_output_tokens)
+            )
+        except AiProviderError as exc:
+            await self._budget.release(reserved)
+            logger.warning("assistant citation repair failed: %s", type(exc).__name__)
+            return None
+        await self._budget.settle(reserved, completion.usage.total)
+        return completion
+
+    async def _current_booking_facts(self) -> BookingFacts | None:
+        if self._booking_facts is None:
+            return None
+        try:
+            return await self._booking_facts.current()
+        except Exception as exc:  # without live settings the checks use their defaults and no prices are quoted
+            logger.warning("booking settings unavailable to the assistant: %s", type(exc).__name__)
+            return None
+
+    async def _quick_passage(self, topic: QuickTopic | None, booking: BookingFacts | None) -> RetrievedPassage | None:
+        """The published entry that answers `topic`; None if no topic or no such entry, and the normal flow follows.
+
+        Prices and kart counts are answered from the admin panel's settings, and the booking entry gets the current
+        booking days and hold time appended, so a changed setting is never contradicted by a stale text.
+        """
         if topic is None:
             return None
+        if booking is not None and topic in (QuickTopic.PRICES, QuickTopic.CAPACITY):
+            live = self._live.passage(booking)
+            text = self._live.prices(booking) if topic is QuickTopic.PRICES else self._live.capacity(booking)
+            return replace(live, title=messages.QUICK_TOPIC_TITLES[topic], text=text)
         title = self._normalizer.normalize(messages.QUICK_TOPIC_TITLES[topic])
         query = SearchQuery.from_text(messages.QUICK_TOPIC_TITLES[topic], self._normalizer)
         try:
@@ -239,7 +311,10 @@ class AskAssistantUseCase:
         except Exception as exc:  # a shortcut must never turn a question into an error
             logger.warning("quick answer lookup failed: %s", type(exc).__name__)
             return None
-        return next((p for p in candidates if self._normalizer.normalize(p.title) == title), None)
+        found = next((p for p in candidates if self._normalizer.normalize(p.title) == title), None)
+        if found is not None and booking is not None and topic is QuickTopic.BOOKING:
+            found = replace(found, text=f"{found.text.rstrip()} {self._live.booking(booking)}")
+        return found
 
     async def _select_passages(self, query: SearchQuery) -> list[RetrievedPassage]:
         """A small knowledge base is sent whole; a large one goes through the relevance gate."""
@@ -319,6 +394,7 @@ class AskAssistantUseCase:
     ) -> SupportAnswer:
         now = self._clock.now()
         interaction_id = uuid.uuid4()
+        passages = [p for p in passages if not p.computed]  # computed text is not a page a customer can open
         shown = tuple(AnswerSource(title=p.title, url=p.url) for p in passages)
         interaction = AssistantInteraction(
             interaction_id=interaction_id,

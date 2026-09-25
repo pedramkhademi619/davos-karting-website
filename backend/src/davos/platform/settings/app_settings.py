@@ -50,11 +50,18 @@ class AppSettings(BaseSettings):
     ai_timeout_seconds: float = 12.0
     ai_token_limit_param: str = "max_tokens"  # noqa: S105  # some providers require max_completion_tokens
     ai_send_temperature: bool = True  # some reasoning models reject a temperature
+    ai_min_output_tokens: int = 0  # reasoning models think inside the output limit; give them room (e.g. 2000)
     ai_max_output_tokens: int = 400
     ai_daily_token_budget: int = 400_000
     ai_max_concurrency: int = 8
     ai_breaker_failure_threshold: int = 5
     ai_breaker_recovery_seconds: float = 30.0
+    # Optional backup model on the same provider, used only when the main model fails. Reasoning models spend part of
+    # the output budget on hidden thinking, so they usually need max_completion_tokens, no temperature and more tokens.
+    ai_fallback_model: str = ""
+    ai_fallback_token_limit_param: str = "max_tokens"  # noqa: S105
+    ai_fallback_send_temperature: bool = True
+    ai_fallback_min_output_tokens: int = 0  # 0 = same as ai_max_output_tokens
     # Owner-editable assistant content: a style-notes file and a folder of knowledge .txt files (blank = off).
     assistant_persona_file: str = ""
     assistant_knowledge_dir: str = ""

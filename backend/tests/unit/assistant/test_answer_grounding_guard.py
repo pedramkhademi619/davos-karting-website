@@ -70,3 +70,12 @@ def test_long_answers_are_truncated_at_a_sentence_boundary() -> None:
 def test_removing_citation_markers_does_not_leave_a_space_before_punctuation(raw: str, expected: str) -> None:
     result = AnswerGroundingGuard(max_chars=900).evaluate(raw, passage_count=2, canary="C", leak_markers=())
     assert result.kind is GroundingKind.GROUNDED and result.text == expected
+
+
+def test_an_answer_broken_by_another_script_is_not_shown() -> None:
+    assert evaluate("نه، نمی‌تواند. قدش符合要求 است [1].").kind is GroundingKind.UNGROUNDED
+
+
+def test_a_copied_answer_label_is_removed() -> None:
+    assert evaluate(": آره، می‌تونه [1].").text == "آره، می‌تونه."
+    assert evaluate("پاسخ: آره، می‌تونه [1].").text == "آره، می‌تونه."

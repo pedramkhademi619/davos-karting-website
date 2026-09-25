@@ -79,6 +79,15 @@ async def test_token_parameter_name_and_temperature_are_configurable(client: htt
 
 
 @respx.mock
+async def test_a_reasoning_model_can_be_given_a_larger_output_floor(client: httpx.AsyncClient) -> None:
+    route = respx.post(URL).mock(return_value=ok())
+    await make_adapter(client, min_output_tokens=2000).complete(REQUEST)
+    assert json.loads(route.calls.last.request.content)["max_tokens"] == 2000
+    await make_adapter(client, min_output_tokens=50).complete(REQUEST)
+    assert json.loads(route.calls.last.request.content)["max_tokens"] == 200  # a floor, never a cut
+
+
+@respx.mock
 async def test_missing_usage_is_estimated_so_budgets_still_move(client: httpx.AsyncClient) -> None:
     respx.post(URL).mock(return_value=ok())
     completion = await make_adapter(client).complete(REQUEST)
