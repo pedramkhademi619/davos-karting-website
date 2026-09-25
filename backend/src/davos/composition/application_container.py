@@ -7,9 +7,21 @@ import httpx
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
-from davos.composition.adapters.no_orders_quote_port import NoOrdersQuotePort
+from davos.composition.adapters.reservation_order_quote_port import ReservationOrderQuotePort
 from davos.composition.adapters.sandbox_order_quote_port import SandboxOrderQuotePort
 from davos.composition.adapters.sms_otp_delivery import SmsOtpDelivery
+from davos.modules.administration.adapters.persistence.sqlalchemy_admin_session_repository import (
+    SqlAlchemyAdminSessionRepository,
+)
+from davos.modules.administration.adapters.persistence.sqlalchemy_admin_user_repository import (
+    SqlAlchemyAdminUserRepository,
+)
+from davos.modules.administration.adapters.security.scrypt_password_hasher import ScryptPasswordHasher
+from davos.modules.administration.adapters.security.sha256_admin_token_service import Sha256AdminTokenService
+from davos.modules.administration.application.use_cases.admin_login_use_case import AdminLoginUseCase
+from davos.modules.administration.application.use_cases.admin_logout_use_case import AdminLogoutUseCase
+from davos.modules.administration.application.use_cases.authenticate_admin_use_case import AuthenticateAdminUseCase
+from davos.modules.administration.application.use_cases.manage_admins_use_case import ManageAdminsUseCase
 from davos.modules.assistant.adapters.ai.disabled_ai_chat import DisabledAiChat
 from davos.modules.assistant.adapters.ai.openai_compatible_chat_adapter import OpenAICompatibleChatAdapter
 from davos.modules.assistant.adapters.ai.resilient_ai_chat import ResilientAiChat
@@ -64,6 +76,8 @@ from davos.modules.identity.adapters.security.hmac_otp_hasher import HmacOtpHash
 from davos.modules.identity.adapters.security.secure_otp_code_generator import SecureOtpCodeGenerator
 from davos.modules.identity.adapters.security.sha256_session_token_service import Sha256SessionTokenService
 from davos.modules.identity.application.use_cases.authenticate_session_use_case import AuthenticateSessionUseCase
+from davos.modules.identity.application.use_cases.customer_directory_use_case import CustomerDirectoryUseCase
+from davos.modules.identity.application.use_cases.customer_profile_use_case import CustomerProfileUseCase
 from davos.modules.identity.application.use_cases.list_sessions_use_case import ListSessionsUseCase
 from davos.modules.identity.application.use_cases.otp_rate_limit_policy import OtpRateLimitPolicy
 from davos.modules.identity.application.use_cases.request_otp_use_case import RequestOtpUseCase
@@ -80,8 +94,17 @@ from davos.modules.loyalty.application.use_cases.reverse_points_use_case import 
 from davos.modules.loyalty.application.use_cases.spend_points_use_case import SpendPointsUseCase
 from davos.modules.loyalty.domain.services.tier_ladder import TierLadder
 from davos.modules.loyalty.domain.value_objects.tier_rule import TierRule
+from davos.modules.notifications.adapters.persistence.sqlalchemy_sms_log_repository import SqlAlchemySmsLogRepository
+from davos.modules.notifications.adapters.sms.kavenegar_sms_gateway import KavenegarSmsGateway
 from davos.modules.notifications.adapters.sms.recording_sms_gateway import RecordingSmsGateway
 from davos.modules.notifications.application.ports.sms_gateway_port import SmsGatewayPort
+from davos.modules.notifications.application.use_cases.refresh_sms_statuses_use_case import RefreshSmsStatusesUseCase
+from davos.modules.notifications.application.use_cases.send_bulk_sms_use_case import SendBulkSmsUseCase
+from davos.modules.notifications.application.use_cases.send_transactional_sms_use_case import (
+    SendTransactionalSmsUseCase,
+)
+from davos.modules.notifications.application.use_cases.sms_panel_use_case import SmsPanelUseCase
+from davos.modules.payments.adapters.mellat.mellat_payment_gateway import MellatPaymentGateway
 from davos.modules.payments.adapters.persistence.sqlalchemy_payment_repository import SqlAlchemyPaymentRepository
 from davos.modules.payments.adapters.zarinpal.zarinpal_payment_gateway import ZarinpalPaymentGateway
 from davos.modules.payments.application.ports.order_quote_port import OrderQuotePort
@@ -89,8 +112,45 @@ from davos.modules.payments.application.ports.payment_gateway_port import Paymen
 from davos.modules.payments.application.services.payment_settlement_service import PaymentSettlementService
 from davos.modules.payments.application.use_cases.get_payment_status_use_case import GetPaymentStatusUseCase
 from davos.modules.payments.application.use_cases.handle_payment_callback_use_case import HandlePaymentCallbackUseCase
+from davos.modules.payments.application.use_cases.list_payments_use_case import ListPaymentsUseCase
 from davos.modules.payments.application.use_cases.reconcile_payments_use_case import ReconcilePaymentsUseCase
 from davos.modules.payments.application.use_cases.start_payment_use_case import StartPaymentUseCase
+from davos.modules.reservations.adapters.persistence.sqlalchemy_reservation_repository import (
+    SqlAlchemyReservationRepository,
+)
+from davos.modules.reservations.adapters.persistence.sqlalchemy_reservation_stats_reader import (
+    SqlAlchemyReservationStatsReader,
+)
+from davos.modules.reservations.adapters.persistence.sqlalchemy_schedule_settings_repository import (
+    SqlAlchemyScheduleSettingsRepository,
+)
+from davos.modules.reservations.adapters.security.secure_reservation_code_generator import (
+    SecureReservationCodeGenerator,
+)
+from davos.modules.reservations.application.use_cases.accept_reservation_payment_use_case import (
+    AcceptReservationPaymentUseCase,
+)
+from davos.modules.reservations.application.use_cases.cancel_own_hold_use_case import CancelOwnHoldUseCase
+from davos.modules.reservations.application.use_cases.confirm_paid_reservation_use_case import (
+    ConfirmPaidReservationUseCase,
+)
+from davos.modules.reservations.application.use_cases.create_staff_reservation_use_case import (
+    CreateStaffReservationUseCase,
+)
+from davos.modules.reservations.application.use_cases.expire_holds_use_case import ExpireHoldsUseCase
+from davos.modules.reservations.application.use_cases.get_booking_calendar_use_case import GetBookingCalendarUseCase
+from davos.modules.reservations.application.use_cases.get_customer_reservations_use_case import (
+    GetCustomerReservationsUseCase,
+)
+from davos.modules.reservations.application.use_cases.get_day_availability_use_case import GetDayAvailabilityUseCase
+from davos.modules.reservations.application.use_cases.get_reservation_stats_use_case import GetReservationStatsUseCase
+from davos.modules.reservations.application.use_cases.hold_reservation_use_case import HoldReservationUseCase
+from davos.modules.reservations.application.use_cases.quote_reservation_use_case import QuoteReservationUseCase
+from davos.modules.reservations.application.use_cases.schedule_settings_use_case import ScheduleSettingsUseCase
+from davos.modules.reservations.application.use_cases.search_reservations_use_case import SearchReservationsUseCase
+from davos.modules.reservations.application.use_cases.staff_update_reservation_use_case import (
+    StaffUpdateReservationUseCase,
+)
 from davos.platform.clock.system_clock import SystemClock
 from davos.platform.persistence.engine_factory import create_engine, create_session_factory
 from davos.platform.persistence.event_serializer import EventSerializer
@@ -124,7 +184,7 @@ class ApplicationContainer:
         ai_chat: AIChatPort,
         ai_budget: AiBudgetPort,
         payment_gateway: PaymentGatewayPort,
-        order_quotes: OrderQuotePort,
+        order_quotes: OrderQuotePort | None = None,
         http_client: httpx.AsyncClient | None = None,
         assistant_persona: AssistantPersonaPort | None = None,
         conversation_context: ConversationContextPort | None = None,
@@ -138,7 +198,9 @@ class ApplicationContainer:
         self.ai_chat = ai_chat
         self.ai_budget = ai_budget
         self.payment_gateway = payment_gateway
-        self.order_quotes = order_quotes
+        self.order_quotes: OrderQuotePort = order_quotes or ReservationOrderQuotePort(
+            self.quote_reservation, self.accept_reservation_payment
+        )
         self._http_client = http_client
         self._assistant_persona = assistant_persona or FileAssistantPersona(settings.assistant_persona_file)
         self._normalizer = PersianTextNormalizer()
@@ -163,6 +225,9 @@ class ApplicationContainer:
         self.csrf = CsrfTokenService(settings.session_csrf_secret.get_secret_value())
         self._otp_policy = OtpPolicy()
         self._otp_limits = OtpRateLimitPolicy()
+        self._password_hasher = ScryptPasswordHasher()
+        self._admin_tokens = Sha256AdminTokenService()
+        self._reservation_codes = SecureReservationCodeGenerator()
         # SAMPLE tier thresholds for development. The real names and thresholds are business decisions that
         # administrators will configure; nothing here is a statement about Davos Karting's actual programme.
         self._tier_ladder = TierLadder(
@@ -181,18 +246,47 @@ class ApplicationContainer:
             redis=redis,
             clock=clock,
             rate_limiter=RedisRateLimiter(redis, clock),
-            sms_gateway=RecordingSmsGateway(echo=settings.dev_sms_echo_enabled),
+            sms_gateway=cls._build_sms_gateway(settings, http_client),
             ai_chat=cls._build_ai_chat(settings, http_client),
             ai_budget=RedisAiBudget(redis, daily_limit=settings.ai_daily_token_budget, clock=clock),
-            payment_gateway=ZarinpalPaymentGateway(
+            payment_gateway=cls._build_payment_gateway(settings, http_client),
+            order_quotes=SandboxOrderQuotePort() if settings.payments_sandbox_orders_enabled else None,
+            http_client=http_client,
+        )
+
+    @staticmethod
+    def _build_sms_gateway(settings: AppSettings, http_client: httpx.AsyncClient) -> SmsGatewayPort:
+        if settings.sms_provider == "kavenegar" and settings.kavenegar_api_key.get_secret_value():
+            return KavenegarSmsGateway(
+                http_client=http_client,
+                api_key=settings.kavenegar_api_key.get_secret_value(),
+                sender=settings.kavenegar_sender,
+                templates={
+                    "otp": settings.kavenegar_otp_template,
+                    "reservation_confirmed": settings.kavenegar_reservation_template,
+                },
+            )
+        if settings.sms_provider == "kavenegar":
+            logger.warning("SMS_PROVIDER is kavenegar but KAVENEGAR_API_KEY is empty; no SMS will be sent")
+        return RecordingSmsGateway(echo=settings.dev_sms_echo_enabled)
+
+    @staticmethod
+    def _build_payment_gateway(settings: AppSettings, http_client: httpx.AsyncClient) -> PaymentGatewayPort:
+        if settings.payment_provider == "zarinpal":
+            return ZarinpalPaymentGateway(
                 http_client=http_client,
                 merchant_id=settings.zarinpal_merchant_id,
                 sandbox=settings.zarinpal_sandbox,
                 api_host=settings.zarinpal_api_host,
                 sandbox_host=settings.zarinpal_sandbox_host,
-            ),
-            order_quotes=SandboxOrderQuotePort() if settings.payments_sandbox_orders_enabled else NoOrdersQuotePort(),
+            )
+        return MellatPaymentGateway(
             http_client=http_client,
+            terminal_id=settings.mellat_terminal_id,
+            username=settings.mellat_username,
+            password=settings.mellat_password.get_secret_value(),
+            service_url=settings.mellat_service_url,
+            start_pay_url=settings.mellat_start_pay_url,
         )
 
     @staticmethod
@@ -320,7 +414,11 @@ class ApplicationContainer:
     # ---- payments -------------------------------------------------------------------------
     def _payment_settlement(self, uow: SqlAlchemyUnitOfWork) -> PaymentSettlementService:
         return PaymentSettlementService(
-            uow=uow, payments=SqlAlchemyPaymentRepository(uow), gateway=self.payment_gateway, clock=self.clock
+            uow=uow,
+            payments=SqlAlchemyPaymentRepository(uow),
+            gateway=self.payment_gateway,
+            orders=self.order_quotes,
+            clock=self.clock,
         )
 
     def start_payment(self) -> StartPaymentUseCase:
@@ -332,7 +430,7 @@ class ApplicationContainer:
             quotes=self.order_quotes,
             gateway=self.payment_gateway,
             clock=self.clock,
-            callback_url=self.settings.payment_callback_url,
+            callback_url=self.settings.effective_payment_callback_url,
         )
 
     def handle_payment_callback(self) -> HandlePaymentCallbackUseCase:
@@ -354,6 +452,165 @@ class ApplicationContainer:
             uow=uow,
             payments=SqlAlchemyPaymentRepository(uow),
             settlement=self._payment_settlement(uow),
+            clock=self.clock,
+        )
+
+    def list_payments(self) -> ListPaymentsUseCase:
+        uow = self.new_unit_of_work()
+        return ListPaymentsUseCase(uow=uow, payments=SqlAlchemyPaymentRepository(uow))
+
+    # ---- reservations ---------------------------------------------------------------------
+    def booking_calendar(self) -> GetBookingCalendarUseCase:
+        uow = self.new_unit_of_work()
+        return GetBookingCalendarUseCase(uow=uow, settings=SqlAlchemyScheduleSettingsRepository(uow), clock=self.clock)
+
+    def day_availability(self) -> GetDayAvailabilityUseCase:
+        uow = self.new_unit_of_work()
+        return GetDayAvailabilityUseCase(
+            uow=uow,
+            reservations=SqlAlchemyReservationRepository(uow),
+            settings=SqlAlchemyScheduleSettingsRepository(uow),
+            clock=self.clock,
+        )
+
+    def hold_reservation(self) -> HoldReservationUseCase:
+        uow = self.new_unit_of_work()
+        return HoldReservationUseCase(
+            uow=uow,
+            reservations=SqlAlchemyReservationRepository(uow),
+            settings=SqlAlchemyScheduleSettingsRepository(uow),
+            codes=self._reservation_codes,
+            clock=self.clock,
+        )
+
+    def create_staff_reservation(self) -> CreateStaffReservationUseCase:
+        uow = self.new_unit_of_work()
+        return CreateStaffReservationUseCase(
+            uow=uow,
+            reservations=SqlAlchemyReservationRepository(uow),
+            settings=SqlAlchemyScheduleSettingsRepository(uow),
+            codes=self._reservation_codes,
+            clock=self.clock,
+        )
+
+    def cancel_own_hold(self) -> CancelOwnHoldUseCase:
+        uow = self.new_unit_of_work()
+        return CancelOwnHoldUseCase(uow=uow, reservations=SqlAlchemyReservationRepository(uow), clock=self.clock)
+
+    def staff_update_reservation(self) -> StaffUpdateReservationUseCase:
+        uow = self.new_unit_of_work()
+        return StaffUpdateReservationUseCase(
+            uow=uow, reservations=SqlAlchemyReservationRepository(uow), clock=self.clock
+        )
+
+    def customer_reservations(self) -> GetCustomerReservationsUseCase:
+        uow = self.new_unit_of_work()
+        return GetCustomerReservationsUseCase(uow=uow, reservations=SqlAlchemyReservationRepository(uow))
+
+    def quote_reservation(self) -> QuoteReservationUseCase:
+        uow = self.new_unit_of_work()
+        return QuoteReservationUseCase(uow=uow, reservations=SqlAlchemyReservationRepository(uow), clock=self.clock)
+
+    def accept_reservation_payment(self) -> AcceptReservationPaymentUseCase:
+        uow = self.new_unit_of_work()
+        return AcceptReservationPaymentUseCase(
+            uow=uow,
+            reservations=SqlAlchemyReservationRepository(uow),
+            settings=SqlAlchemyScheduleSettingsRepository(uow),
+            clock=self.clock,
+        )
+
+    def confirm_paid_reservation(self) -> ConfirmPaidReservationUseCase:
+        uow = self.new_unit_of_work()
+        return ConfirmPaidReservationUseCase(
+            uow=uow, reservations=SqlAlchemyReservationRepository(uow), clock=self.clock
+        )
+
+    def expire_reservation_holds(self) -> ExpireHoldsUseCase:
+        uow = self.new_unit_of_work()
+        return ExpireHoldsUseCase(uow=uow, reservations=SqlAlchemyReservationRepository(uow), clock=self.clock)
+
+    def search_reservations(self) -> SearchReservationsUseCase:
+        uow = self.new_unit_of_work()
+        return SearchReservationsUseCase(uow=uow, reservations=SqlAlchemyReservationRepository(uow))
+
+    def schedule_settings(self) -> ScheduleSettingsUseCase:
+        uow = self.new_unit_of_work()
+        return ScheduleSettingsUseCase(uow=uow, settings=SqlAlchemyScheduleSettingsRepository(uow), clock=self.clock)
+
+    def reservation_stats(self) -> GetReservationStatsUseCase:
+        uow = self.new_unit_of_work()
+        return GetReservationStatsUseCase(uow=uow, stats=SqlAlchemyReservationStatsReader(uow))
+
+    # ---- customers ------------------------------------------------------------------------
+    def customer_profile(self) -> CustomerProfileUseCase:
+        uow = self.new_unit_of_work()
+        return CustomerProfileUseCase(uow=uow, users=SqlAlchemyUserRepository(uow))
+
+    def customer_directory(self) -> CustomerDirectoryUseCase:
+        uow = self.new_unit_of_work()
+        return CustomerDirectoryUseCase(uow=uow, users=SqlAlchemyUserRepository(uow))
+
+    # ---- SMS ------------------------------------------------------------------------------
+    def send_bulk_sms(self) -> SendBulkSmsUseCase:
+        uow = self.new_unit_of_work()
+        return SendBulkSmsUseCase(
+            uow=uow, gateway=self.sms_gateway, log=SqlAlchemySmsLogRepository(uow), clock=self.clock
+        )
+
+    def send_transactional_sms(self) -> SendTransactionalSmsUseCase:
+        uow = self.new_unit_of_work()
+        return SendTransactionalSmsUseCase(
+            uow=uow, gateway=self.sms_gateway, log=SqlAlchemySmsLogRepository(uow), clock=self.clock
+        )
+
+    def refresh_sms_statuses(self) -> RefreshSmsStatusesUseCase:
+        uow = self.new_unit_of_work()
+        return RefreshSmsStatusesUseCase(
+            uow=uow, gateway=self.sms_gateway, log=SqlAlchemySmsLogRepository(uow), clock=self.clock
+        )
+
+    def sms_panel(self) -> SmsPanelUseCase:
+        uow = self.new_unit_of_work()
+        return SmsPanelUseCase(uow=uow, gateway=self.sms_gateway, log=SqlAlchemySmsLogRepository(uow))
+
+    # ---- administration -------------------------------------------------------------------
+    def admin_login(self) -> AdminLoginUseCase:
+        uow = self.new_unit_of_work()
+        return AdminLoginUseCase(
+            uow=uow,
+            admins=SqlAlchemyAdminUserRepository(uow),
+            sessions=SqlAlchemyAdminSessionRepository(uow),
+            hasher=self._password_hasher,
+            tokens=self._admin_tokens,
+            rate_limiter=self.rate_limiter,
+            clock=self.clock,
+            session_lifetime=timedelta(hours=self.settings.admin_session_hours),
+        )
+
+    def authenticate_admin(self) -> AuthenticateAdminUseCase:
+        uow = self.new_unit_of_work()
+        return AuthenticateAdminUseCase(
+            uow=uow,
+            admins=SqlAlchemyAdminUserRepository(uow),
+            sessions=SqlAlchemyAdminSessionRepository(uow),
+            tokens=self._admin_tokens,
+            clock=self.clock,
+        )
+
+    def admin_logout(self) -> AdminLogoutUseCase:
+        uow = self.new_unit_of_work()
+        return AdminLogoutUseCase(
+            uow=uow, sessions=SqlAlchemyAdminSessionRepository(uow), tokens=self._admin_tokens, clock=self.clock
+        )
+
+    def manage_admins(self) -> ManageAdminsUseCase:
+        uow = self.new_unit_of_work()
+        return ManageAdminsUseCase(
+            uow=uow,
+            admins=SqlAlchemyAdminUserRepository(uow),
+            sessions=SqlAlchemyAdminSessionRepository(uow),
+            hasher=self._password_hasher,
             clock=self.clock,
         )
 

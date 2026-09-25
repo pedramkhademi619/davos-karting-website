@@ -31,7 +31,15 @@ def test_the_single_scheduler_owns_exactly_the_periodic_jobs() -> None:
     assert {entry["task"] for entry in schedule.values()} == {
         "davos.outbox.relay",
         "davos.assistant.purge_interactions",
+        "davos.payments.reconcile",
+        "davos.reservations.expire_holds",
+        "davos.notifications.refresh_sms_statuses",
     }
+
+
+def test_open_payments_are_reconciled_every_two_minutes() -> None:
+    schedule = make_app().conf.beat_schedule
+    assert schedule["reconcile-payments"]["schedule"] <= 120
 
 
 def test_events_are_routed_to_the_queue_of_their_concern() -> None:

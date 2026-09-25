@@ -6,10 +6,12 @@ class PaymentStatus(StrEnum):
     REDIRECTED = "redirected"
     VERIFYING = "verifying"
     UNKNOWN = "unknown"  # verification could not be completed (timeout / outage): reconcile, never assume
-    PAID = "paid"
+    PAID = "paid"  # verified by the bank and accepted for the order; ``settled_at`` tells whether funds were settled
     FAILED = "failed"
     EXPIRED = "expired"
+    REFUND_PENDING = "refund_pending"  # the bank took the money but the order cannot accept it: must be reversed
+    REVERSED = "reversed"  # the money went back to the customer
 
     @property
     def is_terminal(self) -> bool:
-        return self in {PaymentStatus.PAID, PaymentStatus.FAILED, PaymentStatus.EXPIRED}
+        return self in {PaymentStatus.FAILED, PaymentStatus.EXPIRED, PaymentStatus.REVERSED}

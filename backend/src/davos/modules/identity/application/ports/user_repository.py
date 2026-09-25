@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from abc import ABC, abstractmethod
 
+from davos.modules.identity.application.ports.customer_page import CustomerPage
 from davos.modules.identity.domain.entities.user import User
 from davos.modules.identity.domain.value_objects.mobile_number import MobileNumber
 
@@ -21,3 +22,13 @@ class UserRepository(ABC):
         Returns (user, created). Implementations must rely on the unique constraint on the
         mobile number, never on a check-then-insert sequence.
         """
+
+    @abstractmethod
+    async def save(self, user: User) -> None: ...
+
+    @abstractmethod
+    async def search(self, *, text: str, offset: int, limit: int) -> CustomerPage: ...
+
+    @abstractmethod
+    async def marketing_mobiles(self) -> list[MobileNumber]:
+        """Active customers who agreed to receive news and offers by SMS."""

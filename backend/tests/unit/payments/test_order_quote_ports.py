@@ -2,18 +2,33 @@ import uuid
 
 import pytest
 
-from davos.composition.adapters.no_orders_quote_port import NoOrdersQuotePort
+from davos.composition.adapters.reservation_order_quote_port import ReservationOrderQuotePort
 from davos.composition.adapters.sandbox_order_quote_port import SandboxOrderQuotePort
 from davos.platform.settings.app_environment import AppEnvironment
 from davos.platform.settings.app_settings import AppSettings
 from davos.platform.settings.insecure_configuration_error import InsecureConfigurationError
+from davos.shared_kernel.domain.money import Money
 
 ME = uuid.uuid4()
 
 
-async def test_by_default_nothing_is_payable_so_no_fictional_debt_can_appear() -> None:
-    assert await NoOrdersQuotePort().quote("sandbox-test-1", ME) is None
-    assert await NoOrdersQuotePort().quote("anything", ME) is None
+def test_reservation_order_refs_round_trip_and_nothing_else_parses() -> None:
+    reservation_id = uuid.uuid4()
+    ref = ReservationOrderQuotePort.order_ref_for(reservation_id)
+    assert ref == f"reservation:{reservation_id}"
+    assert ReservationOrderQuotePort.reservation_id_of(ref) == reservation_id
+    for other in ("sandbox-test-1", "reservation:", "reservation:not-a-uuid", f"x{ref}", str(reservation_id)):
+        assert ReservationOrderQuotePort.reservation_id_of(other) is None
+
+
+async def test_only_reservation_orders_are_payable_on_the_site() -> None:
+    def unused():  # the order refs below never reach the reservation module
+        raise AssertionError("should not be called")
+
+    port = ReservationOrderQuotePort(unused, unused)  # type: ignore[arg-type]
+    assert await port.quote("sandbox-test-1", ME) is None
+    assert await port.quote("anything", ME) is None
+    assert await port.accepts_payment("anything", ME, Money(1)) is False
 
 
 async def test_the_sandbox_path_only_prices_explicit_test_orders_with_a_fixed_small_amount() -> None:
@@ -22,6 +37,8 @@ async def test_the_sandbox_path_only_prices_explicit_test_orders_with_a_fixed_sm
     assert quote is not None and quote.amount.irr == 10_000 and "Sandbox" in quote.description
     for order in ("order-1", "sandbox-test-", "sandbox-test-abc", "xsandbox-test-1", "sandbox-test-1234567"):
         assert await port.quote(order, ME) is None
+    assert await port.accepts_payment("sandbox-test-42", ME, Money(10_000)) is True
+    assert await port.accepts_payment("sandbox-test-42", ME, Money(10_001)) is False
 
 
 def test_the_sandbox_order_switch_is_refused_in_production() -> None:

@@ -20,7 +20,7 @@ SANDBOX = "https://sandbox.zarinpal.test"
 LIVE = "https://payment.zarinpal.test"
 MERCHANT = "12345678-1234-1234-1234-123456789012"
 AUTHORITY = "A0000000000000000000000000000000abcd"
-REQUEST = PaymentRequest("pay-1", "order-1", Money(250_000), "شرح", "https://davoskarting.ir/cb")
+REQUEST = PaymentRequest("pay-1", "order-1", Money(250_000), "شرح", "https://davoskarting.ir/cb", 1_000_001)
 
 
 @pytest.fixture
@@ -47,7 +47,7 @@ async def test_request_sends_integer_rials_with_an_explicit_currency(client: htt
     assert body["amount"] == 250_000 and isinstance(body["amount"], int)
     assert body["currency"] == "IRR"  # never rely on the provider default
     assert body["merchant_id"] == MERCHANT and body["callback_url"] == "https://davoskarting.ir/cb"
-    assert body["metadata"] == {"order_id": "pay-1"}
+    assert body["metadata"] == {"order_id": "1000001"}
     assert session.authority == AUTHORITY
     assert session.redirect_url == f"{SANDBOX}/pg/StartPay/{AUTHORITY}"
 

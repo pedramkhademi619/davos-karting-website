@@ -109,6 +109,9 @@ async def test_docs_are_not_exposed_in_production(container: ApplicationContaine
         session_csrf_secret=strong + "1",
         booking_webhook_secret=strong + "2",
         cors_allowed_origins=["https://davoskarting.ir"],
+        public_base_url="https://davoskarting.ir",
+        sms_provider="kavenegar",
+        kavenegar_api_key="kavenegar-key",
     )
     transport = httpx.ASGITransport(app=create_app(settings, container), client=(CLIENT_IP, 1))
     async with httpx.AsyncClient(transport=transport, base_url="https://testserver") as client:

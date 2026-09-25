@@ -30,6 +30,8 @@ ACTIONS = {
     S.FAILED: lambda p: p.mark_failed("nope", NOW),
     S.UNKNOWN: lambda p: p.mark_unknown(NOW),
     S.EXPIRED: lambda p: p.expire(NOW),
+    S.REFUND_PENDING: lambda p: p.mark_refund_pending("duplicate_payment", "777", NOW),
+    S.REVERSED: lambda p: p.mark_reversed(NOW),
 }
 ALLOWED = {
     (S.CREATED, S.REDIRECTED),
@@ -44,6 +46,10 @@ ALLOWED = {
     (S.UNKNOWN, S.VERIFYING),
     (S.UNKNOWN, S.PAID),
     (S.UNKNOWN, S.FAILED),
+    (S.VERIFYING, S.REFUND_PENDING),
+    (S.UNKNOWN, S.REFUND_PENDING),
+    (S.REFUND_PENDING, S.REVERSED),
+    (S.PAID, S.REVERSED),  # only while unsettled: the bank itself reversed it
 }
 
 
@@ -60,7 +66,16 @@ def test_every_transition_is_either_explicitly_allowed_or_rejected(start: Paymen
 
 
 def test_terminal_states_are_final() -> None:
-    assert {s for s in S if s.is_terminal} == {S.PAID, S.FAILED, S.EXPIRED}
+    assert {s for s in S if s.is_terminal} == {S.FAILED, S.EXPIRED, S.REVERSED}
+
+
+def test_a_settled_payment_can_never_be_reversed_by_the_application() -> None:
+    payment = make(S.VERIFYING)
+    payment.mark_paid("777", NOW)
+    payment.mark_settled(NOW)
+    with pytest.raises(InvalidPaymentTransitionError):
+        payment.mark_reversed(NOW)
+    assert payment.status is S.PAID and not payment.needs_settlement
 
 
 def test_success_raises_exactly_one_event_with_the_reference() -> None:

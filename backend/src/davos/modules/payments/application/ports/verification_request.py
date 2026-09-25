@@ -7,3 +7,5 @@ from davos.shared_kernel.domain.money import Money
 class VerificationRequest:
     authority: str
     amount: Money  # always our stored amount, never a value taken from the browser callback
+    gateway_order_id: int | None = None
+    provider_reference: str | None = None  # Mellat's SaleReferenceId, recorded from the callback

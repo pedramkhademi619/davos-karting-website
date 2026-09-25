@@ -297,7 +297,7 @@ async def test_a_small_knowledge_base_is_sent_whole_even_when_the_question_match
     )
     h = Harness(passages=[], reply="ساعت کاری از ۱۵ است [2].")
     h.search.whole = [booking, hours]
-    answer = await h.ask("می‌خوام بدونم چه ساعتی میتونم بیام؟")
+    answer = await h.ask("می‌خوام بدونم فردا عصر کی بیایم بهتره؟")
     assert answer.outcome is AnswerOutcome.ANSWERED
     assert [s.title for s in answer.sources] == ["ساعت کاری"]  # only what the model actually cited
     assert 'title="رزرو"' in h.chat.user_prompt and 'title="ساعت کاری"' in h.chat.user_prompt

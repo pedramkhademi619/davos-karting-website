@@ -16,7 +16,11 @@ from davos.shared_kernel.domain.errors.conflict_error import ConflictError
 
 
 class StartPaymentUseCase:
-    """Create a payment attempt for a server-quoted order and obtain the gateway redirect."""
+    """Create a payment attempt for a server-quoted order and obtain the gateway redirect.
+
+    The amount always comes from the order service (never from the browser), and every attempt gets its own numeric
+    bank order id from a database sequence, so an order id is never sent to the bank twice.
+    """
 
     def __init__(
         self,
@@ -42,20 +46,24 @@ class StartPaymentUseCase:
             raise PaymentsDisabledError
         quote = await self._quotes.quote(command.order_ref, command.customer_id)
         if quote is None:
-            raise PaymentNotFoundError  # unknown order, or an order that belongs to someone else
+            raise PaymentNotFoundError  # unknown order, one that belongs to someone else, or no longer payable
 
+        now = self._clock.now()
         async with self._uow:
             if await self._payments.has_paid_for_order(command.order_ref):
                 raise ConflictError("این سفارش قبلا پرداخت شده است.", code="order_already_paid")
-
-        now = self._clock.now()
-        payment = PaymentAttempt.create(
-            order_ref=command.order_ref, customer_id=command.customer_id, amount=quote.amount, now=now
-        )
-        async with self._uow:
+            payment = PaymentAttempt.create(
+                order_ref=command.order_ref,
+                customer_id=command.customer_id,
+                amount=quote.amount,
+                now=now,
+                gateway=self._gateway.name,
+                gateway_order_id=await self._payments.next_gateway_order_id(),
+            )
             await self._payments.add(payment)
             await self._uow.commit()
 
+        assert payment.gateway_order_id is not None  # noqa: S101 - set just above
         try:
             session = await self._gateway.request_payment(
                 PaymentRequest(
@@ -64,6 +72,7 @@ class StartPaymentUseCase:
                     amount=payment.amount,
                     description=quote.description,
                     callback_url=self._callback_url,
+                    gateway_order_id=payment.gateway_order_id,
                 )
             )
         except GatewayError as exc:
@@ -85,4 +94,9 @@ class StartPaymentUseCase:
             stored.mark_redirected(session.authority, self._clock.now())
             await self._payments.save(stored)
             await self._uow.commit()
-        return StartPaymentResult(payment_id=payment.id, redirect_url=session.redirect_url)
+        return StartPaymentResult(
+            payment_id=payment.id,
+            redirect_url=session.redirect_url,
+            method=session.method,
+            form_fields=dict(session.form_fields),
+        )

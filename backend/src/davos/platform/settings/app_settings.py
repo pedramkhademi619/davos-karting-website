@@ -63,16 +63,36 @@ class AppSettings(BaseSettings):
     conversation_context_turns: int = 3
     conversation_context_ttl_seconds: int = 1200
 
-    # Payments
-    payment_provider: str = "zarinpal"
+    # Payments. PAYMENT_PROVIDER picks the gateway; its credentials come only from the environment.
+    payment_provider: str = "mellat"  # mellat | zarinpal
+    payments_enabled: bool = False
+    # Where the bank sends the customer back. Blank = derived from PUBLIC_BASE_URL.
+    payment_callback_url: str = ""
+    mellat_terminal_id: int = 0
+    mellat_username: str = ""
+    mellat_password: SecretStr = SecretStr("")
+    mellat_service_url: str = "https://bpm.shaparak.ir/pgwchannel/services/pgw"
+    mellat_start_pay_url: str = "https://bpm.shaparak.ir/pgwchannel/startpay.mellat"
     zarinpal_sandbox: bool = True
     zarinpal_merchant_id: str = ""
     zarinpal_api_host: str = "https://payment.zarinpal.com"
     zarinpal_sandbox_host: str = "https://sandbox.zarinpal.com"
-    payment_callback_url: str = ""
-    payments_enabled: bool = False
     # Lets developers pay a clearly labelled test order against the sandbox. Never allowed in production.
     payments_sandbox_orders_enabled: bool = False
+
+    # SMS. "recording" sends nothing (development); "kavenegar" uses the Kavenegar API.
+    sms_provider: str = "recording"
+    kavenegar_api_key: SecretStr = SecretStr("")
+    kavenegar_sender: str = ""  # the dedicated line number, used for staff messages and texts without a template
+    kavenegar_otp_template: str = ""  # a verify/lookup template approved in the Kavenegar panel, e.g. davos-otp
+    kavenegar_reservation_template: str = ""
+
+    # Admin panel
+    admin_cookie_name: str = "davos_admin"
+    admin_session_hours: int = 12
+    # Creates the first owner account on start-up when there is no admin yet (ignored afterwards).
+    admin_bootstrap_username: str = ""
+    admin_bootstrap_password: SecretStr = SecretStr("")
 
     # Booking integration
     booking_base_url: str = "https://booking.davoskarting.ir"
@@ -82,6 +102,12 @@ class AppSettings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.app_env is AppEnvironment.PRODUCTION
+
+    @property
+    def effective_payment_callback_url(self) -> str:
+        if self.payment_callback_url:
+            return self.payment_callback_url
+        return f"{self.public_base_url.rstrip('/')}/api/v1/payments/{self.payment_provider}/callback"
 
     def validate_for_environment(self) -> None:
         if not self.is_production:
@@ -101,7 +127,20 @@ class AppSettings(BaseSettings):
             problems.append("AI_BASE_URL must use https in production")
         if self.payments_sandbox_orders_enabled:
             problems.append("PAYMENTS_SANDBOX_ORDERS_ENABLED must be false in production")
-        if self.zarinpal_sandbox and self.payments_enabled:
-            problems.append("payments cannot be enabled against the sandbox in production")
+        if self.payments_enabled:
+            if self.payment_provider == "zarinpal" and self.zarinpal_sandbox:
+                problems.append("payments cannot be enabled against the sandbox in production")
+            if self.payment_provider == "mellat" and not (
+                self.mellat_terminal_id and self.mellat_username and self.mellat_password.get_secret_value()
+            ):
+                problems.append("MELLAT_TERMINAL_ID, MELLAT_USERNAME and MELLAT_PASSWORD are required for payments")
+            if not self.effective_payment_callback_url.startswith("https://"):
+                problems.append("the payment callback URL must use https in production")
+        if self.payment_provider not in {"mellat", "zarinpal"}:
+            problems.append("PAYMENT_PROVIDER must be mellat or zarinpal")
+        if self.sms_provider != "kavenegar" or not self.kavenegar_api_key.get_secret_value():
+            problems.append("SMS_PROVIDER=kavenegar with KAVENEGAR_API_KEY is required in production")
+        if not self.public_base_url.startswith("https://"):
+            problems.append("PUBLIC_BASE_URL must use https in production")
         if problems:
             raise InsecureConfigurationError("; ".join(problems))
