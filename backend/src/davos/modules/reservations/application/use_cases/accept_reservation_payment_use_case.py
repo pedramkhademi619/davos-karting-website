@@ -10,7 +10,7 @@ from davos.shared_kernel.application.clock import Clock
 from davos.shared_kernel.application.unit_of_work import UnitOfWork
 from davos.shared_kernel.domain.money import Money
 
-# How long seats are taken again for a payment that arrived after its hold ran out, until it is recorded.
+# How long karts stay taken for a verified payment until it is recorded (also after the hold ran out).
 _RENEWED_HOLD_MINUTES = 10
 
 
@@ -42,6 +42,11 @@ class AcceptReservationPaymentUseCase:
             if reservation is None or reservation.customer_id != customer_id or reservation.amount != amount:
                 return False
             if reservation.status is ReservationStatus.HELD and reservation.occupies_seats_at(now):
+                # Still holding its karts: make sure it keeps them until the payment is recorded, even if that
+                # happens after the original hold time (no session lock needed: the karts are already counted).
+                reservation.extend_hold(now, _RENEWED_HOLD_MINUTES)
+                await self._reservations.save(reservation)
+                await self._uow.commit()
                 return True
             if reservation.status not in {ReservationStatus.HELD, ReservationStatus.EXPIRED}:
                 return False

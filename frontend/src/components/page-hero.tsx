@@ -1,23 +1,29 @@
 import type { ReactNode } from "react";
 import { SectionHeading } from "@/components/section-heading";
+import { SpeedLines } from "@/components/speed-lines";
 import { stagger } from "@/lib/stagger";
 
 type PageHeroProps = {
   eyebrow: string;
-  title: string;
+  title: ReactNode;
   lead?: ReactNode;
+  children?: ReactNode;
 };
 
-/** Compact, atmospheric header shared by the inner pages, closed by the checkered finish-line edge. */
-export function PageHero({ eyebrow, title, lead }: PageHeroProps) {
+/** The inner pages' header: a carbon cockpit band with speed lines, closed by the checkered finish-line edge. */
+export function PageHero({ eyebrow, title, lead, children }: PageHeroProps) {
   return (
-    <section className="relative isolate overflow-hidden">
-      <div className="hero-bg" aria-hidden="true" />
-      <div className="grain" aria-hidden="true" />
-      <div className="container-page py-20 md:py-28">
+    <section className="carbon relative isolate overflow-hidden">
+      <SpeedLines />
+      <div className="container-page relative py-16 md:py-24">
         <div className="rise" style={stagger(0)}>
-          <SectionHeading as="h1" eyebrow={eyebrow} title={title} lead={lead} />
+          <SectionHeading as="h1" eyebrow={eyebrow} title={title} lead={lead} onCarbon />
         </div>
+        {children && (
+          <div className="rise mt-8" style={stagger(1)}>
+            {children}
+          </div>
+        )}
       </div>
       <div className="checker" aria-hidden="true" />
     </section>

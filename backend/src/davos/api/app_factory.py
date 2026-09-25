@@ -29,11 +29,25 @@ from davos.api.v1.routers import (
 )
 from davos.composition.application_container import ApplicationContainer
 from davos.platform.observability.logging_configurator import LoggingConfigurator
+from davos.platform.persistence.startup_lock import StartupLock
 from davos.platform.settings.app_settings import AppSettings
 
 API_PREFIX = "/api/v1"
 
 logger = logging.getLogger(__name__)
+
+
+async def _run_startup_work(container: ApplicationContainer) -> None:
+    """Knowledge sync and the first admin account, done by one API worker process only (they all start together)."""
+    try:
+        async with StartupLock(container.engine, "davos-api-startup").acquired() as mine:
+            if not mine:
+                logger.info("another API process is doing the start-up work")
+                return
+            await _sync_assistant_knowledge(container)
+            await _bootstrap_owner(container)
+    except Exception:
+        logger.exception("start-up work failed; the API starts anyway")
 
 
 async def _bootstrap_owner(container: ApplicationContainer) -> None:
@@ -83,8 +97,7 @@ def create_app(settings: AppSettings, container: ApplicationContainer | None = N
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         owned = container is None
         app.state.container = container or ApplicationContainer.build(settings)
-        await _sync_assistant_knowledge(app.state.container)
-        await _bootstrap_owner(app.state.container)
+        await _run_startup_work(app.state.container)
         try:
             yield
         finally:

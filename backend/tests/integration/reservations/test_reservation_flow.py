@@ -168,6 +168,68 @@ async def test_two_customers_racing_for_the_last_karts_never_both_get_them(reser
     assert next(s for s in day.sessions if s.session_time == SIX_PM).singles_left == 2
 
 
+async def test_a_crowd_racing_for_the_same_sessions_never_oversells_any_of_them(
+    reservations: ApplicationContainer,
+) -> None:
+    """50 customers on real PostgreSQL connections at once, 1-3 singles (sometimes + the double), in 3 sessions."""
+    sessions = (time(18, 0), time(18, 15), time(18, 30))
+
+    async def attempt(index: int) -> tuple[time, int, int] | None:
+        at = sessions[index % 3]
+        singles, doubles = 1 + index % 3, 1 if index % 7 == 0 else 0
+        try:
+            await reservations.hold_reservation().execute(hold(uuid.uuid4(), singles, doubles, at=at))
+        except SessionFullError:
+            return None
+        return at, singles, doubles
+
+    results = await asyncio.gather(*(attempt(i) for i in range(50)))
+    won = [r for r in results if r is not None]
+    assert won, "nobody got a kart"
+    day = await reservations.day_availability().execute(SUNDAY)
+    for at in sessions:
+        singles = sum(r[1] for r in won if r[0] == at)
+        doubles = sum(r[2] for r in won if r[0] == at)
+        assert singles <= 6 and doubles <= 1, f"{at}: {singles} singles / {doubles} doubles sold"
+        session = next(s for s in day.sessions if s.session_time == at)
+        assert (session.singles_left, session.doubles_left) == (6 - singles, 1 - doubles)
+
+
+async def test_a_payment_verified_in_the_last_seconds_keeps_its_karts_until_it_is_recorded(
+    reservations: ApplicationContainer, clock: FixedClock, gateway: ScriptedPaymentGateway
+) -> None:
+    customer = uuid.uuid4()
+    held = await reservations.hold_reservation().execute(hold(customer, 6))
+    started = await pay(reservations, held.id, customer)
+    clock.advance(minutes=19, seconds=59)
+    result = await come_back(reservations, gateway, started)  # verified one second before the hold runs out
+    assert result.status is PaymentStatus.PAID
+    clock.advance(minutes=2)  # the original hold is over; the confirmation is still on its way
+    with pytest.raises(SessionFullError):
+        await reservations.hold_reservation().execute(hold(uuid.uuid4(), 1))
+    await ReservationPaymentEvents(reservations).payment_succeeded(result.order_ref, str(result.payment_id))
+    confirmed = await reservations.search_reservations().one(held.id)
+    assert confirmed is not None and confirmed.status is ReservationStatus.CONFIRMED and not confirmed.confirmed_late
+
+
+async def test_a_payment_recorded_after_its_karts_were_sold_is_cancelled_for_a_refund_never_overbooked(
+    reservations: ApplicationContainer, clock: FixedClock, gateway: ScriptedPaymentGateway
+) -> None:
+    customer = uuid.uuid4()
+    held = await reservations.hold_reservation().execute(hold(customer, 6))
+    started = await pay(reservations, held.id, customer)
+    clock.advance(minutes=19)
+    result = await come_back(reservations, gateway, started)  # accepted: the karts are kept 10 more minutes
+    clock.advance(minutes=11)  # ...but the confirmation never came in time (worker down)
+    await reservations.hold_reservation().execute(hold(uuid.uuid4(), 6))  # someone else bought the session
+    status = await ReservationPaymentEvents(reservations).payment_succeeded(result.order_ref, str(result.payment_id))
+    assert status is ReservationStatus.CANCELLED
+    refused = await reservations.search_reservations().one(held.id)
+    assert refused is not None and "برگردانده" in refused.cancel_reason and refused.payment_ref
+    day = await reservations.day_availability().execute(SUNDAY)
+    assert next(s for s in day.sessions if s.session_time == SIX_PM).singles_left == 0  # 6 sold once, not 12
+
+
 async def test_an_unpaid_hold_frees_its_karts_when_it_runs_out(
     reservations: ApplicationContainer, clock: FixedClock
 ) -> None:

@@ -128,6 +128,10 @@ async def test_the_owner_edits_prices_and_capacity_and_the_site_follows(admin_ap
     assert calendar["days"][0]["single_price_toman"] == 850_000 and len(calendar["days"]) == 2
     day = (await admin_api.get("/api/v1/reservations/availability", params={"date": "2026-01-04"})).json()
     assert day["sessions"][0]["single_capacity"] == 4
+    info = (await admin_api.get("/api/v1/reservations/info")).json()  # public: home page, FAQ and assistant follow
+    assert info["single_capacity"] == 4 and info["double_capacity"] == 1
+    assert info["normal_single_toman"] == 850_000 and info["max_days_ahead"] == 2
+    assert info["closed_weekdays"] == ["پنجشنبه", "جمعه"] and info["first_session"] == "15:00"
 
     settings["interval_minutes"] = 1
     bad = await admin_api.put("/api/v1/admin/settings/schedule", json=settings, headers=headers)

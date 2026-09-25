@@ -11,6 +11,7 @@ from davos.api.dependencies.container_provider import get_container
 from davos.api.dependencies.customer_authentication import require_customer
 from davos.api.schemas.bookable_day_response import BookableDayResponse
 from davos.api.schemas.booking_calendar_response import BookingCalendarResponse
+from davos.api.schemas.booking_info_response import BookingInfoResponse
 from davos.api.schemas.create_reservation_request import CreateReservationRequest
 from davos.api.schemas.day_availability_response import DayAvailabilityResponse
 from davos.api.schemas.reservation_response import ReservationResponse
@@ -41,6 +42,12 @@ async def calendar(container: ApplicationContainer = Depends(get_container)) -> 
         max_karts_per_reservation=result.max_karts_per_reservation,
         days=[BookableDayResponse.of(d) for d in result.days],
     )
+
+
+@router.get("/info", summary="Kart counts, prices, session times and booking days (all set in the admin panel)")
+async def info(container: ApplicationContainer = Depends(get_container)) -> BookingInfoResponse:
+    settings = await container.schedule_settings().get()
+    return BookingInfoResponse.of(settings, payments_enabled=container.settings.payments_enabled)
 
 
 @router.get("/availability", summary="Every session of one day with the karts still free")

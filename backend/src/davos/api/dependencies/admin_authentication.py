@@ -20,7 +20,7 @@ async def require_admin(
     csrf_token = container.csrf.token_for("admin:" + raw_token)
     if request.method not in _SAFE_METHODS:
         origin = request.headers.get("origin")
-        if origin is not None and origin not in container.settings.cors_allowed_origins:
+        if origin is not None and origin not in container.settings.trusted_origins:
             raise HTTPException(status_code=403)
         if not container.csrf.is_valid("admin:" + raw_token, request.headers.get("x-csrf-token", "")):
             raise HTTPException(status_code=403)

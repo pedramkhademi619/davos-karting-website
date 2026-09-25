@@ -16,8 +16,11 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Inlined into the browser bundle at build time (see frontend/src/content/site.ts); compose passes BOOKING_BASE_URL.
-ARG NEXT_PUBLIC_BOOKING_URL=https://booking.davoskarting.ir
+# Inlined at build time (see frontend/src/lib/urls.ts): the main site's address and the booking subdomain.
+# An empty NEXT_PUBLIC_BOOKING_URL keeps booking on the main site (single host, e.g. local development).
+ARG NEXT_PUBLIC_SITE_URL=http://localhost
+ARG NEXT_PUBLIC_BOOKING_URL=
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_BOOKING_URL=$NEXT_PUBLIC_BOOKING_URL
 
 RUN npm run build

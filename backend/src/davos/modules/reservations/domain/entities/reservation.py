@@ -21,8 +21,8 @@ class Reservation(AggregateRoot[uuid.UUID]):
     """Karts reserved in one session: a ticket, like a cinema seat.
 
     Online reservations start HELD (the seats are taken while the customer pays) and become CONFIRMED when the payment
-    is verified. A payment that arrives after the hold ran out still confirms the reservation (the customer has paid)
-    and is flagged ``confirmed_late`` so staff can check the session.
+    is verified. A payment that arrives after the hold ran out confirms the reservation only if its karts are still
+    free (flagged ``confirmed_late``); otherwise it is refused so the money goes back. A session is never oversold.
     """
 
     def __init__(
@@ -186,6 +186,44 @@ class Reservation(AggregateRoot[uuid.UUID]):
         self.hold_expires_at = now + timedelta(minutes=minutes)
         self.confirmed_late = True
         self.updated_at = now
+
+    def extend_hold(self, now: datetime, minutes: int) -> None:
+        """A verified payment is being recorded: keep the karts at least ``minutes`` longer (never shortens the hold).
+
+        Without this, a payment verified in the hold's last seconds could be confirmed a moment after the hold ran out,
+        after someone else had already taken the same karts.
+        """
+        if not (self.status is S.HELD and self.occupies_seats_at(now)):
+            raise InvalidReservationTransitionError(self.status.value, S.HELD.value)
+        until = now + timedelta(minutes=minutes)
+        if self.hold_expires_at is None or until > self.hold_expires_at:
+            self.hold_expires_at = until
+        self.updated_at = now
+
+    def refuse_late_payment(self, payment_ref: str, now: datetime) -> None:
+        """The payment arrived after the hold ran out and the karts were sold meanwhile: cancel instead of overbooking.
+
+        The customer paid, so the cancellation says a refund is due (``was_paid``) and staff see why in the reason.
+        """
+        if self.status not in {S.HELD, S.EXPIRED} or self.occupies_seats_at(now):
+            raise InvalidReservationTransitionError(self.status.value, S.CANCELLED.value)
+        self.status = S.CANCELLED
+        self.payment_ref = payment_ref
+        self.cancel_reason = (
+            "پرداخت بعد از پایان زمان نگه‌داری رسید و جای خالی نمانده بود؛ مبلغ باید به مشتری برگردانده شود"
+        )
+        self.updated_at = now
+        self._raise(
+            ReservationCancelled(
+                reservation_id=self.id,
+                customer_id=self.customer_id,
+                code=self.code,
+                starts_at=self.starts_at,
+                was_paid=True,
+                reason=self.cancel_reason,
+                occurred_at=now,
+            )
+        )
 
     def expire(self, now: datetime) -> None:
         if self.status is not S.HELD or self.hold_expires_at is None or now < self.hold_expires_at:

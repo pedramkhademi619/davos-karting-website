@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from urllib.parse import urlsplit
+
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -37,6 +39,14 @@ class AppSettings(BaseSettings):
 
     # Development-only behaviour, must stay off in production.
     dev_sms_echo_enabled: bool = False
+
+    # Per-IP limits. Many mobile users share one public IP (carrier-grade NAT), so these are generous; the real
+    # anti-abuse limits are per mobile number (5 codes an hour, 3 tries per code) and per conversation.
+    otp_requests_per_ip_per_hour: int = 200
+    otp_verifications_per_ip_per_15_minutes: int = 300
+    assistant_questions_per_ip_per_hour: int = 120
+    # Database connections per API worker process (API_WORKERS processes run side by side).
+    db_pool_timeout_seconds: float = 10.0
 
     # Session cookie
     session_cookie_name: str = "davos_session"
@@ -101,8 +111,9 @@ class AppSettings(BaseSettings):
     admin_bootstrap_username: str = ""
     admin_bootstrap_password: SecretStr = SecretStr("")
 
-    # Booking integration
-    booking_base_url: str = "https://booking.davoskarting.ir"
+    # Online booking lives on its own subdomain (e.g. https://booking.davoskarting.ir): the booking page, sign-in, the
+    # customer's tickets and the payment result. Blank = everything on PUBLIC_BASE_URL (local development).
+    booking_base_url: str = ""
     booking_integration_enabled: bool = False
     booking_webhook_tolerance_seconds: int = 300
 
@@ -111,10 +122,30 @@ class AppSettings(BaseSettings):
         return self.app_env is AppEnvironment.PRODUCTION
 
     @property
+    def trusted_origins(self) -> frozenset[str]:
+        """Origins whose browser requests may change state: the site's own addresses plus CORS_ALLOWED_ORIGINS.
+
+        The main site and the booking subdomain are always trusted, so forgetting to list one of them cannot silently
+        break every sign-in, hold and payment with a 403.
+        """
+        own = (self._origin_of(self.public_base_url), self._origin_of(self.booking_base_url))
+        return frozenset(origin for origin in (*self.cors_allowed_origins, *own) if origin)
+
+    @staticmethod
+    def _origin_of(url: str) -> str:
+        parts = urlsplit(url.strip())
+        return f"{parts.scheme}://{parts.netloc}" if parts.scheme and parts.netloc else ""
+
+    @property
+    def booking_site_url(self) -> str:
+        """Where customers book and pay; the bank sends them back here, where their session cookie lives."""
+        return (self.booking_base_url or self.public_base_url).rstrip("/")
+
+    @property
     def effective_payment_callback_url(self) -> str:
         if self.payment_callback_url:
             return self.payment_callback_url
-        return f"{self.public_base_url.rstrip('/')}/api/v1/payments/{self.payment_provider}/callback"
+        return f"{self.booking_site_url}/api/v1/payments/{self.payment_provider}/callback"
 
     def validate_for_environment(self) -> None:
         if not self.is_production:
@@ -149,5 +180,7 @@ class AppSettings(BaseSettings):
             problems.append("SMS_PROVIDER=kavenegar with KAVENEGAR_API_KEY is required in production")
         if not self.public_base_url.startswith("https://"):
             problems.append("PUBLIC_BASE_URL must use https in production")
+        if self.booking_base_url and not self.booking_base_url.startswith("https://"):
+            problems.append("BOOKING_BASE_URL must use https in production")
         if problems:
             raise InsecureConfigurationError("; ".join(problems))

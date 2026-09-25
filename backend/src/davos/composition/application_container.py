@@ -207,7 +207,10 @@ class ApplicationContainer:
         self._assistant_persona = assistant_persona or FileAssistantPersona(settings.assistant_persona_file)
         self._booking_facts = ScheduleBookingFacts(self.schedule_settings)
         self._normalizer = PersianTextNormalizer()
-        self._assistant_policy = AssistantPolicy(max_output_tokens=settings.ai_max_output_tokens)
+        self._assistant_policy = AssistantPolicy(
+            max_output_tokens=settings.ai_max_output_tokens,
+            questions_per_ip_per_hour=settings.assistant_questions_per_ip_per_hour,
+        )
         self.session_factory: async_sessionmaker[AsyncSession] = create_session_factory(engine)
         self._conversation_context: ConversationContextPort = conversation_context or (
             RedisConversationContext(
@@ -227,7 +230,10 @@ class ApplicationContainer:
         self._tokens = Sha256SessionTokenService()
         self.csrf = CsrfTokenService(settings.session_csrf_secret.get_secret_value())
         self._otp_policy = OtpPolicy()
-        self._otp_limits = OtpRateLimitPolicy()
+        self._otp_limits = OtpRateLimitPolicy(
+            per_ip_limit=settings.otp_requests_per_ip_per_hour,
+            verify_per_ip_limit=settings.otp_verifications_per_ip_per_15_minutes,
+        )
         self._password_hasher = ScryptPasswordHasher()
         self._admin_tokens = Sha256AdminTokenService()
         self._reservation_codes = SecureReservationCodeGenerator()
@@ -545,7 +551,10 @@ class ApplicationContainer:
     def confirm_paid_reservation(self) -> ConfirmPaidReservationUseCase:
         uow = self.new_unit_of_work()
         return ConfirmPaidReservationUseCase(
-            uow=uow, reservations=SqlAlchemyReservationRepository(uow), clock=self.clock
+            uow=uow,
+            reservations=SqlAlchemyReservationRepository(uow),
+            settings=SqlAlchemyScheduleSettingsRepository(uow),
+            clock=self.clock,
         )
 
     def expire_reservation_holds(self) -> ExpireHoldsUseCase:

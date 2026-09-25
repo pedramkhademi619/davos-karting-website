@@ -75,6 +75,7 @@ def test_settings() -> AppSettings:
         payments_enabled=True,
         booking_integration_enabled=True,
         booking_webhook_secret=BOOKING_SECRET,
+        assistant_questions_per_ip_per_hour=30,  # small, so the limit test stays quick (production default: 120)
     )
 
 

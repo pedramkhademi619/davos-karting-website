@@ -33,7 +33,7 @@ _CALLBACKS_PER_IP_PER_MINUTE = 30
 
 
 def _result_page(container: ApplicationContainer, payment_id: uuid.UUID | None) -> RedirectResponse:
-    base = container.settings.public_base_url.rstrip("/")
+    base = container.settings.booking_site_url  # the customer's session cookie lives on the booking site
     target = f"{base}/payment/result?payment={payment_id}" if payment_id else f"{base}/payment/result?error=1"
     return RedirectResponse(target, status_code=303)
 

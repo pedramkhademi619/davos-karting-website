@@ -32,7 +32,7 @@ x-app-environment: &app-environment
   AI_BASE_URL: ${AI_BASE_URL:-}
   AI_API_KEY: ${AI_API_KEY:-}
   AI_MODEL: ${AI_MODEL:-}
-  BOOKING_BASE_URL: ${BOOKING_BASE_URL:-https://booking.davoskarting.ir}
+  BOOKING_BASE_URL: ${BOOKING_BASE_URL:-}
   ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:-}
   PAYMENT_CALLBACK_URL: ${PAYMENT_CALLBACK_URL:-}
   AI_TOKEN_LIMIT_PARAM: ${AI_TOKEN_LIMIT_PARAM:-max_tokens}
@@ -58,6 +58,9 @@ x-app-environment: &app-environment
   KAVENEGAR_RESERVATION_TEMPLATE: ${KAVENEGAR_RESERVATION_TEMPLATE:-}
   ADMIN_BOOTSTRAP_USERNAME: ${ADMIN_BOOTSTRAP_USERNAME:-}
   ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:-}
+  OTP_REQUESTS_PER_IP_PER_HOUR: ${OTP_REQUESTS_PER_IP_PER_HOUR:-200}
+  OTP_VERIFICATIONS_PER_IP_PER_15_MINUTES: ${OTP_VERIFICATIONS_PER_IP_PER_15_MINUTES:-300}
+  ASSISTANT_QUESTIONS_PER_IP_PER_HOUR: ${ASSISTANT_QUESTIONS_PER_IP_PER_HOUR:-120}
 
 services:
   reverse-proxy:
@@ -79,7 +82,7 @@ services:
       retries: 3
     networks: [edge]
     restart: unless-stopped
-    mem_limit: 128m
+    mem_limit: 256m  # includes the tmpfs page caches
     <<: *hardening
 
   frontend:
@@ -87,13 +90,19 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_BOOKING_URL: ${BOOKING_BASE_URL:-https://booking.davoskarting.ir}
+        # Baked into the web app at build time: where the main site and the booking subdomain live.
+        NEXT_PUBLIC_SITE_URL: ${PUBLIC_BASE_URL:-http://localhost}
+        NEXT_PUBLIC_BOOKING_URL: ${BOOKING_BASE_URL:-}
     environment:
       NODE_ENV: production
       API_INTERNAL_URL: http://api:8000
+    # Every page is rendered per request (it carries its own CSP nonce) and one Node.js process renders one page at a
+    # time, so the web app runs as several replicas; nginx spreads requests over them (see nginx/nginx.conf).
+    deploy:
+      replicas: ${FRONTEND_REPLICAS:-3}
     networks: [edge]
     restart: unless-stopped
-    mem_limit: 512m
+    mem_limit: 384m
 
   api:
     <<: [*backend-image, *hardening]
@@ -104,6 +113,9 @@ services:
     environment:
       <<: *app-environment
       FORWARDED_ALLOW_IPS: "*"  # the API is reachable only from the proxy on the private edge network
+      # Worker processes (uvicorn reads WEB_CONCURRENCY). Each keeps DB_POOL_SIZE + DB_MAX_OVERFLOW connections at most;
+      # keep API_WORKERS x (pool + overflow) + worker/scheduler well under PostgreSQL's max_connections (100).
+      WEB_CONCURRENCY: ${API_WORKERS:-4}
       # Owner-editable assistant content (see backend/knowledge/README.md); mounted read-only from the host below.
       ASSISTANT_PERSONA_FILE: /app/prompts/assistant_persona.txt
       ASSISTANT_KNOWLEDGE_DIR: /app/knowledge
@@ -117,7 +129,7 @@ services:
         condition: service_healthy
     networks: [edge, backend]
     restart: unless-stopped
-    mem_limit: 512m
+    mem_limit: 1g
     stop_grace_period: 30s
 
   # One-shot, explicit migration job: replicas never migrate on their own start-up.

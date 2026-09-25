@@ -178,6 +178,29 @@ def test_a_late_payment_still_confirms_but_is_flagged() -> None:
     assert reservation.confirmed_late and reservation.status is S.CONFIRMED
 
 
+def test_a_verified_payment_extends_a_running_hold_but_never_shortens_it() -> None:
+    reservation = held()
+    last_second = SATURDAY_MORNING + timedelta(minutes=19, seconds=59)
+    reservation.extend_hold(last_second, 10)
+    assert reservation.occupies_seats_at(SATURDAY_MORNING + timedelta(minutes=29))
+    early = held()
+    early.extend_hold(SATURDAY_MORNING + timedelta(minutes=1), 5)  # would end sooner than the hold itself
+    assert early.hold_expires_at == SATURDAY_MORNING + timedelta(minutes=20)
+    with pytest.raises(InvalidReservationTransitionError):
+        held().extend_hold(SATURDAY_MORNING + timedelta(minutes=21), 10)  # a hold that already ran out is not revived
+
+
+def test_a_payment_for_karts_sold_meanwhile_is_refused_with_a_refund_note() -> None:
+    reservation = held()
+    later = SATURDAY_MORNING + timedelta(minutes=40)
+    reservation.refuse_late_payment("pay-9", later)
+    events = reservation.pull_events()
+    assert reservation.status is S.CANCELLED and reservation.payment_ref == "pay-9"
+    assert [type(e) for e in events] == [ReservationCancelled] and events[0].was_paid is True
+    with pytest.raises(InvalidReservationTransitionError):
+        held().refuse_late_payment("pay-9", SATURDAY_MORNING)  # a running hold still has its karts
+
+
 def test_customers_cancel_only_unpaid_holds_staff_can_cancel_paid_ones() -> None:
     reservation = held()
     reservation.confirm_payment("pay-1", SATURDAY_MORNING)
