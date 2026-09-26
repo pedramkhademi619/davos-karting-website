@@ -85,6 +85,8 @@ from davos.modules.identity.application.use_cases.otp_rate_limit_policy import O
 from davos.modules.identity.application.use_cases.request_otp_use_case import RequestOtpUseCase
 from davos.modules.identity.application.use_cases.revoke_session_use_case import RevokeSessionUseCase
 from davos.modules.identity.application.use_cases.verify_otp_use_case import VerifyOtpUseCase
+from davos.modules.identity.domain.errors.invalid_mobile_number_error import InvalidMobileNumberError
+from davos.modules.identity.domain.value_objects.mobile_number import MobileNumber
 from davos.modules.identity.domain.value_objects.otp_policy import OtpPolicy
 from davos.modules.loyalty.adapters.persistence.sqlalchemy_points_ledger_repository import (
     SqlAlchemyPointsLedgerRepository,
@@ -262,6 +264,25 @@ class ApplicationContainer:
             order_quotes=SandboxOrderQuotePort() if settings.payments_sandbox_orders_enabled else None,
             http_client=http_client,
         )
+
+    def dev_otp_code(self, raw_mobile: str) -> str | None:
+        """The code just sent to this number, for local development only.
+
+        Only with DEV_SMS_ECHO_ENABLED (the API refuses to start in production with it) and the recording SMS gateway,
+        which sends nothing: the sign-in form can then show the code instead of making developers read the log.
+        """
+        if not self.settings.dev_sms_echo_enabled or self.settings.is_production:
+            return None
+        if not isinstance(self.sms_gateway, RecordingSmsGateway):
+            return None
+        try:
+            mobile = MobileNumber.parse(raw_mobile).local
+        except InvalidMobileNumberError:
+            return None
+        for message in reversed(self.sms_gateway.sent):
+            if message.to_local_mobile == mobile and message.template_key == SmsOtpDelivery.TEMPLATE_KEY:
+                return message.parameters.get("code")
+        return None
 
     @staticmethod
     def _build_sms_gateway(settings: AppSettings, http_client: httpx.AsyncClient) -> SmsGatewayPort:

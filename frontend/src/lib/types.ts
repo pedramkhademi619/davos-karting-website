@@ -113,7 +113,12 @@ export type PaymentStatus = {
 
 export type SignedIn = { user_id: string; is_new_user: boolean; expires_at: string; csrf_token: string };
 export type Me = { user_id: string; csrf_token: string };
-export type OtpRequested = { expires_in_seconds: number; resend_after_seconds: number };
+export type OtpRequested = {
+  expires_in_seconds: number;
+  resend_after_seconds: number;
+  /** Only from a local development API (DEV_SMS_ECHO_ENABLED): no SMS goes out there, so the code comes back here. */
+  dev_code?: string;
+};
 
 export type Profile = {
   user_id: string;

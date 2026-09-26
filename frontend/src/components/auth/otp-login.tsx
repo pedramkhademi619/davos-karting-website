@@ -29,6 +29,8 @@ export function OtpLogin({ onSignedIn, tone = "light", title = "ورود با ش
   const [mobileInput, setMobileInput] = useState("");
   const [mobile, setMobile] = useState("");
   const [code, setCode] = useState("");
+  // Local development only: the API sends no SMS there and returns the code instead (see OtpRequested.dev_code).
+  const [devCode, setDevCode] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendAt, setResendAt] = useState(0);
@@ -54,7 +56,8 @@ export function OtpLogin({ onSignedIn, tone = "light", title = "ورود با ش
       const sent = await api<OtpRequested>("/auth/otp/request", { method: "POST", body: { mobile: target } });
       setMobile(target);
       setStep("code");
-      setCode("");
+      setDevCode(sent.dev_code ?? null);
+      setCode(sent.dev_code ?? "");
       setResendAt(Date.now() + sent.resend_after_seconds * 1000);
       setNow(Date.now());
     } catch (err) {
@@ -130,6 +133,15 @@ export function OtpLogin({ onSignedIn, tone = "light", title = "ورود با ش
               تغییر شماره
             </button>
           </p>
+          {devCode && (
+            <Alert tone="warning">
+              نسخه آزمایشی: پیامکی فرستاده نمی‌شود. کد تایید{" "}
+              <span dir="ltr" className="font-black tracking-widest">
+                {devCode}
+              </span>{" "}
+              است و در کادر زیر نوشته شده.
+            </Alert>
+          )}
           <div>
             <label htmlFor={codeId} className="label">
               کد تایید
