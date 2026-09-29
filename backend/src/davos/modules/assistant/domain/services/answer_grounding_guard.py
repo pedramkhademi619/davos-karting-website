@@ -5,11 +5,14 @@ from collections.abc import Sequence
 
 from davos.modules.assistant.domain.enums.grounding_kind import GroundingKind
 from davos.modules.assistant.domain.value_objects.grounding_result import GroundingResult
+from davos.shared_kernel.domain.digit_normalizer import DigitNormalizer
 
 NO_ANSWER_TOKEN = "NO_ANSWER"  # noqa: S105 - marker, not a credential
 
 _MARKDOWN_LINK = re.compile(r"\[([^\]]+)\]\((?:[^)]*)\)")
-_CITATION = re.compile(r"\[(\d{1,2})\]")
+# "[1]", and the grouped forms some models write: "[10, 11]", "[10، 11]", "[۱۰ و ۱۱]", "[2-3]".
+_CITATION = re.compile(r"\[\s*[0-9۰-۹]{1,2}(?:\s*(?:[,،و]|-)\s*[0-9۰-۹]{1,2})*\s*\]")
+_NUMBER = re.compile(r"[0-9۰-۹]{1,2}")
 _URL = re.compile(r"(?:https?://|www\.)\S+", re.I)
 _SPACES = re.compile(r"[ \t]{2,}")
 _SPACE_BEFORE_PUNCTUATION = re.compile(r"\s+([.،؛؟!:])")  # what removing "[1]" leaves behind
@@ -42,7 +45,8 @@ class AnswerGroundingGuard:
         if _FOREIGN_SCRIPT.search(text):
             return GroundingResult(GroundingKind.UNGROUNDED)
         text = _MARKDOWN_LINK.sub(r"\1", _LEADING_LABEL.sub("", text))
-        cited = tuple(sorted({int(n) for n in _CITATION.findall(text) if 1 <= int(n) <= passage_count}))
+        numbers = (int(DigitNormalizer.to_ascii(n)) for c in _CITATION.findall(text) for n in _NUMBER.findall(c))
+        cited = tuple(sorted({n for n in numbers if 1 <= n <= passage_count}))
         if not cited:
             return GroundingResult(GroundingKind.UNGROUNDED)
 
