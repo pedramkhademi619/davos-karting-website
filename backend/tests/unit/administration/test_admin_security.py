@@ -11,6 +11,10 @@ from davos.modules.administration.domain.entities.admin_user import AdminUser
 from davos.modules.administration.domain.enums.admin_role import AdminRole
 from davos.modules.administration.domain.errors.weak_password_error import WeakPasswordError
 from davos.shared_kernel.domain.errors.validation_error import ValidationError
+from tests.fakes.standard_config import admin_security
+
+SECURITY = admin_security()  # five wrong passwords lock for fifteen minutes
+IDLE = SECURITY.idle_timeout  # two hours
 
 NOW = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
 hasher = ScryptPasswordHasher()
@@ -43,9 +47,9 @@ def test_five_wrong_passwords_lock_the_account_for_fifteen_minutes() -> None:
     admin = AdminUser.create(username=" Owner ", display_name="", password_hash="h", role=AdminRole.OWNER, now=NOW)
     assert admin.username == "owner"
     for _ in range(4):
-        admin.record_failed_login(NOW)
+        admin.record_failed_login(NOW, SECURITY)
     assert not admin.is_locked_at(NOW)
-    admin.record_failed_login(NOW)
+    admin.record_failed_login(NOW, SECURITY)
     assert admin.is_locked_at(NOW) and admin.seconds_locked(NOW) == 900
     assert not admin.is_locked_at(NOW + timedelta(minutes=15))
     admin.record_login(NOW + timedelta(minutes=16))
@@ -63,13 +67,13 @@ def test_admin_sessions_end_on_expiry_idle_time_or_revocation() -> None:
         ip_hint="1.2.3.4",
         user_agent="ua",
     )
-    assert session.is_active(NOW + timedelta(hours=1))
-    assert not session.is_active(NOW + timedelta(hours=2, minutes=1))  # idle for more than two hours
+    assert session.is_active(NOW + timedelta(hours=1), IDLE)
+    assert not session.is_active(NOW + timedelta(hours=2, minutes=1), IDLE)  # idle for more than two hours
     session.touch(NOW + timedelta(hours=1, minutes=59))
-    assert session.is_active(NOW + timedelta(hours=3))
-    assert not session.is_active(NOW + timedelta(hours=12))
+    assert session.is_active(NOW + timedelta(hours=3), IDLE)
+    assert not session.is_active(NOW + timedelta(hours=12), IDLE)
     session.revoke(NOW)
-    assert not session.is_active(NOW)
+    assert not session.is_active(NOW, IDLE)
 
 
 def test_admin_tokens_are_random_and_only_digests_are_kept() -> None:

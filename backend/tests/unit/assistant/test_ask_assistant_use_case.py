@@ -26,6 +26,7 @@ from tests.fakes.fixed_clock import FixedClock
 from tests.fakes.passages import passage
 from tests.fakes.recording_interaction_log import RecordingInteractionLog
 from tests.fakes.scripted_ai_chat import ScriptedAiChat
+from tests.fakes.standard_config import assistant_policy, booking_facts
 from tests.fakes.static_knowledge_search import StaticKnowledgeSearch
 from tests.fakes.static_persona import StaticPersona
 
@@ -56,7 +57,7 @@ class Harness:
             interactions=self.log,
             rate_limiter=InMemoryRateLimiter(self.clock),
             clock=self.clock,
-            policy=policy or AssistantPolicy(),
+            policy=policy or assistant_policy(),
             persona=StaticPersona(persona) if persona is not None else None,
             canary_factory=lambda: CANARY,
         )
@@ -161,7 +162,7 @@ async def test_budget_is_settled_with_actual_usage() -> None:
 
 
 async def test_per_ip_limit_is_enforced() -> None:
-    h = Harness(policy=AssistantPolicy(questions_per_ip_per_hour=2))
+    h = Harness(policy=assistant_policy(questions_per_ip_per_hour=2))
     await h.ask()
     await h.ask()
     with pytest.raises(RateLimitedError):
@@ -170,7 +171,7 @@ async def test_per_ip_limit_is_enforced() -> None:
 
 
 async def test_conversation_length_limit_is_enforced() -> None:
-    h = Harness(policy=AssistantPolicy(questions_per_conversation=2))
+    h = Harness(policy=assistant_policy(questions_per_conversation=2))
     conversation = uuid.uuid4()
     await h.ask(conversation_id=conversation)
     await h.ask(conversation_id=conversation)
@@ -210,7 +211,7 @@ async def test_a_bare_greeting_or_thanks_gets_a_friendly_reply_without_search_or
 
 
 async def test_small_talk_still_counts_against_the_rate_limit() -> None:
-    h = Harness(policy=AssistantPolicy(questions_per_ip_per_hour=2))
+    h = Harness(policy=assistant_policy(questions_per_ip_per_hour=2))
     await h.ask("سلام")
     await h.ask("سلام")
     with pytest.raises(RateLimitedError):
@@ -244,7 +245,7 @@ async def test_without_consent_no_question_or_answer_text_is_stored() -> None:
 
 
 async def test_with_consent_text_is_stored_with_a_retention_date() -> None:
-    h = Harness(policy=AssistantPolicy(interaction_retention_days=30))
+    h = Harness(policy=assistant_policy(interaction_retention_days=30))
     user = uuid.uuid4()
     answer = await h.ask("چطور لغو کنم؟", user_id=user, consent_to_store=True)
     stored = h.log.items[0]
@@ -301,7 +302,9 @@ async def test_a_small_knowledge_base_is_sent_whole_even_when_the_question_match
     answer = await h.ask("می‌خوام بدونم فردا عصر کی بیایم بهتره؟")
     assert answer.outcome is AnswerOutcome.ANSWERED
     assert [s.title for s in answer.sources] == ["ساعت کاری"]  # only what the model actually cited
-    assert 'title="رزرو"' in h.chat.user_prompt and 'title="ساعت کاری"' in h.chat.user_prompt
+    # the whole base is the shared part of the system message, in a fixed (title) order, so it can be cached
+    assert h.chat.system_prompt.index('title="رزرو"') < h.chat.system_prompt.index('title="ساعت کاری"')
+    assert 'title="رزرو"' not in h.chat.user_prompt
     assert h.search.queries == [], "the keyword gate is skipped when the whole knowledge base is small"
 
 
@@ -320,7 +323,7 @@ async def test_a_large_knowledge_base_still_goes_through_the_relevance_gate() ->
 
 
 async def test_the_policy_limits_are_what_the_use_case_asks_the_search_for() -> None:
-    h = Harness(policy=AssistantPolicy(whole_knowledge_max_entries=3, whole_knowledge_max_chars=1000))
+    h = Harness(policy=assistant_policy(whole_knowledge_max_entries=3, whole_knowledge_max_chars=1000))
     await h.ask()
     assert h.search.whole_requests == [(3, 1000)]
 
@@ -363,7 +366,7 @@ async def test_a_question_with_a_detail_is_not_a_quick_answer() -> None:
 
 
 async def test_a_quick_answer_still_counts_against_the_rate_limit() -> None:
-    h = Harness(passages=[_hours_passage()], policy=AssistantPolicy(questions_per_ip_per_hour=1))
+    h = Harness(passages=[_hours_passage()], policy=assistant_policy(questions_per_ip_per_hour=1))
     await h.ask("ساعت کاری چیه؟")
     with pytest.raises(RateLimitedError):
         await h.ask("ساعت کاری چیه؟")
@@ -432,9 +435,8 @@ async def test_a_failed_repair_falls_back_to_insufficient_information() -> None:
 
 class _Settings:
     def __init__(self, facts=None, fail: bool = False) -> None:
-        from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
 
-        self.facts = facts or BookingFacts(singles_per_session=5, normal_single_toman=850_000)
+        self.facts = facts or booking_facts(singles_per_session=5, normal_single_toman=850_000)
         self.fail = fail
 
     async def current(self):

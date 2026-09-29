@@ -9,7 +9,7 @@ from davos.modules.assistant.domain.enums.chat_role import ChatRole
 from davos.modules.assistant.domain.value_objects.chat_message import ChatMessage
 from tests.fakes.scripted_ai_chat import ScriptedAiChat
 
-REQUEST = ChatCompletionRequest(messages=(ChatMessage(ChatRole.USER, "hi"),), max_output_tokens=10)
+REQUEST = ChatCompletionRequest(messages=(ChatMessage(ChatRole.USER, "hi"),), max_output_tokens=10, temperature=0.1)
 
 
 async def test_the_backup_is_not_called_when_the_primary_answers() -> None:

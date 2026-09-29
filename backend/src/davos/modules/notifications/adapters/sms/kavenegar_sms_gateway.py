@@ -55,8 +55,8 @@ class KavenegarSmsGateway(SmsGatewayPort):
         api_key: str,
         sender: str,
         templates: dict[str, str],
-        base_url: str = "https://api.kavenegar.com/v1",
-        timeout_seconds: float = 10.0,
+        base_url: str,
+        timeout_seconds: float,
     ) -> None:
         self._client = http_client
         self._api_key = api_key

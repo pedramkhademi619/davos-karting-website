@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from davos.modules.payments.application.ports.gateway_error import GatewayError
 from davos.modules.payments.application.ports.order_quote_port import OrderQuotePort
 from davos.modules.payments.application.ports.payment_gateway_port import PaymentGatewayPort
@@ -32,6 +34,7 @@ class StartPaymentUseCase:
         gateway: PaymentGatewayPort,
         clock: Clock,
         callback_url: str,
+        attempt_ttl: timedelta,
     ) -> None:
         self._enabled = enabled
         self._uow = uow
@@ -40,6 +43,7 @@ class StartPaymentUseCase:
         self._gateway = gateway
         self._clock = clock
         self._callback_url = callback_url
+        self._attempt_ttl = attempt_ttl  # an unpaid attempt expires after this
 
     async def execute(self, command: StartPaymentCommand) -> StartPaymentResult:
         if not self._enabled:
@@ -59,6 +63,7 @@ class StartPaymentUseCase:
                 now=now,
                 gateway=self._gateway.name,
                 gateway_order_id=await self._payments.next_gateway_order_id(),
+                ttl=self._attempt_ttl,
             )
             await self._payments.add(payment)
             await self._uow.commit()

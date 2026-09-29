@@ -16,12 +16,19 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Inlined at build time (see frontend/src/lib/urls.ts): the main site's address and the booking subdomain.
-# An empty NEXT_PUBLIC_BOOKING_URL keeps booking on the main site (single host, e.g. local development).
-ARG NEXT_PUBLIC_SITE_URL=http://localhost
-ARG NEXT_PUBLIC_BOOKING_URL=
-ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
-ENV NEXT_PUBLIC_BOOKING_URL=$NEXT_PUBLIC_BOOKING_URL
+# Inlined at build time; docker-compose.yml passes them from .env (no defaults here, so a value lives only in .env):
+# the main site and the booking subdomain (src/lib/urls.ts; an empty booking URL keeps booking on the main site), and
+# the venue's phone number and location (src/lib/venue.ts).
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_BOOKING_URL
+ARG NEXT_PUBLIC_CONTACT_PHONE
+ARG NEXT_PUBLIC_VENUE_LATITUDE
+ARG NEXT_PUBLIC_VENUE_LONGITUDE
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+    NEXT_PUBLIC_BOOKING_URL=$NEXT_PUBLIC_BOOKING_URL \
+    NEXT_PUBLIC_CONTACT_PHONE=$NEXT_PUBLIC_CONTACT_PHONE \
+    NEXT_PUBLIC_VENUE_LATITUDE=$NEXT_PUBLIC_VENUE_LATITUDE \
+    NEXT_PUBLIC_VENUE_LONGITUDE=$NEXT_PUBLIC_VENUE_LONGITUDE
 
 RUN npm run build
 

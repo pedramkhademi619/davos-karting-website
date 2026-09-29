@@ -1,13 +1,33 @@
 import { BOOKING_HOME } from "@/lib/urls";
+import { venue } from "@/lib/venue";
 
 /**
  * Everything the pages say about the business lives here, so it can be replaced in one place.
  *
- * Phone, working hours and the riding rules come from the owner (September 2026) and match backend/knowledge. Numbers the
- * owner changes in the admin panel (prices, karts per session, days without booking, hold time) are NOT written here: pages
- * read them from the API (/api/v1/reservations/info), see content/faq.ts. No street address or e-mail is published because
- * none was confirmed; the map link uses the owner's own coordinates.
+ * The working hours and the riding rules come from the owner (September 2026) and match backend/knowledge. The phone
+ * number and the map location differ per deployment and come from .env (lib/venue.ts). Numbers the owner changes in the
+ * admin panel (prices, karts per session, days without booking, hold time) are NOT written here: pages read them from
+ * the API (/api/v1/reservations/info), see content/faq.ts. No street address or e-mail is published because none was
+ * confirmed.
  */
+
+/** Opening hours, written once: the pages show `label: text`, search engines get the schema.org days and times. */
+const openingHours = [
+  {
+    label: "شنبه تا چهارشنبه",
+    text: "۱۵ تا ۲۴",
+    schemaDays: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"],
+    opens: "15:00",
+    closes: "24:00",
+  },
+  {
+    label: "پنجشنبه، جمعه و روزهای تعطیل",
+    text: "۱۵ تا ۱ بامداد فردا",
+    schemaDays: ["Thursday", "Friday"],
+    opens: "15:00",
+    closes: "01:00",
+  },
+] as const;
 
 export const site = {
   name: "داوس کارتینگ",
@@ -15,10 +35,10 @@ export const site = {
   description:
     "کارتینگ داوس؛ پیست حرفه‌ای با خودروهای تک‌نفره و دونفره. سانس دلخواه را آنلاین ببینید، رزرو کنید و از درگاه بانک ملت پرداخت کنید.",
   contact: {
-    phone: { display: "0917 733 4894", href: "tel:09177334894", e164: "+989177334894" },
-    hours: ["شنبه تا چهارشنبه: ۱۵ تا ۲۴", "پنجشنبه، جمعه و روزهای تعطیل: ۱۵ تا ۱ بامداد فردا"],
-    map: { label: "مسیریابی روی نقشه", href: "https://www.google.com/maps?q=29.76912,52.49991" },
-    geo: { latitude: 29.76912, longitude: 52.49991 },
+    phone: venue.phone,
+    openingHours,
+    map: { label: "مسیریابی روی نقشه", href: venue.mapHref },
+    geo: venue.geo,
   },
   booking: {
     href: BOOKING_HOME, // the booking subdomain when there is one (lib/urls.ts)

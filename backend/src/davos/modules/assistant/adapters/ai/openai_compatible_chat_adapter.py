@@ -110,9 +110,26 @@ class OpenAICompatibleChatAdapter(AIChatPort):
             raise AiProviderProtocolError("AI provider returned an invalid completion") from exc
 
         usage = payload.get("usage") if isinstance(payload, dict) else None
+        cost: float | None = None
         if isinstance(usage, dict) and isinstance(usage.get("prompt_tokens"), int):
-            token_usage = TokenUsage(int(usage["prompt_tokens"]), int(usage.get("completion_tokens", 0) or 0))
+            details = usage.get("prompt_tokens_details")
+            cached = details.get("cached_tokens") if isinstance(details, dict) else None
+            token_usage = TokenUsage(
+                int(usage["prompt_tokens"]),
+                int(usage.get("completion_tokens", 0) or 0),
+                cached if isinstance(cached, int) else 0,
+            )
+            reported = usage.get("cost")
+            cost = float(reported) if isinstance(reported, int | float) and not isinstance(reported, bool) else None
         else:  # provider omitted usage: estimate so budgets still move
             prompt_chars = sum(len(m.content) for m in request.messages)
             token_usage = TokenUsage(prompt_chars // _CHARS_PER_TOKEN, len(text) // _CHARS_PER_TOKEN)
-        return ChatCompletion(text=text, usage=token_usage, model=str(payload.get("model", self._model)))
+        # Counts only, never content: lets the operator see how much of each prompt the provider's cache served.
+        logger.info(
+            "ai_usage model=%s prompt_tokens=%d cached_tokens=%d completion_tokens=%d",
+            self._model,
+            token_usage.prompt_tokens,
+            token_usage.cached_prompt_tokens,
+            token_usage.completion_tokens,
+        )
+        return ChatCompletion(text=text, usage=token_usage, model=str(payload.get("model", self._model)), cost_usd=cost)

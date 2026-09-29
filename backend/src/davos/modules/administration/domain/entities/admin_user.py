@@ -2,16 +2,15 @@ from __future__ import annotations
 
 import re
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from davos.modules.administration.domain.enums.admin_role import AdminRole
 from davos.modules.administration.domain.errors.weak_password_error import WeakPasswordError
+from davos.modules.administration.domain.value_objects.admin_security_policy import AdminSecurityPolicy
 from davos.shared_kernel.domain.aggregate_root import AggregateRoot
 from davos.shared_kernel.domain.errors.validation_error import ValidationError
 
 _USERNAME = re.compile(r"[a-z][a-z0-9._-]{2,31}")
-MAX_FAILED_ATTEMPTS = 5
-LOCK_DURATION = timedelta(minutes=15)
 
 
 class AdminUser(AggregateRoot[uuid.UUID]):
@@ -84,10 +83,10 @@ class AdminUser(AggregateRoot[uuid.UUID]):
             return 0
         return max(int((self.locked_until - now).total_seconds()), 1)
 
-    def record_failed_login(self, now: datetime) -> None:
+    def record_failed_login(self, now: datetime, policy: AdminSecurityPolicy) -> None:
         self.failed_attempts += 1
-        if self.failed_attempts >= MAX_FAILED_ATTEMPTS:
-            self.locked_until = now + LOCK_DURATION
+        if self.failed_attempts >= policy.max_failed_logins:
+            self.locked_until = now + policy.lockout
             self.failed_attempts = 0
 
     def record_login(self, now: datetime) -> None:

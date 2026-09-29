@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import timedelta
 
 import pytest
 
@@ -49,6 +50,7 @@ class Harness:
             gateway=self.gateway,
             clock=self.clock,
             callback_url="https://davoskarting.ir/api/v1/payments/mellat/callback",
+            attempt_ttl=timedelta(minutes=30),
         )
         self.settlement = PaymentSettlementService(
             uow=self.uow, payments=self.repo, gateway=self.gateway, orders=self.quotes, clock=self.clock
@@ -57,7 +59,12 @@ class Harness:
             uow=self.uow, payments=self.repo, settlement=self.settlement, clock=self.clock
         )
         self.reconcile = ReconcilePaymentsUseCase(
-            uow=self.uow, payments=self.repo, settlement=self.settlement, clock=self.clock
+            uow=self.uow,
+            payments=self.repo,
+            settlement=self.settlement,
+            clock=self.clock,
+            stuck_for_seconds=120,
+            batch_size=50,
         )
 
     async def started(self, authority: str | None = None):

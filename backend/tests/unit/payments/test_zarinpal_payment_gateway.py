@@ -31,7 +31,12 @@ async def client():
 
 def gateway(client: httpx.AsyncClient, *, sandbox: bool = True) -> ZarinpalPaymentGateway:
     return ZarinpalPaymentGateway(
-        http_client=client, merchant_id=MERCHANT, sandbox=sandbox, api_host=LIVE, sandbox_host=SANDBOX
+        http_client=client,
+        merchant_id=MERCHANT,
+        sandbox=sandbox,
+        api_host=LIVE,
+        sandbox_host=SANDBOX,
+        timeout_seconds=5.0,
     )
 
 

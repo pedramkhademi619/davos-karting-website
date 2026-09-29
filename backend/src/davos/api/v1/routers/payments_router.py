@@ -29,7 +29,6 @@ router = APIRouter(prefix="/payments", tags=["payments"])
 logger = logging.getLogger(__name__)
 
 _MAX_CALLBACK_BYTES = 8 * 1024
-_CALLBACKS_PER_IP_PER_MINUTE = 30
 
 
 def _result_page(container: ApplicationContainer, payment_id: uuid.UUID | None) -> RedirectResponse:
@@ -40,7 +39,9 @@ def _result_page(container: ApplicationContainer, payment_id: uuid.UUID | None) 
 
 async def _limit(container: ApplicationContainer, ip: str) -> None:
     decision = await container.rate_limiter.hit(
-        f"payment-callback:ip:{ip}", limit=_CALLBACKS_PER_IP_PER_MINUTE, window_seconds=60
+        f"payment-callback:ip:{ip}",
+        limit=container.settings.payment_callbacks_per_ip_per_minute,
+        window_seconds=60,
     )
     if not decision.allowed:
         raise RateLimitedError("درخواست‌ها زیاد است.", retry_after_seconds=decision.retry_after_seconds)

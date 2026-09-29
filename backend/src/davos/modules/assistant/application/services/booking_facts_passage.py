@@ -75,7 +75,8 @@ class BookingFactsPassage:
             else "رزرو از روز قبل انجام می‌شود و برای همان روز ممکن نیست."
         )
         closed = _days(facts.closed_weekdays)
-        return f"{online} {ahead}" + (f" روزهای بدون رزرو: {closed}." if closed else "")
+        phone = f" رزرو تلفنی هم با شماره {_fa(facts.contact_phone)} ممکن است." if facts.contact_phone else ""
+        return f"{online} {ahead}" + (f" روزهای بدون رزرو: {closed}." if closed else "") + phone
 
     def passage(self, facts: BookingFacts) -> RetrievedPassage:
         text = "\n".join(f"- {line}" for line in (self.capacity(facts), self.prices(facts), self.booking(facts)))

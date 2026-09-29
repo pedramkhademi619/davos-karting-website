@@ -17,50 +17,17 @@ x-hardening: &hardening
   security_opt:
     - no-new-privileges:true
 
+# The API, worker, scheduler and migration job read the whole .env (env_file below), so a setting added to AppSettings
+# works as soon as it is in .env: nothing to list here, and its default lives only in AppSettings. Only the values that
+# depend on this file (service host names, the passwords the database and Redis containers are started with) are set.
+x-app-env-file: &app-env-file
+  env_file:
+    - path: .env
+      required: true
+
 x-app-environment: &app-environment
-  APP_ENV: ${APP_ENV:-development}
-  LOG_LEVEL: ${LOG_LEVEL:-INFO}
-  PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost}
-  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-["http://localhost"]}
   DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-davos}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-davos}
   REDIS_URL: redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}@redis:6379/0
-  OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:?set OTP_HMAC_SECRET in .env}
-  SESSION_CSRF_SECRET: ${SESSION_CSRF_SECRET:?set SESSION_CSRF_SECRET in .env}
-  BOOKING_WEBHOOK_SECRET: ${BOOKING_WEBHOOK_SECRET:?set BOOKING_WEBHOOK_SECRET in .env}
-  COOKIE_SECURE: ${COOKIE_SECURE:-false}
-  DEV_SMS_ECHO_ENABLED: ${DEV_SMS_ECHO_ENABLED:-false}
-  AI_BASE_URL: ${AI_BASE_URL:-}
-  AI_API_KEY: ${AI_API_KEY:-}
-  AI_MODEL: ${AI_MODEL:-}
-  BOOKING_BASE_URL: ${BOOKING_BASE_URL:-}
-  ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:-}
-  PAYMENT_CALLBACK_URL: ${PAYMENT_CALLBACK_URL:-}
-  AI_TOKEN_LIMIT_PARAM: ${AI_TOKEN_LIMIT_PARAM:-max_tokens}
-  AI_DAILY_TOKEN_BUDGET: ${AI_DAILY_TOKEN_BUDGET:-400000}
-  BOOKING_INTEGRATION_ENABLED: ${BOOKING_INTEGRATION_ENABLED:-false}
-  PAYMENTS_ENABLED: ${PAYMENTS_ENABLED:-false}
-  ZARINPAL_SANDBOX: ${ZARINPAL_SANDBOX:-true}
-  AI_SEND_TEMPERATURE: ${AI_SEND_TEMPERATURE:-true}
-  AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-400}
-  AI_TIMEOUT_SECONDS: ${AI_TIMEOUT_SECONDS:-12}
-  AI_FALLBACK_MODEL: ${AI_FALLBACK_MODEL:-}
-  AI_FALLBACK_TOKEN_LIMIT_PARAM: ${AI_FALLBACK_TOKEN_LIMIT_PARAM:-max_tokens}
-  AI_FALLBACK_SEND_TEMPERATURE: ${AI_FALLBACK_SEND_TEMPERATURE:-true}
-  AI_FALLBACK_MIN_OUTPUT_TOKENS: ${AI_FALLBACK_MIN_OUTPUT_TOKENS:-0}
-  PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mellat}
-  MELLAT_TERMINAL_ID: ${MELLAT_TERMINAL_ID:-0}
-  MELLAT_USERNAME: ${MELLAT_USERNAME:-}
-  MELLAT_PASSWORD: ${MELLAT_PASSWORD:-}
-  SMS_PROVIDER: ${SMS_PROVIDER:-recording}
-  KAVENEGAR_API_KEY: ${KAVENEGAR_API_KEY:-}
-  KAVENEGAR_SENDER: ${KAVENEGAR_SENDER:-}
-  KAVENEGAR_OTP_TEMPLATE: ${KAVENEGAR_OTP_TEMPLATE:-}
-  KAVENEGAR_RESERVATION_TEMPLATE: ${KAVENEGAR_RESERVATION_TEMPLATE:-}
-  ADMIN_BOOTSTRAP_USERNAME: ${ADMIN_BOOTSTRAP_USERNAME:-}
-  ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:-}
-  OTP_REQUESTS_PER_IP_PER_HOUR: ${OTP_REQUESTS_PER_IP_PER_HOUR:-200}
-  OTP_VERIFICATIONS_PER_IP_PER_15_MINUTES: ${OTP_VERIFICATIONS_PER_IP_PER_15_MINUTES:-300}
-  ASSISTANT_QUESTIONS_PER_IP_PER_HOUR: ${ASSISTANT_QUESTIONS_PER_IP_PER_HOUR:-120}
 
 services:
   reverse-proxy:
@@ -90,12 +57,17 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Baked into the web app at build time: where the main site and the booking subdomain live.
-        NEXT_PUBLIC_SITE_URL: ${PUBLIC_BASE_URL:-http://localhost}
+        # Baked into the web app at build time (rebuild the frontend after changing them in .env).
+        NEXT_PUBLIC_SITE_URL: ${PUBLIC_BASE_URL:?set PUBLIC_BASE_URL in .env}
         NEXT_PUBLIC_BOOKING_URL: ${BOOKING_BASE_URL:-}
+        NEXT_PUBLIC_CONTACT_PHONE: ${CONTACT_PHONE:?set CONTACT_PHONE in .env}
+        NEXT_PUBLIC_VENUE_LATITUDE: ${VENUE_LATITUDE:?set VENUE_LATITUDE in .env}
+        NEXT_PUBLIC_VENUE_LONGITUDE: ${VENUE_LONGITUDE:?set VENUE_LONGITUDE in .env}
     environment:
       NODE_ENV: production
       API_INTERNAL_URL: http://api:8000
+      # The bank's payment page: the only outside address the site's forms may post to (content security policy).
+      BANK_PAYMENT_URL: ${MELLAT_START_PAY_URL:-}
     # Every page is rendered per request (it carries its own CSP nonce) and one Node.js process renders one page at a
     # time, so the web app runs as several replicas; nginx spreads requests over them (see nginx/nginx.conf).
     deploy:
@@ -105,7 +77,7 @@ services:
     mem_limit: 384m
 
   api:
-    <<: [*backend-image, *hardening]
+    <<: [*backend-image, *hardening, *app-env-file]
     image: davos-api:${DAVOS_VERSION:-dev}
     build:
       context: ./backend
@@ -134,7 +106,7 @@ services:
 
   # One-shot, explicit migration job: replicas never migrate on their own start-up.
   migrate:
-    <<: [*backend-image, *hardening]
+    <<: [*backend-image, *hardening, *app-env-file]
     command: ["alembic", "upgrade", "head"]
     environment:
       <<: *app-environment
@@ -147,16 +119,11 @@ services:
       disable: true
 
   worker:
-    <<: [*backend-image, *hardening]
+    <<: [*backend-image, *hardening, *app-env-file]
     # Queues are isolated; to scale them independently run extra workers with a single -Q each.
     command: ["celery", "-A", "davos.worker.celery_app.celery_app", "worker", "-Q", "critical,sms,ai,export", "-c", "4", "--loglevel=INFO"]
     environment:
       <<: *app-environment
-      # The daily cache purge works out the "current" answer fingerprint, which includes the persona text: it must read
-      # the same file as the API. (The purge is also written so a wrong fingerprint cannot remove entries still in use.)
-      ASSISTANT_PERSONA_FILE: /app/prompts/assistant_persona.txt
-    volumes:
-      - ./backend/prompts:/app/prompts:ro
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -174,7 +141,7 @@ services:
 
   # Exactly one scheduler: never scale this service (duplicate beat processes duplicate scheduled jobs).
   scheduler:
-    <<: [*backend-image, *hardening]
+    <<: [*backend-image, *hardening, *app-env-file]
     command: ["celery", "-A", "davos.worker.celery_app.celery_app", "beat", "--loglevel=INFO", "--schedule=/tmp/celerybeat-schedule"]
     environment:
       <<: *app-environment

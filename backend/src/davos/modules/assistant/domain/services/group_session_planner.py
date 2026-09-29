@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from davos.modules.assistant.domain.value_objects.eligibility_rules import EligibilityRules
-
 
 class GroupSessionPlanner:
     """Fewest sessions for a group, following the owner's rule: every single-seater takes one driver, and a two-seater
-    takes two people only when a 4 to 15 year old sits behind a licensed adult. The kart counts come from the rules
-    (the admin panel's booking settings), so a session holds ``singles + children in the rear`` drivers."""
+    takes two people only when a 4 to 15 year old sits behind a licensed adult. The kart counts are the admin panel's
+    booking settings, so a session holds ``singles + children in the rear`` drivers."""
 
-    def __init__(self, rules: EligibilityRules | None = None) -> None:
-        self._rules = rules or EligibilityRules()
+    def __init__(self, *, singles_per_session: int, doubles_per_session: int) -> None:
+        self._singles = singles_per_session
+        self._doubles = doubles_per_session
 
     def sessions_needed(self, *, drivers: int, rear_children: int) -> int:
         """``drivers`` includes everyone who drives (single-seaters and the two-seaters' front seats)."""
-        singles, doubles = self._rules.singles_per_session, self._rules.doubles_per_session
+        singles, doubles = self._singles, self._doubles
         by_children = -(-rear_children // doubles) if doubles else 0
         by_drivers = -(-(drivers - rear_children) // singles) if singles else 0
         return max(by_children, by_drivers, 1)
@@ -27,10 +26,10 @@ class GroupSessionPlanner:
         """
         sessions = self.sessions_needed(drivers=drivers, rear_children=rear_children)
         children = [0] * sessions
-        for index in range(min(rear_children, sessions * self._rules.doubles_per_session)):
+        for index in range(min(rear_children, sessions * self._doubles)):
             children[index % sessions] += 1
         # each child's two-seater also seats one more driver
-        rooms = [self._rules.singles_per_session + child for child in children]
+        rooms = [self._singles + child for child in children]
         driving = [0] * sessions
         left = min(drivers, sum(rooms))
         while left:

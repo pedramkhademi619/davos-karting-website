@@ -62,7 +62,7 @@ class MellatPaymentGateway(PaymentGatewayPort):
         password: str,
         service_url: str,
         start_pay_url: str,
-        timeout_seconds: float = 20.0,
+        timeout_seconds: float,
     ) -> None:
         self._client = http_client
         self._terminal_id = terminal_id

@@ -12,19 +12,19 @@ from davos.modules.administration.domain.entities.admin_session import AdminSess
 from davos.modules.administration.domain.entities.admin_user import AdminUser
 from davos.modules.administration.domain.errors.admin_locked_error import AdminLockedError
 from davos.modules.administration.domain.errors.admin_login_failed_error import AdminLoginFailedError
+from davos.modules.administration.domain.value_objects.admin_security_policy import AdminSecurityPolicy
 from davos.shared_kernel.application.clock import Clock
 from davos.shared_kernel.application.rate_limiter import RateLimiter
 from davos.shared_kernel.application.unit_of_work import UnitOfWork
 from davos.shared_kernel.domain.errors.rate_limited_error import RateLimitedError
 
-_PER_IP_PER_15_MIN = 20
-
 
 class AdminLoginUseCase:
     """Username + password sign-in for staff.
 
-    Defences: a per-IP rate limit, a per-account lock after five wrong passwords, the same answer and the same
-    work (a dummy hash check) for unknown usernames, and failed attempts committed before the error is returned.
+    Defences: a per-IP rate limit, a per-account lock after too many wrong passwords (both from the security policy),
+    the same answer and the same work (a dummy hash check) for unknown usernames, and failed attempts committed before
+    the error is returned.
     """
 
     def __init__(
@@ -38,6 +38,7 @@ class AdminLoginUseCase:
         rate_limiter: RateLimiter,
         clock: Clock,
         session_lifetime: timedelta,
+        security: AdminSecurityPolicy,
     ) -> None:
         self._uow = uow
         self._admins = admins
@@ -47,10 +48,11 @@ class AdminLoginUseCase:
         self._rate_limiter = rate_limiter
         self._clock = clock
         self._lifetime = session_lifetime
+        self._security = security
 
     async def execute(self, *, username: str, password: str, client_ip: str, user_agent: str) -> AdminLoginResult:
         decision = await self._rate_limiter.hit(
-            f"admin-login:ip:{client_ip}", limit=_PER_IP_PER_15_MIN, window_seconds=900
+            f"admin-login:ip:{client_ip}", limit=self._security.logins_per_ip_per_15_minutes, window_seconds=900
         )
         if not decision.allowed:
             raise RateLimitedError(
@@ -66,7 +68,7 @@ class AdminLoginUseCase:
             if admin.is_locked_at(now):
                 raise AdminLockedError(admin.seconds_locked(now))
             if not self._hasher.verify(password, admin.password_hash):
-                admin.record_failed_login(now)
+                admin.record_failed_login(now, self._security)
                 await self._admins.save(admin)
                 await self._uow.commit()
                 raise AdminLoginFailedError

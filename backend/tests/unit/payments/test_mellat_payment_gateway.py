@@ -74,6 +74,7 @@ def gateway(client: httpx.AsyncClient) -> MellatPaymentGateway:
         password=PASSWORD,
         service_url=SERVICE,
         start_pay_url=START,
+        timeout_seconds=5.0,
     )
 
 

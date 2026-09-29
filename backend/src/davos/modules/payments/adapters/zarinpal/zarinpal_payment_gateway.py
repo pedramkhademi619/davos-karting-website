@@ -43,7 +43,7 @@ class ZarinpalPaymentGateway(PaymentGatewayPort):
         sandbox: bool,
         api_host: str,
         sandbox_host: str,
-        timeout_seconds: float = 10.0,
+        timeout_seconds: float,
     ) -> None:
         self._client = http_client
         self._merchant_id = merchant_id

@@ -1,3 +1,4 @@
+import { site } from "@/content/site";
 import { fa, tomanWords } from "@/lib/format";
 import type { BookingInfo } from "@/lib/types";
 
@@ -15,20 +16,22 @@ function days(names: readonly string[]): string {
  * answers fall back to wording without numbers.
  */
 export function buildFaq(info: BookingInfo | null): FaqItem[] {
+  const phone = `رزرو تلفنی هم با ${fa(site.contact.phone.local)} انجام می‌شود.`;
+  const hours = site.contact.openingHours.map(({ label, text }) => `${label} از ساعت ${text}`).join("؛ ");
   const closed = info ? days(info.closed_weekdays) : "";
   const booking = info
     ? `از صفحه «رزرو سانس» با شماره موبایل وارد شوید، سانس خالی را انتخاب کنید و مبلغ را از درگاه بانک ملت بپردازید؛ خودروها ${fa(
         info.hold_minutes,
       )} دقیقه برای پرداخت نگه داشته می‌شوند و کد رزرو پیامک می‌شود. ${
         info.min_days_ahead === 0 ? "رزرو برای همان روز هم ممکن است." : "رزرو از روز قبل انجام می‌شود و برای همان روز ممکن نیست."
-      }${closed ? ` برای ${closed} رزرو نداریم.` : ""} رزرو تلفنی هم با ۰۹۱۷۷۳۳۴۸۹۴ انجام می‌شود.`
-    : "از صفحه «رزرو سانس» با شماره موبایل وارد شوید، سانس خالی را انتخاب کنید و مبلغ را از درگاه بانک ملت بپردازید؛ کد رزرو پیامک می‌شود. رزرو تلفنی هم با ۰۹۱۷۷۳۳۴۸۹۴ انجام می‌شود.";
+      }${closed ? ` برای ${closed} رزرو نداریم.` : ""} ${phone}`
+    : `از صفحه «رزرو سانس» با شماره موبایل وارد شوید، سانس خالی را انتخاب کنید و مبلغ را از درگاه بانک ملت بپردازید؛ کد رزرو پیامک می‌شود. ${phone}`;
 
   const items: FaqItem[] = [
     { question: "چطور نوبت رزرو کنم؟", answer: booking },
     {
       question: "ساعت کاری چیست؟",
-      answer: "شنبه تا چهارشنبه از ساعت ۱۵ تا ۲۴؛ پنجشنبه، جمعه و روزهای تعطیل از ساعت ۱۵ تا ۱ بامداد فردا.",
+      answer: `${hours}.`,
     },
     {
       question: "آیا محدودیت سنی و قد وجود دارد؟",

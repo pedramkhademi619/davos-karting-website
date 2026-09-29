@@ -10,9 +10,6 @@ from davos.shared_kernel.application.clock import Clock
 from davos.shared_kernel.application.unit_of_work import UnitOfWork
 from davos.shared_kernel.domain.money import Money
 
-# How long karts stay taken for a verified payment until it is recorded (also after the hold ran out).
-_RENEWED_HOLD_MINUTES = 10
-
 
 class AcceptReservationPaymentUseCase:
     """Asked by the payment flow after the bank verified a payment and before the money is settled.
@@ -29,11 +26,14 @@ class AcceptReservationPaymentUseCase:
         reservations: ReservationRepository,
         settings: ScheduleSettingsRepository,
         clock: Clock,
+        hold_extension_minutes: int,
     ) -> None:
         self._uow = uow
         self._reservations = reservations
         self._settings = settings
         self._clock = clock
+        # how long karts stay taken for a verified payment until it is recorded (also after the hold ran out)
+        self._extension = hold_extension_minutes
 
     async def execute(self, reservation_id: uuid.UUID, customer_id: uuid.UUID, amount: Money) -> bool:
         now = self._clock.now()
@@ -44,7 +44,7 @@ class AcceptReservationPaymentUseCase:
             if reservation.status is ReservationStatus.HELD and reservation.occupies_seats_at(now):
                 # Still holding its karts: make sure it keeps them until the payment is recorded, even if that
                 # happens after the original hold time (no session lock needed: the karts are already counted).
-                reservation.extend_hold(now, _RENEWED_HOLD_MINUTES)
+                reservation.extend_hold(now, self._extension)
                 await self._reservations.save(reservation)
                 await self._uow.commit()
                 return True
@@ -58,7 +58,7 @@ class AcceptReservationPaymentUseCase:
             left = SeatAllocator(settings).remaining(load)
             if reservation.single_count > left.singles or reservation.double_count > left.doubles:
                 return False
-            reservation.renew_hold(now, _RENEWED_HOLD_MINUTES)
+            reservation.renew_hold(now, self._extension)
             await self._reservations.save(reservation)
             await self._uow.commit()
             return True

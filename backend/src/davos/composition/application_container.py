@@ -11,6 +11,7 @@ from davos.composition.adapters.reservation_order_quote_port import ReservationO
 from davos.composition.adapters.sandbox_order_quote_port import SandboxOrderQuotePort
 from davos.composition.adapters.schedule_booking_facts import ScheduleBookingFacts
 from davos.composition.adapters.sms_otp_delivery import SmsOtpDelivery
+from davos.composition.policy_factory import PolicyFactory
 from davos.modules.administration.adapters.persistence.sqlalchemy_admin_session_repository import (
     SqlAlchemyAdminSessionRepository,
 )
@@ -48,7 +49,6 @@ from davos.modules.assistant.application.use_cases.submit_feedback_use_case impo
 from davos.modules.assistant.application.use_cases.sync_knowledge_documents_use_case import (
     SyncKnowledgeDocumentsUseCase,
 )
-from davos.modules.assistant.domain.value_objects.assistant_policy import AssistantPolicy
 from davos.modules.assistant.domain.value_objects.persian_text_normalizer import PersianTextNormalizer
 from davos.modules.booking.adapters.persistence.sqlalchemy_booking_record_repository import (
     SqlAlchemyBookingRecordRepository,
@@ -81,13 +81,11 @@ from davos.modules.identity.application.use_cases.authenticate_session_use_case 
 from davos.modules.identity.application.use_cases.customer_directory_use_case import CustomerDirectoryUseCase
 from davos.modules.identity.application.use_cases.customer_profile_use_case import CustomerProfileUseCase
 from davos.modules.identity.application.use_cases.list_sessions_use_case import ListSessionsUseCase
-from davos.modules.identity.application.use_cases.otp_rate_limit_policy import OtpRateLimitPolicy
 from davos.modules.identity.application.use_cases.request_otp_use_case import RequestOtpUseCase
 from davos.modules.identity.application.use_cases.revoke_session_use_case import RevokeSessionUseCase
 from davos.modules.identity.application.use_cases.verify_otp_use_case import VerifyOtpUseCase
 from davos.modules.identity.domain.errors.invalid_mobile_number_error import InvalidMobileNumberError
 from davos.modules.identity.domain.value_objects.mobile_number import MobileNumber
-from davos.modules.identity.domain.value_objects.otp_policy import OtpPolicy
 from davos.modules.loyalty.adapters.persistence.sqlalchemy_points_ledger_repository import (
     SqlAlchemyPointsLedgerRepository,
 )
@@ -207,12 +205,13 @@ class ApplicationContainer:
         )
         self._http_client = http_client
         self._assistant_persona = assistant_persona or FileAssistantPersona(settings.assistant_persona_file)
-        self._booking_facts = ScheduleBookingFacts(self.schedule_settings)
-        self._normalizer = PersianTextNormalizer()
-        self._assistant_policy = AssistantPolicy(
-            max_output_tokens=settings.ai_max_output_tokens,
-            questions_per_ip_per_hour=settings.assistant_questions_per_ip_per_hour,
+        self._booking_facts = ScheduleBookingFacts(
+            self.schedule_settings,
+            contact_phone=settings.contact_phone,
+            cache_seconds=settings.assistant_booking_facts_cache_seconds,
         )
+        self._normalizer = PersianTextNormalizer()
+        self._assistant_policy = PolicyFactory.assistant(settings)
         self.session_factory: async_sessionmaker[AsyncSession] = create_session_factory(engine)
         self._conversation_context: ConversationContextPort = conversation_context or (
             RedisConversationContext(
@@ -231,11 +230,9 @@ class ApplicationContainer:
         self._otp_hasher = HmacOtpHasher(settings.otp_hmac_secret.get_secret_value())
         self._tokens = Sha256SessionTokenService()
         self.csrf = CsrfTokenService(settings.session_csrf_secret.get_secret_value())
-        self._otp_policy = OtpPolicy()
-        self._otp_limits = OtpRateLimitPolicy(
-            per_ip_limit=settings.otp_requests_per_ip_per_hour,
-            verify_per_ip_limit=settings.otp_verifications_per_ip_per_15_minutes,
-        )
+        self._otp_policy = PolicyFactory.otp(settings)
+        self._otp_limits = PolicyFactory.otp_limits(settings)
+        self._admin_security = PolicyFactory.admin_security(settings)
         self._password_hasher = ScryptPasswordHasher()
         self._admin_tokens = Sha256AdminTokenService()
         self._reservation_codes = SecureReservationCodeGenerator()
@@ -250,7 +247,8 @@ class ApplicationContainer:
         settings.validate_for_environment()
         clock = SystemClock()
         redis = Redis.from_url(settings.redis_url, decode_responses=True)
-        http_client = httpx.AsyncClient(limits=httpx.Limits(max_connections=20, max_keepalive_connections=10))
+        pool = settings.outbound_http_max_connections
+        http_client = httpx.AsyncClient(limits=httpx.Limits(max_connections=pool, max_keepalive_connections=pool // 2))
         return cls(
             settings=settings,
             engine=create_engine(settings),
@@ -295,6 +293,8 @@ class ApplicationContainer:
                     "otp": settings.kavenegar_otp_template,
                     "reservation_confirmed": settings.kavenegar_reservation_template,
                 },
+                base_url=settings.kavenegar_api_url,
+                timeout_seconds=settings.sms_timeout_seconds,
             )
         if settings.sms_provider == "kavenegar":
             logger.warning("SMS_PROVIDER is kavenegar but KAVENEGAR_API_KEY is empty; no SMS will be sent")
@@ -309,6 +309,7 @@ class ApplicationContainer:
                 sandbox=settings.zarinpal_sandbox,
                 api_host=settings.zarinpal_api_host,
                 sandbox_host=settings.zarinpal_sandbox_host,
+                timeout_seconds=settings.payment_gateway_timeout_seconds,
             )
         return MellatPaymentGateway(
             http_client=http_client,
@@ -317,6 +318,7 @@ class ApplicationContainer:
             password=settings.mellat_password.get_secret_value(),
             service_url=settings.mellat_service_url,
             start_pay_url=settings.mellat_start_pay_url,
+            timeout_seconds=settings.payment_gateway_timeout_seconds,
         )
 
     @staticmethod
@@ -342,6 +344,7 @@ class ApplicationContainer:
                     is_failure=ResilientAiChat.counts_as_failure,
                 ),
                 max_concurrency=settings.ai_max_concurrency,
+                acquire_timeout_seconds=settings.ai_queue_wait_seconds,
             )
 
         primary = model(
@@ -480,6 +483,7 @@ class ApplicationContainer:
             gateway=self.payment_gateway,
             clock=self.clock,
             callback_url=self.settings.effective_payment_callback_url,
+            attempt_ttl=timedelta(minutes=self.settings.payment_attempt_ttl_minutes),
         )
 
     def handle_payment_callback(self) -> HandlePaymentCallbackUseCase:
@@ -502,6 +506,8 @@ class ApplicationContainer:
             payments=SqlAlchemyPaymentRepository(uow),
             settlement=self._payment_settlement(uow),
             clock=self.clock,
+            stuck_for_seconds=self.settings.payment_reconcile_after_seconds,
+            batch_size=self.settings.payment_reconcile_batch_size,
         )
 
     def list_payments(self) -> ListPaymentsUseCase:
@@ -567,6 +573,7 @@ class ApplicationContainer:
             reservations=SqlAlchemyReservationRepository(uow),
             settings=SqlAlchemyScheduleSettingsRepository(uow),
             clock=self.clock,
+            hold_extension_minutes=self.settings.payment_hold_extension_minutes,
         )
 
     def confirm_paid_reservation(self) -> ConfirmPaidReservationUseCase:
@@ -638,6 +645,7 @@ class ApplicationContainer:
             rate_limiter=self.rate_limiter,
             clock=self.clock,
             session_lifetime=timedelta(hours=self.settings.admin_session_hours),
+            security=self._admin_security,
         )
 
     def authenticate_admin(self) -> AuthenticateAdminUseCase:
@@ -648,6 +656,7 @@ class ApplicationContainer:
             sessions=SqlAlchemyAdminSessionRepository(uow),
             tokens=self._admin_tokens,
             clock=self.clock,
+            security=self._admin_security,
         )
 
     def admin_logout(self) -> AdminLogoutUseCase:

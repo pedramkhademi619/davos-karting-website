@@ -14,9 +14,13 @@ from davos.shared_kernel.domain.money import Money
 NOW = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
 S = PaymentStatus
 
+TTL = timedelta(minutes=30)
+
 
 def make(status: PaymentStatus = S.CREATED) -> PaymentAttempt:
-    payment = PaymentAttempt.create(order_ref="order-1", customer_id=uuid.uuid4(), amount=Money(100_000), now=NOW)
+    payment = PaymentAttempt.create(
+        order_ref="order-1", customer_id=uuid.uuid4(), amount=Money(100_000), now=NOW, ttl=TTL
+    )
     payment.status = status
     if status is not S.CREATED:
         payment.authority = "A" * 36
@@ -96,7 +100,7 @@ def test_failure_raises_a_failure_event() -> None:
 @pytest.mark.parametrize("irr", [0, -5])
 def test_amount_must_be_positive(irr: int) -> None:
     with pytest.raises((ValidationError,)):
-        PaymentAttempt.create(order_ref="o", customer_id=uuid.uuid4(), amount=Money(irr), now=NOW)
+        PaymentAttempt.create(order_ref="o", customer_id=uuid.uuid4(), amount=Money(irr), now=NOW, ttl=TTL)
 
 
 def test_only_open_attempts_expire_by_time() -> None:

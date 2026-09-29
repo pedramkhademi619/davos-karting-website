@@ -19,8 +19,8 @@ class ReconcilePaymentsUseCase:
         payments: PaymentRepository,
         settlement: PaymentSettlementService,
         clock: Clock,
-        stuck_for_seconds: int = 120,
-        batch_size: int = 50,
+        stuck_for_seconds: int,
+        batch_size: int,
     ) -> None:
         self._uow = uow
         self._payments = payments

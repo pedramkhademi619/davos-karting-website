@@ -32,7 +32,14 @@ async def client():
 
 
 def gateway(client: httpx.AsyncClient, **templates: str) -> KavenegarSmsGateway:
-    return KavenegarSmsGateway(http_client=client, api_key=KEY, sender="10008663", templates=templates)
+    return KavenegarSmsGateway(
+        http_client=client,
+        api_key=KEY,
+        sender="10008663",
+        templates=templates,
+        base_url="https://api.kavenegar.com/v1",
+        timeout_seconds=5.0,
+    )
 
 
 def form(request: httpx.Request) -> dict[str, str]:

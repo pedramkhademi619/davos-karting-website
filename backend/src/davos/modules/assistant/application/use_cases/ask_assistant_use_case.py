@@ -182,12 +182,14 @@ class AskAssistantUseCase:
             )
 
         query = SearchQuery.from_text(resolved.text, self._normalizer)
-        passages = [] if query.is_empty else await self._select_passages(query)
+        shared, retrieved = ([], []) if query.is_empty else await self._select_passages(query)
         # Computed passages go last, right before the question: stored knowledge keeps its numbers and the checked
         # verdict is the text the model reads just before answering.
-        computed = [self._live.passage(booking) if booking is not None and passages else None]
+        computed = [self._live.passage(booking) if booking is not None and (shared or retrieved) else None]
         computed.append(self._checks.passage(question.text, history, booking))
-        passages = [*passages, *(p for p in computed if p is not None)]
+        specific = [*retrieved, *(p for p in computed if p is not None)]
+        # [n] in the reply indexes this list: the shared knowledge (system message) first, then this question's own.
+        passages = [*shared, *specific]
         if not passages:
             return await self._finish(
                 command,
@@ -200,7 +202,7 @@ class AskAssistantUseCase:
 
         canary = self._canary_factory()
         persona = self._persona.text() if self._persona is not None else ""
-        prompt = self._prompt_builder.build(question, passages, canary, persona, history)
+        prompt = self._prompt_builder.build(question, specific, canary, persona, history, shared=shared)
         reserved = self._estimate_tokens(prompt)
         if not await self._budget.try_reserve(reserved):
             return await self._finish(
@@ -213,9 +215,7 @@ class AskAssistantUseCase:
             )
 
         try:
-            completion = await self._chat.complete(
-                ChatCompletionRequest(messages=prompt, max_output_tokens=self._policy.max_output_tokens)
-            )
+            completion = await self._chat.complete(self._request(prompt))
         except AiProviderError as exc:
             await self._budget.release(reserved)
             logger.warning("assistant provider failure: %s", type(exc).__name__)
@@ -273,15 +273,18 @@ class AskAssistantUseCase:
         if not await self._budget.try_reserve(reserved):
             return None
         try:
-            completion = await self._chat.complete(
-                ChatCompletionRequest(messages=messages_, max_output_tokens=self._policy.max_output_tokens)
-            )
+            completion = await self._chat.complete(self._request(messages_))
         except AiProviderError as exc:
             await self._budget.release(reserved)
             logger.warning("assistant citation repair failed: %s", type(exc).__name__)
             return None
         await self._budget.settle(reserved, completion.usage.total)
         return completion
+
+    def _request(self, messages_: tuple[ChatMessage, ...]) -> ChatCompletionRequest:
+        return ChatCompletionRequest(
+            messages=messages_, max_output_tokens=self._policy.max_output_tokens, temperature=self._policy.temperature
+        )
 
     async def _current_booking_facts(self) -> BookingFacts | None:
         if self._booking_facts is None:
@@ -307,7 +310,7 @@ class AskAssistantUseCase:
         title = self._normalizer.normalize(messages.QUICK_TOPIC_TITLES[topic])
         query = SearchQuery.from_text(messages.QUICK_TOPIC_TITLES[topic], self._normalizer)
         try:
-            candidates = await self._select_passages(query)
+            candidates = [p for group in await self._select_passages(query) for p in group]
         except Exception as exc:  # a shortcut must never turn a question into an error
             logger.warning("quick answer lookup failed: %s", type(exc).__name__)
             return None
@@ -316,17 +319,19 @@ class AskAssistantUseCase:
             found = replace(found, text=f"{found.text.rstrip()} {self._live.booking(booking)}")
         return found
 
-    async def _select_passages(self, query: SearchQuery) -> list[RetrievedPassage]:
-        """A small knowledge base is sent whole; a large one goes through the relevance gate."""
+    async def _select_passages(self, query: SearchQuery) -> tuple[list[RetrievedPassage], list[RetrievedPassage]]:
+        """(shared, retrieved). A small knowledge base is sent whole as the shared part, in a fixed order so the
+        prompt prefix is byte-identical for every question and the provider can cache it; a large one goes through
+        the relevance gate and its hits are specific to this question."""
         whole = await self._search.all_entries_if_small(
             query,
             max_entries=self._policy.whole_knowledge_max_entries,
             max_total_chars=self._policy.whole_knowledge_max_chars,
         )
         if whole:
-            return whole
+            return sorted(whole, key=lambda p: (p.title, str(p.entry_id))), []
         candidates = await self._search.search(query, limit=self._policy.retrieval_limit)
-        return [p for p in candidates if p.score >= self._policy.min_relevance]
+        return [], [p for p in candidates if p.score >= self._policy.min_relevance]
 
     async def _recent_history(self, command: AskAssistantCommand) -> tuple[ConversationTurn, ...]:
         if self._context is None or command.conversation_id is None:

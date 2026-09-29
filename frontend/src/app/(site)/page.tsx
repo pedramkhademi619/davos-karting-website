@@ -30,15 +30,12 @@ export default async function HomePage() {
           telephone: site.contact.phone.e164,
           geo: { "@type": "GeoCoordinates", latitude: site.contact.geo.latitude, longitude: site.contact.geo.longitude },
           hasMap: site.contact.map.href,
-          openingHoursSpecification: [
-            {
-              "@type": "OpeningHoursSpecification",
-              dayOfWeek: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"],
-              opens: "15:00",
-              closes: "24:00",
-            },
-            { "@type": "OpeningHoursSpecification", dayOfWeek: ["Thursday", "Friday"], opens: "15:00", closes: "01:00" },
-          ],
+          openingHoursSpecification: site.contact.openingHours.map(({ schemaDays, opens, closes }) => ({
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: schemaDays,
+            opens,
+            closes,
+          })),
           potentialAction: { "@type": "ReserveAction", target: BOOKING_HOME.startsWith("http") ? BOOKING_HOME : `${url}${BOOKING_HOME}` },
         }}
       />

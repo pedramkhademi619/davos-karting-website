@@ -10,13 +10,16 @@ from davos.modules.assistant.domain.services.eligibility_advisor import Eligibil
 from davos.modules.assistant.domain.services.group_session_planner import GroupSessionPlanner
 from davos.modules.assistant.domain.services.party_facts_extractor import PartyFactsExtractor
 from davos.modules.assistant.domain.value_objects.eligibility_rules import EligibilityRules
+from tests.fakes.standard_config import booking_facts
 
 KNOWLEDGE = Path(__file__).resolve().parents[3] / "knowledge"
 _FA = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 
 
 def advise(text: str) -> str:
-    return "\n".join(EligibilityAdvisor().advise(PartyFactsExtractor().extract(text)))
+    """With the admin panel's initial booking settings, as in production."""
+    rules = EligibilityRules().for_booking(booking_facts())
+    return "\n".join(EligibilityAdvisor(rules).advise(PartyFactsExtractor().extract(text)))
 
 
 def test_junior_with_every_condition_met_may_drive() -> None:
@@ -70,7 +73,7 @@ def test_booking_days() -> None:
     [(6, 0, 1), (7, 0, 2), (12, 0, 2), (13, 0, 3), (7, 1, 1), (8, 1, 2), (14, 2, 2), (5, 2, 2)],
 )
 def test_group_sessions(drivers: int, rear: int, sessions: int) -> None:
-    planner = GroupSessionPlanner()
+    planner = GroupSessionPlanner(singles_per_session=6, doubles_per_session=1)
     assert planner.sessions_needed(drivers=drivers, rear_children=rear) == sessions
     plan = planner.layout(drivers=drivers, rear_children=rear)
     assert len(plan) == sessions
@@ -78,14 +81,19 @@ def test_group_sessions(drivers: int, rear: int, sessions: int) -> None:
     assert all(d <= 7 and c <= 1 for d, c in plan)
 
 
+def test_without_the_live_settings_no_kart_count_or_booking_day_is_made_up() -> None:
+    unknown = EligibilityAdvisor(EligibilityRules())  # the admin settings could not be read
+    lines = " ".join(unknown.advise(PartyFactsExtractor().extract("۹ نفر بزرگسالیم، برای پنجشنبه میشه رزرو کرد؟")))
+    assert "سانس" not in lines and "رزرو نداریم" not in lines
+
+
 def test_a_group_of_eight_with_one_child_fits_one_session() -> None:
     assert "همه در ۱ سانس جا می‌شوند" in advise("۸ نفریم، یکیمون بچه ۱۰ ساله است و بقیه بزرگسال با گواهینامه")
 
 
 def test_kart_counts_and_booking_days_come_from_the_admin_settings() -> None:
-    from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
 
-    booking = BookingFacts(singles_per_session=8, doubles_per_session=2, closed_weekdays=frozenset({4}))
+    booking = booking_facts(singles_per_session=8, doubles_per_session=2, closed_weekdays=frozenset({4}))
     rules = EligibilityRules().for_booking(booking)
 
     def run(text: str) -> str:
@@ -105,10 +113,10 @@ def test_kart_counts_and_booking_days_come_from_the_admin_settings() -> None:
 def test_group_sessions_follow_any_kart_count(
     singles: int, doubles: int, drivers: int, rear: int, sessions: int
 ) -> None:
-    from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
 
-    rules = EligibilityRules().for_booking(BookingFacts(singles_per_session=singles, doubles_per_session=doubles))
-    plan = GroupSessionPlanner(rules).layout(drivers=drivers, rear_children=rear)
+    plan = GroupSessionPlanner(singles_per_session=singles, doubles_per_session=doubles).layout(
+        drivers=drivers, rear_children=rear
+    )
     assert len(plan) == sessions
     assert sum(d for d, _ in plan) == drivers and sum(c for _, c in plan) == rear
     assert all(c <= doubles and d <= singles + c for d, c in plan)

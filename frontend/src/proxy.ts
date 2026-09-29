@@ -10,9 +10,18 @@ import { BOOKING_URL, SITE_URL, bookingHostPath, isBookingHostHeader, isBookingP
  * 2. Content-Security-Policy with a fresh nonce per request (the pattern from Next.js' CSP guide). The admin panel and
  *    the payment flow live on these origins, so only scripts carrying this request's nonce (and what they load, via
  *    'strict-dynamic') may run. form-action allows the bank's payment page: Bank Mellat (Behpardakht) is reached by
- *    POSTing a form to bpm.shaparak.ir. Styles keep 'unsafe-inline' because React renders style attributes.
+ *    POSTing a form to it. Its address is the backend's MELLAT_START_PAY_URL from .env, handed to this container as
+ *    BANK_PAYMENT_URL (read at run time, not inlined). Styles keep 'unsafe-inline' because React renders style attributes.
  */
-const BANK_FORM_TARGETS = "https://bpm.shaparak.ir";
+function originOf(url: string | undefined): string {
+  try {
+    return url ? new URL(url).origin : "";
+  } catch {
+    return "";
+  }
+}
+
+const BANK_FORM_TARGET = originOf(process.env.BANK_PAYMENT_URL);
 
 function policy(nonce: string): string {
   const isDev = process.env.NODE_ENV === "development";
@@ -25,7 +34,7 @@ function policy(nonce: string): string {
     "connect-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
-    `form-action 'self' ${BANK_FORM_TARGETS}`,
+    `form-action 'self'${BANK_FORM_TARGET ? ` ${BANK_FORM_TARGET}` : ""}`,
     "frame-ancestors 'none'",
   ].join("; ");
 }

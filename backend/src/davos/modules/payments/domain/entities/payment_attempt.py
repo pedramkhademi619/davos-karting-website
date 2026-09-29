@@ -82,7 +82,7 @@ class PaymentAttempt(AggregateRoot[uuid.UUID]):
         now: datetime,
         gateway: str = "",
         gateway_order_id: int | None = None,
-        ttl: timedelta = timedelta(minutes=30),
+        ttl: timedelta,
     ) -> PaymentAttempt:
         if amount.irr <= 0:
             raise ValidationError("مبلغ پرداخت باید بیشتر از صفر باشد.", code="payment_amount_not_positive")

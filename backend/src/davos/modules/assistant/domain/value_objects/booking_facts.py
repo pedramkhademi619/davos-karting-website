@@ -2,26 +2,25 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# Python weekday numbers (Monday = 0).
-THURSDAY_AND_FRIDAY = frozenset({3, 4})
-
 
 @dataclass(frozen=True)
 class BookingFacts:
-    """The owner's current booking settings, as the assistant needs them. They are edited in the admin panel, so the
-    assistant reads them live instead of quoting numbers from a text file that would go stale.
+    """The booking facts in force right now, as the assistant needs them.
 
-    The defaults are only used when the settings cannot be read (they match the settings' own defaults).
+    Kart counts, prices, closed days and the hold time are the owner's admin-panel settings, and the phone number is
+    the deployment's CONTACT_PHONE; the composition root (ScheduleBookingFacts) reads them live. None of them is
+    written in code or in a knowledge file, where they would go stale.
     """
 
-    singles_per_session: int = 6
-    doubles_per_session: int = 1
-    normal_single_toman: int = 790_000
-    normal_double_toman: int = 1_000_000
-    holiday_single_toman: int = 940_000
-    holiday_double_toman: int = 1_200_000
-    holiday_weekdays: frozenset[int] = THURSDAY_AND_FRIDAY
-    closed_weekdays: frozenset[int] = THURSDAY_AND_FRIDAY
-    online_booking_enabled: bool = True
-    min_days_ahead: int = 1
-    hold_minutes: int = 20
+    singles_per_session: int
+    doubles_per_session: int
+    normal_single_toman: int
+    normal_double_toman: int
+    holiday_single_toman: int
+    holiday_double_toman: int
+    holiday_weekdays: frozenset[int]  # Python weekday numbers (Monday = 0)
+    closed_weekdays: frozenset[int]
+    online_booking_enabled: bool
+    min_days_ahead: int
+    hold_minutes: int
+    contact_phone: str  # blank when not configured: then no phone number is quoted

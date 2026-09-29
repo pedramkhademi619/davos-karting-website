@@ -28,7 +28,6 @@ class EligibilityAdvisor:
 
     def __init__(self, rules: EligibilityRules | None = None) -> None:
         self._r = rules or EligibilityRules()
-        self._planner = GroupSessionPlanner(self._r)
 
     def advise(self, facts: PartyFacts) -> list[str]:
         lines: list[str] = []
@@ -143,7 +142,7 @@ class EligibilityAdvisor:
     def _booking_day(self, facts: PartyFacts) -> list[str]:
         r = self._r
         lines: list[str] = []
-        if facts.mentions_today and facts.mentions_booking and not r.same_day_booking:
+        if facts.mentions_today and facts.mentions_booking and r.same_day_booking is False:
             lines.append("نتیجه: نه. رزرو برای همان روز ممکن نیست؛ رزرو هر روز برای روز بعد انجام می‌شود.")
         if facts.mentions_booking and facts.weekday in r.booking_closed_weekdays:
             closed = "، ".join(_WEEKDAY_NAMES[d] for d in _WEEK_ORDER if d in r.booking_closed_weekdays)
@@ -153,15 +152,18 @@ class EligibilityAdvisor:
     # ------------------------------------------------------------------ groups
     def _group(self, facts: PartyFacts) -> list[str]:
         size = facts.group_size
-        if size is None or size < 2:
-            return []
         r = self._r
+        singles, doubles = r.singles_per_session, r.doubles_per_session
+        if size is None or size < 2 or singles is None or doubles is None:
+            return []  # without the live kart counts no plan is made up
         rear = sum(1 for a in facts.ages if r.rear_seat_min_age <= a < r.min_driving_age)
         if facts.height_cm is not None and facts.height_cm < r.junior_min_height_cm:
             rear += sum(1 for a in facts.ages if r.min_driving_age <= a < r.unclear_age)
         rear = min(rear, size - 1)
         drivers = size - rear
-        plan = self._planner.layout(drivers=drivers, rear_children=rear)
+        plan = GroupSessionPlanner(singles_per_session=singles, doubles_per_session=doubles).layout(
+            drivers=drivers, rear_children=rear
+        )
         parts = []
         for index, (driving, children) in enumerate(plan, start=1):
             text = f"سانس {_fa(index)}: {_fa(driving)} نفر رانندگی"
@@ -173,7 +175,6 @@ class EligibilityAdvisor:
             parts.append(text)
         who = f"{_fa(size)} نفر" + (f" با {_fa(rear)} کودک که فقط عقب دونفره می‌نشینند" if rear else "")
         verdict = "همه در ۱ سانس جا می‌شوند" if len(plan) == 1 else f"حداقل {_fa(len(plan))} سانس لازم است"
-        singles, doubles = r.singles_per_session, r.doubles_per_session
         line = (
             f"گروه {who}: نتیجه: {verdict}. هر سانس {_fa(singles)} خودرو تک‌نفره و {_fa(doubles)} خودرو دونفره دارد؛ "
             f"بزرگسالان فقط با تک‌نفره می‌روند و هر دونفره فقط وقتی دو نفر می‌برد که کودکی عقبش بنشیند (یا دو خانم "

@@ -5,12 +5,11 @@ from datetime import datetime, timedelta
 
 from davos.shared_kernel.domain.entity import Entity
 
-IDLE_TIMEOUT = timedelta(hours=2)
 _TOUCH_EVERY = timedelta(minutes=1)
 
 
 class AdminSession(Entity[uuid.UUID]):
-    """A signed-in admin browser. Ends at ``expires_at``, after two idle hours, or when revoked."""
+    """A signed-in admin browser. Ends at ``expires_at``, after ``idle_timeout`` without use, or when revoked."""
 
     def __init__(
         self,
@@ -57,8 +56,8 @@ class AdminSession(Entity[uuid.UUID]):
             user_agent=user_agent[:200],
         )
 
-    def is_active(self, now: datetime) -> bool:
-        return self.revoked_at is None and now < self.expires_at and now - self.last_seen_at < IDLE_TIMEOUT
+    def is_active(self, now: datetime, idle_timeout: timedelta) -> bool:
+        return self.revoked_at is None and now < self.expires_at and now - self.last_seen_at < idle_timeout
 
     def touch(self, now: datetime) -> bool:
         if now - self.last_seen_at < _TOUCH_EVERY:
