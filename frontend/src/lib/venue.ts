@@ -6,14 +6,10 @@
  * A missing or malformed value stops the site with a clear message instead of publishing it without a phone number.
  */
 
-function required(name: string, value: string | undefined): string {
-  const text = (value ?? "").trim();
-  if (!text) throw new Error(`${name} is not set: add it to .env (see .env.example) and rebuild the frontend.`);
-  return text;
-}
+import { requiredEnv } from "@/lib/required-env";
 
 function coordinate(name: string, value: string | undefined, limit: number): number {
-  const parsed = Number(required(name, value));
+  const parsed = Number(requiredEnv(name, value));
   if (!Number.isFinite(parsed) || Math.abs(parsed) > limit) throw new Error(`${name} is not a valid coordinate.`);
   return parsed;
 }
@@ -26,7 +22,7 @@ function localPhone(raw: string): string {
   return local;
 }
 
-const local = localPhone(required("CONTACT_PHONE", process.env.NEXT_PUBLIC_CONTACT_PHONE));
+const local = localPhone(requiredEnv("CONTACT_PHONE", process.env.NEXT_PUBLIC_CONTACT_PHONE));
 const latitude = coordinate("VENUE_LATITUDE", process.env.NEXT_PUBLIC_VENUE_LATITUDE, 90);
 const longitude = coordinate("VENUE_LONGITUDE", process.env.NEXT_PUBLIC_VENUE_LONGITUDE, 180);
 

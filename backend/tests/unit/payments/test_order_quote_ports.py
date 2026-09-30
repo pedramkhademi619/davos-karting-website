@@ -5,9 +5,9 @@ import pytest
 from davos.composition.adapters.reservation_order_quote_port import ReservationOrderQuotePort
 from davos.composition.adapters.sandbox_order_quote_port import SandboxOrderQuotePort
 from davos.platform.settings.app_environment import AppEnvironment
-from davos.platform.settings.app_settings import AppSettings
 from davos.platform.settings.insecure_configuration_error import InsecureConfigurationError
 from davos.shared_kernel.domain.money import Money
+from tests.fakes.standard_config import example_settings
 
 ME = uuid.uuid4()
 
@@ -43,8 +43,7 @@ async def test_the_sandbox_path_only_prices_explicit_test_orders_with_a_fixed_sm
 
 def test_the_sandbox_order_switch_is_refused_in_production() -> None:
     strong = "s" * 40
-    settings = AppSettings(
-        _env_file=None,
+    settings = example_settings(
         app_env=AppEnvironment.PRODUCTION,
         otp_hmac_secret=strong,
         session_csrf_secret=strong + "1",

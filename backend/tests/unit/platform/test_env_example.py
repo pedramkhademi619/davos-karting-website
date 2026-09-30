@@ -1,18 +1,16 @@
-""".env.example is the configuration reference: it must list every setting, and the defaults it shows must be the real
-ones, so the file and AppSettings can never drift apart."""
+""".env.example is the complete configuration reference: every setting AppSettings declares is in it with a working
+value, nothing in it is unused, and a missing setting stops the program by name without printing any value."""
 
 from __future__ import annotations
 
-import json
 import re
-from enum import Enum
-from pathlib import Path
 
-from pydantic import SecretStr
+import pytest
+from pydantic import ValidationError
 
 from davos.platform.settings.app_settings import AppSettings
+from tests.fakes.standard_config import EXAMPLE_ENV
 
-ENV_EXAMPLE = Path(__file__).resolve().parents[4] / ".env.example"
 # Read by docker-compose.yml or the web app's build, not by the backend.
 NOT_BACKEND_SETTINGS = {
     "HTTP_PORT",
@@ -28,47 +26,40 @@ NOT_BACKEND_SETTINGS = {
     "VENUE_LATITUDE",
     "VENUE_LONGITUDE",
 }
-_LINE = re.compile(r"^(?P<comment>#\s)?(?P<name>[A-Z][A-Z0-9_]+)=(?P<value>.*)$")
+_SET = re.compile(r"^([A-Z][A-Z0-9_]+)=")
+_COMMENTED = re.compile(r"^#\s*([A-Z][A-Z0-9_]+)=")
 
 
-def documented() -> dict[str, tuple[bool, str]]:
-    """NAME -> (shown as a commented default, value)."""
-    entries: dict[str, tuple[bool, str]] = {}
-    for line in ENV_EXAMPLE.read_text(encoding="utf-8").splitlines():
-        match = _LINE.match(line)
-        if match:
-            entries[match["name"]] = (bool(match["comment"]), match["value"])
-    return entries
+def lines() -> list[str]:
+    return EXAMPLE_ENV.read_text(encoding="utf-8").splitlines()
 
 
-def as_env(value: object) -> str:
-    if isinstance(value, SecretStr):
-        return value.get_secret_value()
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    if isinstance(value, Enum):
-        return str(value.value)
-    if isinstance(value, list):
-        return json.dumps(value)
-    return str(value)
+def declared() -> set[str]:
+    return {name.upper() for name in AppSettings.model_fields}
 
 
-def test_every_setting_is_documented() -> None:
-    missing = {name.upper() for name in AppSettings.model_fields} - documented().keys()
-    assert not missing, f"add these to .env.example: {sorted(missing)}"
+def test_every_setting_is_set_in_the_example() -> None:
+    written = {m.group(1) for line in lines() if (m := _SET.match(line))}
+    assert not declared() - written, f"add these to .env.example: {sorted(declared() - written)}"
 
 
-def test_every_documented_variable_is_used() -> None:
-    known = {name.upper() for name in AppSettings.model_fields} | NOT_BACKEND_SETTINGS
-    unknown = documented().keys() - known
-    assert not unknown, f".env.example lists variables nothing reads: {sorted(unknown)}"
+def test_nothing_in_the_example_is_unused_or_commented_out() -> None:
+    written = {m.group(1) for line in lines() if (m := _SET.match(line))}
+    assert not written - declared() - NOT_BACKEND_SETTINGS, f"nothing reads: {sorted(written - declared())}"
+    commented = [m.group(1) for line in lines() if (m := _COMMENTED.match(line))]
+    assert not commented, f"there are no defaults in code, so these must have a value: {commented}"
 
 
-def test_the_defaults_shown_are_the_real_defaults() -> None:
-    defaults = AppSettings(_env_file=None)  # type: ignore[call-arg]
-    wrong = {
-        name: (shown, as_env(getattr(defaults, name.lower())))
-        for name, (commented, shown) in documented().items()
-        if commented and name not in NOT_BACKEND_SETTINGS and shown != as_env(getattr(defaults, name.lower()))
-    }
-    assert not wrong, f"commented defaults in .env.example differ from AppSettings (shown, real): {wrong}"
+def test_the_example_alone_is_a_complete_working_configuration() -> None:
+    settings = AppSettings(_env_file=EXAMPLE_ENV)  # type: ignore[call-arg]
+    settings.validate_for_environment()  # development accepts the example secrets
+
+
+def test_a_missing_setting_is_named_and_no_value_is_printed(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in declared():
+        monkeypatch.delenv(name, raising=False)
+    with pytest.raises(ValidationError) as error:
+        AppSettings(_env_file=None, otp_hmac_secret="a-real-secret-that-must-not-leak")  # type: ignore[call-arg]
+    message = str(error.value)
+    assert "database_url" in message and "Field required" in message
+    assert "a-real-secret-that-must-not-leak" not in message

@@ -32,6 +32,7 @@ from tests.fakes.fixed_clock import FixedClock
 from tests.fakes.fixed_order_quotes import FixedOrderQuotes
 from tests.fakes.scripted_ai_chat import ScriptedAiChat
 from tests.fakes.scripted_payment_gateway import ScriptedPaymentGateway
+from tests.fakes.standard_config import example_settings
 from tests.support.booking_webhooks import SECRET as BOOKING_SECRET
 
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:54329/davos_test")
@@ -67,15 +68,16 @@ def migrated_database() -> None:
 
 @pytest.fixture
 def test_settings() -> AppSettings:
-    return AppSettings(
+    return example_settings(
         app_env=AppEnvironment.TEST,
         database_url=DATABASE_URL,
         redis_url=REDIS_URL,
         cookie_secure=False,
+        cors_allowed_origins=["http://localhost:3000"],  # the browser origin the API tests send (api/conftest.py)
         payments_enabled=True,
         booking_integration_enabled=True,
         booking_webhook_secret=BOOKING_SECRET,
-        assistant_questions_per_ip_per_hour=30,  # small, so the limit test stays quick (production default: 120)
+        assistant_questions_per_ip_per_hour=30,  # small, so the limit test stays quick
     )
 
 

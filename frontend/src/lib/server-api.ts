@@ -1,4 +1,5 @@
 import type { BookingInfo } from "@/lib/types";
+import { requiredEnv } from "@/lib/required-env";
 import { SITE_URL } from "@/lib/urls";
 
 /**
@@ -6,7 +7,12 @@ import { SITE_URL } from "@/lib/urls";
  * Only public data is fetched here; anything tied to a customer is fetched by the browser with its own cookie.
  */
 
-const INTERNAL_API = process.env.API_INTERNAL_URL ?? "http://127.0.0.1:8000";
+/** Set by docker-compose.yml (the API service on the private network). Read per request, at run time: it does not
+ * exist while the site is being built. */
+function internalApi(): string {
+  return requiredEnv("API_INTERNAL_URL", process.env.API_INTERNAL_URL);
+}
+
 const INFO_TTL_MS = 5_000; // admin changes show up within seconds; a crowd does not turn every page view into an API call
 
 let infoCache: { at: number; value: Promise<BookingInfo | null> } | null = null;
@@ -17,8 +23,9 @@ export function siteUrl(): string {
 }
 
 async function fetchBookingInfo(): Promise<BookingInfo | null> {
+  const url = `${internalApi()}/api/v1/reservations/info`; // a missing setting must fail loudly, not look like an outage
   try {
-    const response = await fetch(`${INTERNAL_API}/api/v1/reservations/info`, {
+    const response = await fetch(url, {
       cache: "no-store",
       signal: AbortSignal.timeout(2500),
       headers: { Accept: "application/json" },

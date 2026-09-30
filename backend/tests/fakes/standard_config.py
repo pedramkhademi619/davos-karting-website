@@ -1,10 +1,14 @@
-"""Standard configuration for tests, built the way production builds it: from AppSettings' own defaults (never a
-developer's .env) through PolicyFactory, and from the admin panel's initial settings. Tests change one value with
-``dataclasses.replace`` instead of repeating numbers that already live in AppSettings."""
+"""Standard configuration for tests, built the way production builds it: the settings from the repository's
+.env.example (never a developer's .env, so results do not depend on the machine) through PolicyFactory, and the
+admin panel's initial settings. Tests change one value with keyword overrides or ``dataclasses.replace`` instead of
+repeating numbers that already live in .env.example."""
 
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
+
+from dotenv import dotenv_values
 
 from davos.composition.adapters.schedule_booking_facts import ScheduleBookingFacts
 from davos.composition.policy_factory import PolicyFactory
@@ -16,7 +20,20 @@ from davos.modules.identity.domain.value_objects.otp_policy import OtpPolicy
 from davos.modules.reservations.domain.value_objects.schedule_settings import ScheduleSettings
 from davos.platform.settings.app_settings import AppSettings
 
-DEFAULT_SETTINGS = AppSettings(_env_file=None)  # type: ignore[call-arg]
+EXAMPLE_ENV = Path(__file__).resolve().parents[3] / ".env.example"
+
+
+def example_settings(**overrides: object) -> AppSettings:
+    """The complete development configuration from .env.example, with ``overrides`` applied."""
+    return AppSettings(_env_file=EXAMPLE_ENV, **overrides)  # type: ignore[arg-type]
+
+
+def example_environment() -> dict[str, str]:
+    """.env.example as environment variables, the way docker-compose hands .env to the containers."""
+    return {name: value or "" for name, value in dotenv_values(EXAMPLE_ENV).items()}
+
+
+DEFAULT_SETTINGS = example_settings()
 TEST_CONTACT_PHONE = "09120000000"
 
 

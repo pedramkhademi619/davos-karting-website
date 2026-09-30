@@ -3,6 +3,7 @@ import pytest
 from davos.platform.settings.app_environment import AppEnvironment
 from davos.platform.settings.app_settings import AppSettings
 from davos.platform.settings.insecure_configuration_error import InsecureConfigurationError
+from tests.fakes.standard_config import example_settings
 
 STRONG = "x" * 40
 
@@ -10,6 +11,7 @@ STRONG = "x" * 40
 def production(**overrides: object) -> AppSettings:
     values: dict[str, object] = {
         "app_env": AppEnvironment.PRODUCTION,
+        "cookie_secure": True,
         "otp_hmac_secret": STRONG,
         "session_csrf_secret": STRONG + "1",
         "booking_webhook_secret": STRONG + "2",
@@ -18,7 +20,7 @@ def production(**overrides: object) -> AppSettings:
         "sms_provider": "kavenegar",
         "kavenegar_api_key": "kavenegar-key",
     }
-    return AppSettings(_env_file=None, **{**values, **overrides})  # type: ignore[arg-type]
+    return example_settings(**{**values, **overrides})
 
 
 def test_a_correct_production_configuration_starts() -> None:
@@ -26,7 +28,7 @@ def test_a_correct_production_configuration_starts() -> None:
 
 
 def test_development_accepts_placeholders() -> None:
-    AppSettings(_env_file=None).validate_for_environment()
+    example_settings().validate_for_environment()
 
 
 @pytest.mark.parametrize(
@@ -92,5 +94,5 @@ def test_the_sites_own_addresses_are_always_trusted_origins() -> None:
         "https://booking.davoskarting.ir",
         "https://x.example",
     }
-    local = AppSettings(_env_file=None, public_base_url="http://localhost:8088", cors_allowed_origins=[])
+    local = example_settings(public_base_url="http://localhost:8088", cors_allowed_origins=[])
     assert local.trusted_origins == {"http://localhost:8088"}

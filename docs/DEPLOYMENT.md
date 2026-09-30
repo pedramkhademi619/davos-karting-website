@@ -21,15 +21,17 @@ One source per value:
 
 | What | Where it lives | Who reads it |
 | --- | --- | --- |
-| Deployment settings, limits, timeouts, provider addresses, secrets | `.env` (reference: `.env.example`) | backend: `AppSettings` (`backend/src/davos/platform/settings/app_settings.py`) is the only place with defaults; the composition root (`PolicyFactory`, `ApplicationContainer`) hands the values to the modules, which never read the environment |
+| Deployment settings, limits, timeouts, provider addresses, secrets | `.env` (complete working example: `.env.example`) | backend: `AppSettings` (`backend/src/davos/platform/settings/app_settings.py`) only declares them, with no values or defaults; the composition root (`PolicyFactory`, `ApplicationContainer`) hands the values to the modules, which never read the environment |
 | Public values baked into the web app (site addresses, `CONTACT_PHONE`, `VENUE_LATITUDE`/`VENUE_LONGITUDE`) | the same `.env` | `docker-compose.yml` passes them as build arguments (`frontend/Dockerfile`, `frontend/src/lib/urls.ts`, `frontend/src/lib/venue.ts`); rebuild the frontend after changing them |
 | Prices, karts per session, closed days, hold time, online booking on/off | admin panel, booking settings | backend and site at run time (the assistant within `ASSISTANT_BOOKING_FACTS_CACHE_SECONDS`) |
 | The owner's riding rules (ages, height, seats) | domain code (`EligibilityRules`) and `backend/knowledge` | backend; a test keeps the two in step |
 
-The API, worker, scheduler and migration job load the whole `.env` (`env_file` in `docker-compose.yml`), so a new setting
-works as soon as it is in `.env`; compose itself only sets the database and Redis addresses. `.env.example` lists every
-setting in the order of `AppSettings`, optional ones commented out with their real default, and
-`backend/tests/unit/platform/test_env_example.py` fails when the two disagree.
+No value is written in code, and there are no fallbacks: a setting missing from `.env` stops the API (or the web app's
+build) at start-up with its name, and the error never prints the other values. The API, worker, scheduler and migration
+job load the whole `.env` (`env_file` in `docker-compose.yml`); compose itself only builds the containers' database and
+Redis addresses from the passwords in `.env`, and requires every variable it uses. `.env.example` is a complete working
+development configuration in the order of `AppSettings`; `backend/tests/unit/platform/test_env_example.py` fails when a
+setting is missing from it, unused or commented out, and the tests run on it (never on a developer's `.env`).
 
 In production set `APP_ENV=production` and inject secrets from a secret manager.
 The API **refuses to start** in production when any of these hold: placeholder or `<32`-character secrets, `DEV_SMS_ECHO_ENABLED`,

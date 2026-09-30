@@ -4,7 +4,7 @@
 name: davos
 
 x-backend-image: &backend-image
-  image: davos-backend:${DAVOS_VERSION:-dev}
+  image: davos-backend:${DAVOS_VERSION:?set DAVOS_VERSION in .env}
   build:
     context: ./backend
     dockerfile: Dockerfile
@@ -26,14 +26,14 @@ x-app-env-file: &app-env-file
       required: true
 
 x-app-environment: &app-environment
-  DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-davos}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-davos}
+  DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:?set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB in .env}
   REDIS_URL: redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}@redis:6379/0
 
 services:
   reverse-proxy:
     image: nginxinc/nginx-unprivileged:1.27.2-alpine
     ports:
-      - "${HTTP_PORT:-80}:8080"
+      - "${HTTP_PORT:?set HTTP_PORT in .env}:8080"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/proxy_params:/etc/nginx/proxy_params:ro
@@ -59,7 +59,7 @@ services:
       args:
         # Baked into the web app at build time (rebuild the frontend after changing them in .env).
         NEXT_PUBLIC_SITE_URL: ${PUBLIC_BASE_URL:?set PUBLIC_BASE_URL in .env}
-        NEXT_PUBLIC_BOOKING_URL: ${BOOKING_BASE_URL:-}
+        NEXT_PUBLIC_BOOKING_URL: ${BOOKING_BASE_URL?set BOOKING_BASE_URL in .env (empty = no subdomain)}
         NEXT_PUBLIC_CONTACT_PHONE: ${CONTACT_PHONE:?set CONTACT_PHONE in .env}
         NEXT_PUBLIC_VENUE_LATITUDE: ${VENUE_LATITUDE:?set VENUE_LATITUDE in .env}
         NEXT_PUBLIC_VENUE_LONGITUDE: ${VENUE_LONGITUDE:?set VENUE_LONGITUDE in .env}
@@ -67,18 +67,18 @@ services:
       NODE_ENV: production
       API_INTERNAL_URL: http://api:8000
       # The bank's payment page: the only outside address the site's forms may post to (content security policy).
-      BANK_PAYMENT_URL: ${MELLAT_START_PAY_URL:-}
+      BANK_PAYMENT_URL: ${MELLAT_START_PAY_URL:?set MELLAT_START_PAY_URL in .env}
     # Every page is rendered per request (it carries its own CSP nonce) and one Node.js process renders one page at a
     # time, so the web app runs as several replicas; nginx spreads requests over them (see nginx/nginx.conf).
     deploy:
-      replicas: ${FRONTEND_REPLICAS:-3}
+      replicas: ${FRONTEND_REPLICAS:?set FRONTEND_REPLICAS in .env}
     networks: [edge]
     restart: unless-stopped
     mem_limit: 384m
 
   api:
     <<: [*backend-image, *hardening, *app-env-file]
-    image: davos-api:${DAVOS_VERSION:-dev}
+    image: davos-api:${DAVOS_VERSION:?set DAVOS_VERSION in .env}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -87,7 +87,7 @@ services:
       FORWARDED_ALLOW_IPS: "*"  # the API is reachable only from the proxy on the private edge network
       # Worker processes (uvicorn reads WEB_CONCURRENCY). Each keeps DB_POOL_SIZE + DB_MAX_OVERFLOW connections at most;
       # keep API_WORKERS x (pool + overflow) + worker/scheduler well under PostgreSQL's max_connections (100).
-      WEB_CONCURRENCY: ${API_WORKERS:-4}
+      WEB_CONCURRENCY: ${API_WORKERS:?set API_WORKERS in .env}
       # Owner-editable assistant content (see backend/knowledge/README.md); mounted read-only from the host below.
       ASSISTANT_PERSONA_FILE: /app/prompts/assistant_persona.txt
       ASSISTANT_KNOWLEDGE_DIR: /app/knowledge
@@ -162,9 +162,9 @@ services:
     build: ./postgres
     image: davos-postgres:16.4-pgvector0.8.0
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-davos}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-davos}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

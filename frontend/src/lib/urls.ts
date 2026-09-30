@@ -2,12 +2,15 @@
  * Where each page lives. The main site (home, FAQ, contact, admin) and online booking (the booking page, sign-in, the
  * customer's tickets and the payment result) can run on two hosts: NEXT_PUBLIC_BOOKING_URL is the booking subdomain,
  * e.g. https://booking.davoskarting.ir. Without it everything stays on one host and booking is at /booking (local
- * development). Both addresses are inlined at build time (frontend/Dockerfile, fed by compose from .env).
+ * development). Both addresses are inlined at build time (frontend/Dockerfile, fed by compose from .env); the main
+ * site's address is required.
  */
+
+import { requiredEnv } from "@/lib/required-env";
 
 const trim = (url: string | undefined) => (url ?? "").trim().replace(/\/+$/, "");
 
-export const SITE_URL = trim(process.env.NEXT_PUBLIC_SITE_URL) || "http://localhost:8088";
+export const SITE_URL = trim(requiredEnv("PUBLIC_BASE_URL", process.env.NEXT_PUBLIC_SITE_URL));
 export const BOOKING_URL = trim(process.env.NEXT_PUBLIC_BOOKING_URL);
 
 function hostnameOf(url: string): string {
