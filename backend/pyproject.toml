@@ -79,6 +79,9 @@ source_modules = [
   "davos.modules.loyalty.domain",
   "davos.modules.payments.domain",
   "davos.modules.booking.domain",
+  "davos.modules.reservations.domain",
+  "davos.modules.notifications.domain",
+  "davos.modules.administration.domain",
 ]
 forbidden_modules = ["fastapi", "sqlalchemy", "redis", "httpx", "celery", "pydantic", "davos.platform"]
 
@@ -93,6 +96,8 @@ source_modules = [
   "davos.modules.loyalty.application",
   "davos.modules.payments.application",
   "davos.modules.booking.application",
+  "davos.modules.reservations.application",
+  "davos.modules.administration.application",
 ]
 forbidden_modules = ["fastapi", "sqlalchemy", "redis", "httpx", "celery", "davos.platform"]
 
@@ -106,6 +111,8 @@ containers = [
   "davos.modules.loyalty",
   "davos.modules.payments",
   "davos.modules.booking",
+  "davos.modules.reservations",
+  "davos.modules.administration",
 ]
 layers = ["adapters", "application", "(domain)"]
 
@@ -119,6 +126,8 @@ modules = [
   "davos.modules.loyalty",
   "davos.modules.payments",
   "davos.modules.booking",
+  "davos.modules.reservations",
+  "davos.modules.administration",
 ]
 
 [[tool.importlinter.contracts]]
@@ -132,11 +141,6 @@ extend-immutable-calls = ["fastapi.Depends"]
 
 [[tool.mypy.overrides]]
 module = ["celery.*", "kombu.*"]
-ignore_missing_imports = true
-
-# Only installed in the images that carry the local embedding model (requirements-embeddings.lock), not in the dev venv.
-[[tool.mypy.overrides]]
-module = ["torch.*", "sentence_transformers.*", "huggingface_hub.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

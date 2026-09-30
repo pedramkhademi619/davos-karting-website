@@ -8,9 +8,9 @@ import { WorkingHours } from "@/components/working-hours";
 
 export function ContactPreview() {
   return (
-    <section className="container-page pb-24 md:pb-36">
+    <section className="container-page pb-24 md:pb-32">
       <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-        <SectionHeading eyebrow="تماس با ما" title="راه‌های ارتباط با ما" />
+        <SectionHeading eyebrow="تماس با ما" title="تا پیست یک قدم فاصله دارید" />
         <ButtonLink href="/contact" variant="ghost">
           همه راه‌های ارتباطی
         </ButtonLink>

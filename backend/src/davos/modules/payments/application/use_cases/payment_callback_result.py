@@ -8,3 +8,4 @@ from davos.modules.payments.domain.enums.payment_status import PaymentStatus
 class PaymentCallbackResult:
     payment_id: uuid.UUID
     status: PaymentStatus
+    order_ref: str = ""

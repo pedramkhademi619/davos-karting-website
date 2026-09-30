@@ -28,14 +28,10 @@ mypy --strict clean, 5 import contracts kept.
   small, message wording aligned with the phone-only booking. Verified: 1691 backend tests, and by hand ~35 questions against a
   real provider (GapGPT, `gemma-3-27b-it`). Not done: conversation memory, an evaluation set, admin views (see `AI_ASSISTANT.md`).
 
-- [~] **1.8 Semantic answer cache and conversation memory.** Done 2026-09-21, all local: a sentence-transformers model
-  (`multilingual-e5-base`) read from files, vectors in PostgreSQL with pgvector (built into the existing Alpine image; migration
-  `0007`, HNSW index, iterative scans), signature/policy/fingerprint/age/feedback guards, intent reset, follow-up resolution,
-  Redis conversation memory, background caching, daily purge, tools to fetch the model, calibrate the threshold and purge.
-  Verified: 2093 backend tests (real PostgreSQL + pgvector + Redis; the embedder is a fake there), a test proving the filtered
-  HNSW query fails without iterative scanning, and the real model measured on ~100 questions and 435 pairs (the brief's 0.88
-  threshold misfires; the default is 0.94), plus live requests against the running API. Not done: an admin screen for flagged
-  entries, real-traffic hit-ratio numbers, an automated test that loads the real model. See `SEMANTIC_CACHE.md`.
+- [x] **1.8 Semantic answer cache and conversation memory.** Built 2026-09-21 (all local: sentence-transformers embeddings,
+  pgvector, migration `0007`), then the cache half was **retired 2026-09-23** (migration `0008`): the embedding model competed
+  for CPU/RAM in the API process and degraded ordinary answers. Its code is kept on the `feature/semantic-cache` branch, not on
+  `main`. The follow-up conversation memory (Redis, no embeddings) stays and is unaffected.
 
 ## Phase 2 - identity, CMS, public site
 

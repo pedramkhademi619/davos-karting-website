@@ -6,7 +6,6 @@ from davos.modules.identity.application.use_cases.request_otp_command import Req
 from davos.modules.identity.application.use_cases.request_otp_use_case import RequestOtpUseCase
 from davos.modules.identity.domain.errors.invalid_mobile_number_error import InvalidMobileNumberError
 from davos.modules.identity.domain.errors.otp_delivery_failed_error import OtpDeliveryFailedError
-from davos.modules.identity.domain.value_objects.otp_policy import OtpPolicy
 from davos.platform.rate_limiting.in_memory_rate_limiter import InMemoryRateLimiter
 from davos.shared_kernel.domain.errors.rate_limited_error import RateLimitedError
 from tests.fakes.fake_otp_delivery import FakeOtpDelivery
@@ -14,6 +13,7 @@ from tests.fakes.fake_unit_of_work import FakeUnitOfWork
 from tests.fakes.fixed_clock import FixedClock
 from tests.fakes.in_memory_otp_challenge_repository import InMemoryOtpChallengeRepository
 from tests.fakes.sequence_otp_code_generator import SequenceOtpCodeGenerator
+from tests.fakes.standard_config import otp_limits, otp_policy
 
 SECRET = "s" * 40
 
@@ -32,8 +32,8 @@ class Harness:
             delivery=self.delivery,
             rate_limiter=InMemoryRateLimiter(self.clock),
             clock=self.clock,
-            policy=OtpPolicy(),
-            limits=limits or OtpRateLimitPolicy(),
+            policy=otp_policy(),
+            limits=limits or otp_limits(),
         )
 
     async def request(self, mobile: str = "09123456789", ip: str = "203.0.113.5") -> None:
@@ -78,7 +78,7 @@ async def test_resend_inside_cooldown_is_refused_and_after_it_supersedes_the_old
 
 
 async def test_per_mobile_rate_limit_blocks_after_the_configured_number_of_requests() -> None:
-    h = Harness(limits=OtpRateLimitPolicy(per_mobile_limit=2))
+    h = Harness(limits=otp_limits(per_mobile_limit=2))
     for _ in range(2):
         await h.request()
         h.clock.advance(seconds=61)
@@ -87,7 +87,7 @@ async def test_per_mobile_rate_limit_blocks_after_the_configured_number_of_reque
 
 
 async def test_per_ip_rate_limit_applies_across_different_numbers() -> None:
-    h = Harness(limits=OtpRateLimitPolicy(per_ip_limit=2))
+    h = Harness(limits=otp_limits(per_ip_limit=2))
     await h.request(mobile="09120000001")
     await h.request(mobile="09120000002")
     with pytest.raises(RateLimitedError):
@@ -102,7 +102,7 @@ async def test_delivery_failure_is_reported() -> None:
 
 
 async def test_rate_limit_window_resets() -> None:
-    h = Harness(limits=OtpRateLimitPolicy(per_mobile_limit=1, per_mobile_window_seconds=3600))
+    h = Harness(limits=otp_limits(per_mobile_limit=1, per_mobile_window_seconds=3600))
     await h.request()
     h.clock.advance(seconds=61)
     with pytest.raises(RateLimitedError):

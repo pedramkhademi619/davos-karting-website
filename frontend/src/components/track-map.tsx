@@ -55,17 +55,24 @@ function Kart({ body, duration, begin }: { body: string; duration: number; begin
 }
 
 /**
- * Top-down map of the track, drawn from the traced data in content/track.ts. Decorative artwork with a text alternative; the karts
- * are hidden when the visitor prefers reduced motion.
+ * Top-down map of the track, drawn from the traced data in content/track.ts. About 150 KB of markup that never changes,
+ * so it is drawn in the browser from a cached script instead of being rendered into every home page. The karts are
+ * hidden when the visitor prefers reduced motion.
  */
-export function TrackMap({ className }: { className?: string }) {
+export function TrackMapSvg() {
   const { x, y, width, height } = TRACK_VIEWBOX;
   const period = TYRE_PITCH * 2 - 0.01;
 
   return (
-    <figure className={className}>
-      <div className="overflow-hidden rounded-[2rem] bg-surface-2 shadow-[0_1px_0_rgb(17_17_20/0.04),0_44px_80px_-36px_rgb(90_65_10/0.45)] ring-1 ring-black/5">
-        <svg viewBox={`${x} ${y} ${width} ${height}`} role="img" aria-labelledby="track-map-title" className="block h-auto w-full">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={`${x} ${y} ${width} ${height}`}
+      width={width}
+      height={height}
+      role="img"
+      aria-labelledby="track-map-title"
+    >
+      <style>{"@media (prefers-reduced-motion: reduce) { .kart { display: none; } }"}</style>
           <title id="track-map-title">نقشه پیست کارتینگ داوس از نمای بالا</title>
           <defs>
             <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1">
@@ -156,6 +163,17 @@ export function TrackMap({ className }: { className?: string }) {
             <path key={fence.d} d={fence.d} fill="none" stroke="#3D322A" strokeWidth={fence.width} strokeDasharray={fence.dash} strokeLinecap="round" opacity={fence.opacity} />
           ))}
         </svg>
+  );
+}
+
+export const TRACK_MAP_SIZE = { width: TRACK_VIEWBOX.width, height: TRACK_VIEWBOX.height };
+
+/** The map in the site's frame, with a caption. Rendered in the browser only (see home/track-map-lazy.tsx). */
+export function TrackMap({ className }: { className?: string }) {
+  return (
+    <figure className={className}>
+      <div className="overflow-hidden rounded-[2rem] bg-surface-2 shadow-[0_1px_0_rgb(17_17_20/0.04),0_44px_80px_-36px_rgb(90_65_10/0.45)] ring-1 ring-black/5 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">
+        <TrackMapSvg />
       </div>
       <figcaption className="mt-3 text-sm text-fg-subtle">نقشه پیست بر پایه تصویر هوایی؛ جزئیات اطراف پیست تقریبی است.</figcaption>
     </figure>

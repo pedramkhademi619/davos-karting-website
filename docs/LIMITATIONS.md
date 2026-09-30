@@ -2,6 +2,20 @@
 
 Nothing below is claimed as delivered.
 
+## Launch-ready work (2026-09-25): what is and is not verified
+
+* **Verified locally**: online booking on the booking subdomain end to end in a browser (SMS-code sign-in with the code from
+  the development log, seat map, hold, ticket with countdown, release, profile save), host routing and redirects between the
+  two hosts, the CSP nonce, the edge cache, 40 simultaneous holds on one session never overselling (and the backend tests for
+  every payment race), page and API throughput (docs/DEPLOYMENT.md).
+* **Not verified against the real services**: Bank Mellat (no terminal credentials yet; the flow is covered by tests with a
+  scripted gateway), Kavenegar (development uses the recording gateway), the production TLS/DNS setup for two hosts.
+* **Admin panel UI**: every screen type-checks and the admin API has integration tests, but the screens were not clicked
+  through with a signed-in account here (the owner creates the first account via `ADMIN_BOOTSTRAP_*`).
+* **Counter app is separate**: `D:\Davos\davoos-karting-booking` does not talk to the website. Karts sold at the counter must be
+  entered in the admin panel ("ثبت فروش حضوری") or the website can sell them again.
+* **Refunds**: a paid online reservation cancelled by staff is not refunded automatically; refund from the bank's panel.
+
 ## Not implemented (in scope of the original brief)
 
 * **Web application** beyond three marketing pages and the assistant chat: customer dashboard, admin panel at `/admin`, login,
@@ -53,9 +67,9 @@ Nothing below is claimed as delivered.
     simplified redraw. Nothing is surveyed: do not read dimensions off it. To update it, replace `TRACK_POINTS`/`TRACK_WIDTHS`
     in `frontend/src/content/track.ts` (the tracing scripts were throwaway and are not in the repository).
   * **Deliberately absent**: a contact form (there is no ticket endpoint, and a form that does nothing is worse than none) and
-    scroll-reveal animations (CSS scroll-driven animations stalled rendering in the embedded browser and were removed).
-  * `NEXT_PUBLIC_BOOKING_URL` (fed from `BOOKING_BASE_URL` by compose) is still frozen into the bundle at build time but **unused**
-    while booking is by phone; its default `https://booking.davoskarting.ir` is a placeholder. Fonts (Vazirmatn, Unbounded) are downloaded from Google during `next build` and self-hosted afterwards, so the
+    scroll-reveal animations (CSS scroll-driven animations stalled rendering in the embedded browser; removed twice now).
+  * `NEXT_PUBLIC_BOOKING_URL` and `NEXT_PUBLIC_SITE_URL` (fed from `BOOKING_BASE_URL` and `PUBLIC_BASE_URL` by compose) are
+    frozen into the web app at build time: after changing either, rebuild the frontend image. Fonts (Vazirmatn, Unbounded) are downloaded from Google during `next build` and self-hosted afterwards, so the
     image build needs network access. `frontend/AGENTS.md` warns that this Next.js version has breaking changes; read
     `node_modules/next/dist/docs/` before writing frontend code.
 * **Admin authentication** (Argon2id, TOTP MFA, roles/permissions), audit log, admin dashboards/reports/exports.
@@ -83,19 +97,7 @@ Nothing below is claimed as delivered.
   `docs/AI_ASSISTANT.md`). The persona makes every riding answer end with a request to state age and height when booking by phone,
   but until a rule check that does not depend on the model exists, treat its eligibility answers as advice, not as the rule. That
   is a sample, not an evaluation; there is no regression set, and a persona or knowledge edit needs a fresh manual check.
-* **Semantic answer cache** (`docs/SEMANTIC_CACHE.md`): verified with the real local model, real pgvector and your configured
-  language model, but on about 100 hand-written questions and a handful of live requests, **not on real traffic**, so the hit
-  ratio is unknown. What was measured: the brief's 0.88 threshold wrongly served 15 of 405 different-topic pairs, so the default
-  is 0.94, which serves everyday rewordings and does **not** match true paraphrases in other words (3 of 11), and an unrelated
-  contrast the vocabulary does not know (a new vehicle, an unusual qualifier) is not caught by the signature guard, so add such
-  words to `SEMANTIC_CACHE_EXTRA_DISCRIMINATORS` and re-run `python -m davos.tools.calibrate_semantic_cache`. It keeps the text of
-  questions (anonymous, phone numbers and e-mail addresses excluded) without asking for consent, and an answer can be up to 30
-  days old; answers citing a `policy` source are never cached. There is no admin screen for flagged entries yet (SQL only), two
-  visitors asking a new question at the same instant both reach the model, and the pytest suite uses a fake embedder: the real
-  model is exercised by the calibration tool and by hand, not by an automated test. The API image is 2.1 GB and needs 2 GB of
-  memory (about 750-850 MB used); CI runs PostgreSQL from the upstream Debian `pgvector` image while the stack uses the Alpine
-  build of the same version. `pip check` reports that PyTorch declares a `setuptools` dependency, which the runtime image
-  deliberately does not carry (inference works without it).
+* **Semantic answer cache**: implemented, measured on the real model (details on the `feature/semantic-cache` branch), then **retired 2026-09-23**. Running the local embedding model in the API process competed for CPU/RAM with everything else and degraded ordinary answers, so it was removed from `main`; the code and its docs live only on that branch.
 * **Conversation memory** is short-term and heuristic: the last 3 exchanges for 20 minutes, in Redis, keyed by the widget's
   per-visit id; follow-up detection looks for pointer words, a leading "and" or a message made only of details, and can miss.
 * **Assistant behaviour that is by design but easy to forget**: (conversation memory: see the previous bullet); while the

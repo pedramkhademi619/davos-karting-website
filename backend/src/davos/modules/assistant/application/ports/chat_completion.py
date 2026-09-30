@@ -8,3 +8,4 @@ class ChatCompletion:
     text: str
     usage: TokenUsage
     model: str
+    cost_usd: float | None = None  # only when the provider reports it (some gateways do, OpenAI itself does not)

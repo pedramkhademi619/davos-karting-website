@@ -9,7 +9,8 @@ from davos.shared_kernel.application.unit_of_work import UnitOfWork
 
 
 class ReconcilePaymentsUseCase:
-    """Periodic recovery: settle attempts whose verification never finished and expire abandoned ones."""
+    """Periodic recovery: verify attempts whose verification never finished, settle paid-but-unsettled money,
+    reverse money waiting for a refund and expire abandoned attempts."""
 
     def __init__(
         self,
@@ -18,8 +19,8 @@ class ReconcilePaymentsUseCase:
         payments: PaymentRepository,
         settlement: PaymentSettlementService,
         clock: Clock,
-        stuck_for_seconds: int = 300,
-        batch_size: int = 50,
+        stuck_for_seconds: int,
+        batch_size: int,
     ) -> None:
         self._uow = uow
         self._payments = payments
@@ -50,6 +51,6 @@ class ReconcilePaymentsUseCase:
                     await self._uow.commit()
             status = await self._settlement.settle(payment_id)
             paid += status is PaymentStatus.PAID
-            failed += status is PaymentStatus.FAILED
-            unknown += status in {PaymentStatus.UNKNOWN, PaymentStatus.VERIFYING}
+            failed += status in {PaymentStatus.FAILED, PaymentStatus.REVERSED}
+            unknown += status in {PaymentStatus.UNKNOWN, PaymentStatus.VERIFYING, PaymentStatus.REFUND_PENDING}
         return ReconciliationReport(examined=len(ids), paid=paid, failed=failed, still_unknown=unknown, expired=expired)

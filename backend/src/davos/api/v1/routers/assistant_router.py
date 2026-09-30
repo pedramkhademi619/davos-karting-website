@@ -45,7 +45,6 @@ async def ask(
         sources=[AnswerSourceResponse(title=s.title, url=s.url) for s in answer.sources],
         suggest_ticket=answer.suggest_ticket,
         interaction_id=answer.interaction_id,
-        from_cache=answer.from_cache,
     )
 
 

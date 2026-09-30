@@ -32,6 +32,3 @@ class AssistantInteractionModel(Base):
     question_text: Mapped[str | None] = mapped_column(Text)
     answer_text: Mapped[str | None] = mapped_column(Text)
     helpful: Mapped[bool | None] = mapped_column(Boolean)
-    # Plain reference (no FK): cache entries are purged on their own schedule, interactions on theirs.
-    cache_entry_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
-    served_from_cache: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")

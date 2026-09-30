@@ -20,9 +20,6 @@ class RecordingInteractionLog(InteractionLogPort):
     async def record_feedback(self, interaction_id: uuid.UUID, *, helpful: bool) -> bool:
         return any(i.interaction_id == interaction_id for i in self.items)
 
-    async def cache_entry_of(self, interaction_id: uuid.UUID) -> uuid.UUID | None:
-        return next((i.cache_entry_id for i in self.items if i.interaction_id == interaction_id), None)
-
     async def count_in_conversation(self, conversation_id: uuid.UUID) -> int:
         return sum(1 for i in self.items if i.conversation_id == conversation_id)
 

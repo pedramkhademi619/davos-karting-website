@@ -26,6 +26,7 @@ from tests.fakes.fixed_clock import FixedClock
 from tests.fakes.passages import passage
 from tests.fakes.recording_interaction_log import RecordingInteractionLog
 from tests.fakes.scripted_ai_chat import ScriptedAiChat
+from tests.fakes.standard_config import assistant_policy, booking_facts
 from tests.fakes.static_knowledge_search import StaticKnowledgeSearch
 from tests.fakes.static_persona import StaticPersona
 
@@ -42,9 +43,10 @@ class Harness:
         policy: AssistantPolicy | None = None,
         log_fails: bool = False,
         persona: str | None = None,
+        then: list[str | BaseException] | None = None,
     ) -> None:
         self.clock = FixedClock()
-        self.chat = ScriptedAiChat(reply)
+        self.chat = ScriptedAiChat(reply, then=then)
         self.search = StaticKnowledgeSearch([passage()] if passages is None else passages)
         self.budget = InMemoryAiBudget(daily_limit=budget, clock=self.clock)
         self.log = RecordingInteractionLog(fail=log_fails)
@@ -55,7 +57,7 @@ class Harness:
             interactions=self.log,
             rate_limiter=InMemoryRateLimiter(self.clock),
             clock=self.clock,
-            policy=policy or AssistantPolicy(),
+            policy=policy or assistant_policy(),
             persona=StaticPersona(persona) if persona is not None else None,
             canary_factory=lambda: CANARY,
         )
@@ -160,7 +162,7 @@ async def test_budget_is_settled_with_actual_usage() -> None:
 
 
 async def test_per_ip_limit_is_enforced() -> None:
-    h = Harness(policy=AssistantPolicy(questions_per_ip_per_hour=2))
+    h = Harness(policy=assistant_policy(questions_per_ip_per_hour=2))
     await h.ask()
     await h.ask()
     with pytest.raises(RateLimitedError):
@@ -169,7 +171,7 @@ async def test_per_ip_limit_is_enforced() -> None:
 
 
 async def test_conversation_length_limit_is_enforced() -> None:
-    h = Harness(policy=AssistantPolicy(questions_per_conversation=2))
+    h = Harness(policy=assistant_policy(questions_per_conversation=2))
     conversation = uuid.uuid4()
     await h.ask(conversation_id=conversation)
     await h.ask(conversation_id=conversation)
@@ -209,7 +211,7 @@ async def test_a_bare_greeting_or_thanks_gets_a_friendly_reply_without_search_or
 
 
 async def test_small_talk_still_counts_against_the_rate_limit() -> None:
-    h = Harness(policy=AssistantPolicy(questions_per_ip_per_hour=2))
+    h = Harness(policy=assistant_policy(questions_per_ip_per_hour=2))
     await h.ask("سلام")
     await h.ask("سلام")
     with pytest.raises(RateLimitedError):
@@ -243,7 +245,7 @@ async def test_without_consent_no_question_or_answer_text_is_stored() -> None:
 
 
 async def test_with_consent_text_is_stored_with_a_retention_date() -> None:
-    h = Harness(policy=AssistantPolicy(interaction_retention_days=30))
+    h = Harness(policy=assistant_policy(interaction_retention_days=30))
     user = uuid.uuid4()
     answer = await h.ask("چطور لغو کنم؟", user_id=user, consent_to_store=True)
     stored = h.log.items[0]
@@ -297,10 +299,12 @@ async def test_a_small_knowledge_base_is_sent_whole_even_when_the_question_match
     )
     h = Harness(passages=[], reply="ساعت کاری از ۱۵ است [2].")
     h.search.whole = [booking, hours]
-    answer = await h.ask("می‌خوام بدونم چه ساعتی میتونم بیام؟")
+    answer = await h.ask("می‌خوام بدونم فردا عصر کی بیایم بهتره؟")
     assert answer.outcome is AnswerOutcome.ANSWERED
     assert [s.title for s in answer.sources] == ["ساعت کاری"]  # only what the model actually cited
-    assert 'title="رزرو"' in h.chat.user_prompt and 'title="ساعت کاری"' in h.chat.user_prompt
+    # the whole base is the shared part of the system message, in a fixed (title) order, so it can be cached
+    assert h.chat.system_prompt.index('title="رزرو"') < h.chat.system_prompt.index('title="ساعت کاری"')
+    assert 'title="رزرو"' not in h.chat.user_prompt
     assert h.search.queries == [], "the keyword gate is skipped when the whole knowledge base is small"
 
 
@@ -319,7 +323,7 @@ async def test_a_large_knowledge_base_still_goes_through_the_relevance_gate() ->
 
 
 async def test_the_policy_limits_are_what_the_use_case_asks_the_search_for() -> None:
-    h = Harness(policy=AssistantPolicy(whole_knowledge_max_entries=3, whole_knowledge_max_chars=1000))
+    h = Harness(policy=assistant_policy(whole_knowledge_max_entries=3, whole_knowledge_max_chars=1000))
     await h.ask()
     assert h.search.whole_requests == [(3, 1000)]
 
@@ -362,7 +366,121 @@ async def test_a_question_with_a_detail_is_not_a_quick_answer() -> None:
 
 
 async def test_a_quick_answer_still_counts_against_the_rate_limit() -> None:
-    h = Harness(passages=[_hours_passage()], policy=AssistantPolicy(questions_per_ip_per_hour=1))
+    h = Harness(passages=[_hours_passage()], policy=assistant_policy(questions_per_ip_per_hour=1))
     await h.ask("ساعت کاری چیه؟")
     with pytest.raises(RateLimitedError):
         await h.ask("ساعت کاری چیه؟")
+
+
+# ---------------------------------------------------------------- rule checks and citation repair
+
+
+async def test_rule_checks_for_the_question_are_the_last_passage_and_marked_as_computed() -> None:
+    h = Harness(reply="نه، قدش کافی نیست [2].", passages=[passage(title="تک‌نفره")])
+    answer = await h.ask("دخترم ۱۳ سالشه و قدش ۱۴۰، یکشنبه ساعت ۱۶ میتونه برونه؟")
+    assert answer.outcome is AnswerOutcome.ANSWERED
+    user = h.chat.user_prompt
+    assert user.index('title="تک‌نفره"') < user.index('checked="true"') < user.index("<question>")
+    assert "۱۴۰ بیشتر از ۱۴۰ نیست" in user
+    assert answer.sources == ()  # the check is not a page a customer can open
+
+
+async def test_a_question_without_people_details_gets_no_rule_check() -> None:
+    h = Harness(reply="لغو ممکن است [1].")
+    await h.ask("چطور رزرو را لغو کنم؟")
+    assert 'checked="true"' not in h.chat.user_prompt
+
+
+def test_a_follow_up_detail_is_checked_with_the_people_named_just_before() -> None:
+    from davos.modules.assistant.application.services.eligibility_check_service import EligibilityCheckService
+    from davos.modules.assistant.domain.value_objects.conversation_turn import ConversationTurn
+
+    turns = (ConversationTurn(question="پسرم ۱۲ سالشه، میتونه تک‌نفره برونه؟", answer="قدش چنده؟"),)
+    checked = EligibilityCheckService().passage("قدش ۱۵۰ـه، شنبه ساعت ۱۶", turns)
+    assert checked is not None and checked.computed
+    assert "نتیجه: بله" in checked.text
+
+
+async def test_an_answer_that_forgot_its_citation_is_repaired_once() -> None:
+    h = Harness(reply="بله، می‌تونه.", then=["بله، می‌تونه [1]."])
+    answer = await h.ask()
+    assert answer.outcome is AnswerOutcome.ANSWERED
+    assert answer.text == "بله، می‌تونه."
+    assert h.chat.calls == 2
+    assert h.chat.requests[1].messages[-2].content == "بله، می‌تونه."  # the model sees its own answer
+    assert len(h.log.items) == 1 and h.log.items[0].usage.total == 300  # both calls are counted
+
+
+async def test_an_answer_still_uncited_after_the_repair_is_withheld() -> None:
+    h = Harness(reply="بله، می‌تونه.")
+    answer = await h.ask()
+    assert answer.outcome is AnswerOutcome.INSUFFICIENT_INFORMATION
+    assert h.chat.calls == 2
+
+
+async def test_no_answer_is_not_repaired() -> None:
+    h = Harness(reply="NO_ANSWER")
+    await h.ask()
+    assert h.chat.calls == 1
+
+
+async def test_a_failed_repair_falls_back_to_insufficient_information() -> None:
+    h = Harness(reply="بله.", then=[AiProviderTimeoutError()])
+    answer = await h.ask()
+    assert answer.outcome is AnswerOutcome.INSUFFICIENT_INFORMATION
+
+
+# ---------------------------------------------------------------- live booking settings from the admin panel
+
+
+class _Settings:
+    def __init__(self, facts=None, fail: bool = False) -> None:
+
+        self.facts = facts or booking_facts(singles_per_session=5, normal_single_toman=850_000)
+        self.fail = fail
+
+    async def current(self):
+        if self.fail:
+            raise ConnectionError("database down")
+        return self.facts
+
+
+def _with_settings(h: Harness, settings: _Settings) -> Harness:
+    h.use_case._booking_facts = settings
+    return h
+
+
+async def test_prices_are_answered_from_the_admin_settings_without_the_model() -> None:
+    h = _with_settings(Harness(passages=[passage()]), _Settings())
+    answer = await h.ask("قیمت‌ها؟")
+    assert answer.outcome is AnswerOutcome.QUICK_ANSWER
+    assert "۸۵۰ هزار تومان" in answer.text and h.chat.calls == 0
+
+
+async def test_capacity_is_answered_from_the_admin_settings() -> None:
+    h = _with_settings(Harness(passages=[passage()]), _Settings())
+    answer = await h.ask("چند تا ماشین دارید؟")
+    assert answer.outcome is AnswerOutcome.QUICK_ANSWER and "۵ خودرو تک‌نفره" in answer.text
+
+
+async def test_the_booking_entry_gets_the_current_booking_days() -> None:
+    booking = passage(title=messages.QUICK_TOPIC_TITLES[QuickTopic.BOOKING], text="از صفحه رزرو سانس رزرو کنید.")
+    h = _with_settings(Harness(passages=[booking]), _Settings())
+    answer = await h.ask("چطور رزرو کنم؟")
+    assert answer.text.startswith("از صفحه رزرو سانس رزرو کنید.") and "روزهای بدون رزرو" in answer.text
+    assert [s.title for s in answer.sources] == [messages.QUICK_TOPIC_TITLES[QuickTopic.BOOKING]]
+
+
+async def test_the_model_sees_the_live_settings_and_the_checks_use_its_kart_count() -> None:
+    h = _with_settings(Harness(reply="دو سانس [1]."), _Settings())
+    await h.ask("۶ نفر بزرگسالیم، یه سانس کافیه؟")
+    user = h.chat.user_prompt
+    assert "حداقل ۲ سانس" in user  # 5 single-seaters in the settings, not the default 6
+    assert "تنظیمات فعلی رزرو" in user
+
+
+async def test_without_the_settings_the_assistant_still_answers() -> None:
+    h = _with_settings(Harness(reply="لغو ممکن است [1]."), _Settings(fail=True))
+    answer = await h.ask()
+    assert answer.outcome is AnswerOutcome.ANSWERED
+    assert "تنظیمات فعلی رزرو" not in h.chat.user_prompt

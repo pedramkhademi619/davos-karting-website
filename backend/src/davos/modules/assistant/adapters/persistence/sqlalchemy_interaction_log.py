@@ -30,8 +30,6 @@ class SqlAlchemyInteractionLog(InteractionLogPort):
                     user_id=interaction.user_id,
                     question_text=interaction.question_text,
                     answer_text=interaction.answer_text,
-                    cache_entry_id=interaction.cache_entry_id,
-                    served_from_cache=interaction.served_from_cache,
                 )
             )
 
@@ -44,13 +42,6 @@ class SqlAlchemyInteractionLog(InteractionLogPort):
                 .returning(AssistantInteractionModel.id)
             )
             return result.scalar_one_or_none() is not None
-
-    async def cache_entry_of(self, interaction_id: uuid.UUID) -> uuid.UUID | None:
-        async with self._session_factory() as session:
-            result = await session.execute(
-                select(AssistantInteractionModel.cache_entry_id).where(AssistantInteractionModel.id == interaction_id)
-            )
-            return result.scalar_one_or_none()
 
     async def count_in_conversation(self, conversation_id: uuid.UUID) -> int:
         async with self._session_factory() as session:

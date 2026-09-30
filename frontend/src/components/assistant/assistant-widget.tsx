@@ -40,7 +40,7 @@ export function AssistantWidget() {
         aria-expanded={open}
         aria-controls={used ? panelId : undefined}
         aria-label={open ? "بستن دستیار هوشمند" : "باز کردن دستیار هوشمند"}
-        className="fixed bottom-4 right-3 z-40 inline-flex h-14 items-center gap-2.5 rounded-full bg-ink px-4 font-bold text-white shadow-[0_18px_40px_-12px_rgb(17_17_20/0.55)] transition-all duration-300 ease-out-expo hover:-translate-y-0.5 hover:bg-black active:scale-[0.97] sm:bottom-6 sm:right-6 sm:px-5"
+        className="assistant-launcher fixed bottom-4 right-3 z-40 inline-flex h-14 items-center gap-2.5 rounded-full bg-ink px-4 font-bold text-white shadow-[0_18px_40px_-12px_rgb(17_17_20/0.55)] transition-all duration-300 ease-out-expo hover:-translate-y-0.5 hover:bg-black active:scale-[0.97] sm:bottom-6 sm:right-6 sm:px-5"
       >
         {open ? <CloseIcon className="h-6 w-6" /> : <ChatIcon className="h-6 w-6" />}
         <span className="hidden sm:inline">دستیار هوشمند</span>

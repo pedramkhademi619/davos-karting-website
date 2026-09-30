@@ -14,4 +14,3 @@ class SupportAnswer:
     sources: tuple[AnswerSource, ...] = field(default_factory=tuple)
     suggest_ticket: bool = False
     interaction_id: uuid.UUID | None = None
-    from_cache: bool = False

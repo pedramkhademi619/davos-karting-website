@@ -49,14 +49,17 @@ async def test_files_on_disk_become_answerable_with_a_source_and_drafts_never_re
     answer = await _ask(container, "چطور نوبت رزرو کنم؟")
     assert answer.outcome is AnswerOutcome.ANSWERED
     assert [(s.title, s.url) for s in answer.sources] == [("چطور نوبت رزرو کنم؟", "/")]
-    assert "«رزرو نوبت»" in ai_chat.user_prompt
-    assert "دوازده" not in ai_chat.user_prompt, "a draft must never be sent to the model"
+    sent = ai_chat.system_prompt + ai_chat.user_prompt
+    assert "«رزرو نوبت»" in ai_chat.system_prompt
+    assert "دوازده" not in sent, "a draft must never be sent to the model"
     assert "<style>" in ai_chat.system_prompt, "the default style notes are part of the prompt"
 
     ai_chat.reply = "NO_ANSWER"  # what a well-behaved model says when the published text does not cover the question
     declined = await _ask(container, "محدودیت سنی و قد برای رانندگی چقدر است؟")
     assert declined.outcome is AnswerOutcome.INSUFFICIENT_INFORMATION and declined.suggest_ticket
-    assert "دوازده" not in ai_chat.user_prompt, "the draft is not in the prompt even when the whole base is sent"
+    assert "دوازده" not in ai_chat.system_prompt + ai_chat.user_prompt, (
+        "the draft is not in the prompt even when the whole base is sent"
+    )
 
 
 async def test_deleting_a_file_or_turning_it_into_a_draft_takes_it_away_from_the_assistant(
@@ -132,7 +135,7 @@ async def test_a_small_knowledge_base_answers_casual_questions_that_a_keyword_ga
     answer = await _ask(container, "می‌خوام برای آخر هفته یه نوبت بگیرم، از کجا شروع کنم؟")
 
     assert answer.outcome is AnswerOutcome.ANSWERED
-    assert "چطور نوبت رزرو کنم؟" in ai_chat.user_prompt and "ساعت کاری" in ai_chat.user_prompt
+    assert "چطور نوبت رزرو کنم؟" in ai_chat.system_prompt and "ساعت کاری" in ai_chat.system_prompt
 
 
 async def test_the_whole_knowledge_base_is_returned_best_match_first(

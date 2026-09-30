@@ -9,12 +9,16 @@ _MODEL_MODULES = (
     "davos.modules.identity.adapters.persistence.customer_session_model",
     "davos.modules.assistant.adapters.persistence.knowledge_entry_model",
     "davos.modules.assistant.adapters.persistence.assistant_interaction_model",
-    "davos.modules.assistant.adapters.persistence.semantic_cache_entry_model",
     "davos.modules.payments.adapters.persistence.payment_attempt_model",
     "davos.modules.loyalty.adapters.persistence.loyalty_account_model",
     "davos.modules.loyalty.adapters.persistence.points_ledger_entry_model",
     "davos.modules.booking.adapters.persistence.booking_record_model",
     "davos.modules.booking.adapters.persistence.booking_webhook_inbox_model",
+    "davos.modules.reservations.adapters.persistence.reservation_model",
+    "davos.modules.reservations.adapters.persistence.schedule_settings_model",
+    "davos.modules.notifications.adapters.persistence.sms_message_model",
+    "davos.modules.administration.adapters.persistence.admin_user_model",
+    "davos.modules.administration.adapters.persistence.admin_session_model",
 )
 
 

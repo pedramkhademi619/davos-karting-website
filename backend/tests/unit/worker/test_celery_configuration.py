@@ -1,17 +1,18 @@
 import logging
 
+import pytest
 from celery.signals import setup_logging
 
 from davos.platform.observability.sensitive_data_filter import SensitiveDataFilter
-from davos.platform.settings.app_settings import AppSettings
 from davos.worker.celery_app_factory import CeleryAppFactory
 from davos.worker.celery_outbox_dispatcher import CeleryOutboxDispatcher
 from davos.worker.dispatcher_queues import DispatcherQueues
+from tests.fakes.standard_config import example_environment, example_settings
 from tests.support.logging_state import preserved_logging_state
 
 
 def make_app():
-    return CeleryAppFactory.create(AppSettings(_env_file=None))
+    return CeleryAppFactory.create(example_settings())
 
 
 def test_sms_ai_export_and_critical_work_use_separate_queues() -> None:
@@ -31,8 +32,15 @@ def test_the_single_scheduler_owns_exactly_the_periodic_jobs() -> None:
     assert {entry["task"] for entry in schedule.values()} == {
         "davos.outbox.relay",
         "davos.assistant.purge_interactions",
-        "davos.assistant.purge_semantic_cache",
+        "davos.payments.reconcile",
+        "davos.reservations.expire_holds",
+        "davos.notifications.refresh_sms_statuses",
     }
+
+
+def test_open_payments_are_reconciled_every_two_minutes() -> None:
+    schedule = make_app().conf.beat_schedule
+    assert schedule["reconcile-payments"]["schedule"] <= 120
 
 
 def test_events_are_routed_to_the_queue_of_their_concern() -> None:
@@ -52,7 +60,9 @@ def test_worker_logging_uses_the_masking_handler_instead_of_celerys_own() -> Non
         assert any(isinstance(f, SensitiveDataFilter) for f in handlers[0].filters)
 
 
-def test_task_modules_import_without_touching_the_network() -> None:
+def test_task_modules_import_without_touching_the_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name, value in example_environment().items():  # the worker reads its settings on import, as in a container
+        monkeypatch.setenv(name, value)
     import davos.worker.tasks as tasks
 
     assert tasks.handle_event.max_retries == 5

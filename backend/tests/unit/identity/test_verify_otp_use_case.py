@@ -18,7 +18,6 @@ from davos.modules.identity.domain.errors.otp_verification_failed_error import O
 from davos.modules.identity.domain.errors.session_not_found_error import SessionNotFoundError
 from davos.modules.identity.domain.errors.user_blocked_error import UserBlockedError
 from davos.modules.identity.domain.events.user_registered import UserRegistered
-from davos.modules.identity.domain.value_objects.otp_policy import OtpPolicy
 from davos.platform.rate_limiting.in_memory_rate_limiter import InMemoryRateLimiter
 from davos.shared_kernel.domain.errors.rate_limited_error import RateLimitedError
 from tests.fakes.fake_otp_delivery import FakeOtpDelivery
@@ -28,6 +27,7 @@ from tests.fakes.in_memory_otp_challenge_repository import InMemoryOtpChallengeR
 from tests.fakes.in_memory_session_repository import InMemorySessionRepository
 from tests.fakes.in_memory_user_repository import InMemoryUserRepository
 from tests.fakes.sequence_otp_code_generator import SequenceOtpCodeGenerator
+from tests.fakes.standard_config import otp_limits, otp_policy
 
 SECRET = "s" * 40
 MOBILE = "09123456789"
@@ -52,8 +52,8 @@ class Harness:
             delivery=self.delivery,
             rate_limiter=limiter,
             clock=self.clock,
-            policy=OtpPolicy(),
-            limits=limits or OtpRateLimitPolicy(),
+            policy=otp_policy(),
+            limits=limits or otp_limits(),
         )
         self.verify_otp = VerifyOtpUseCase(
             uow=self.uow,
@@ -64,7 +64,7 @@ class Harness:
             tokens=self.tokens,
             rate_limiter=limiter,
             clock=self.clock,
-            limits=limits or OtpRateLimitPolicy(),
+            limits=limits or otp_limits(),
             session_lifetime=timedelta(days=30),
         )
         self.authenticate = AuthenticateSessionUseCase(
@@ -165,7 +165,7 @@ async def test_verifying_without_a_challenge_fails_generically() -> None:
 
 
 async def test_verify_is_rate_limited_per_ip() -> None:
-    h = Harness(limits=OtpRateLimitPolicy(verify_per_ip_limit=2))
+    h = Harness(limits=otp_limits(verify_per_ip_limit=2))
     await h.issue_code()
     for _ in range(2):
         with pytest.raises(OtpVerificationFailedError):

@@ -9,6 +9,7 @@ def create_engine(settings: AppSettings) -> AsyncEngine:
         settings.database_url,
         pool_size=settings.db_pool_size,
         max_overflow=settings.db_max_overflow,
+        pool_timeout=settings.db_pool_timeout_seconds,  # under overload, fail fast instead of queueing for 30 s
         pool_pre_ping=True,
         pool_recycle=1800,
     )

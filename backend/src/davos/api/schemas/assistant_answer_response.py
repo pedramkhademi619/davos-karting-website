@@ -11,4 +11,3 @@ class AssistantAnswerResponse(BaseModel):
     sources: list[AnswerSourceResponse]
     suggest_ticket: bool
     interaction_id: uuid.UUID | None
-    from_cache: bool = False

@@ -25,7 +25,8 @@ class OpenAICompatibleChatAdapter(AIChatPort):
     """Chat Completions client for any OpenAI-compatible provider.
 
     * base URL, key and model come from configuration; nothing provider-specific is hardcoded,
-    * the token-limit parameter name is configurable (``max_tokens`` vs ``max_completion_tokens``),
+    * the token-limit parameter name is configurable (``max_tokens`` vs ``max_completion_tokens``), and a floor for
+      it can be set for reasoning models, whose hidden thinking counts against the same limit,
     * prompts, answers and credentials are never logged, only status and latency,
     * every failure is mapped to a typed port error; raw provider bodies are dropped.
     """
@@ -40,6 +41,7 @@ class OpenAICompatibleChatAdapter(AIChatPort):
         timeout_seconds: float,
         token_limit_param: str = "max_tokens",  # noqa: S107 - JSON field name, not a secret
         send_temperature: bool = True,
+        min_output_tokens: int = 0,
     ) -> None:
         self._url = f"{base_url.rstrip('/')}/chat/completions" if base_url else ""
         self._api_key = api_key
@@ -48,6 +50,7 @@ class OpenAICompatibleChatAdapter(AIChatPort):
         self._timeout = httpx.Timeout(timeout_seconds, connect=min(timeout_seconds, 5.0))
         self._token_limit_param = token_limit_param
         self._send_temperature = send_temperature
+        self._min_output_tokens = min_output_tokens
 
     def __repr__(self) -> str:
         return f"OpenAICompatibleChatAdapter(model={self._model!r}, configured={self.is_configured})"
@@ -63,7 +66,7 @@ class OpenAICompatibleChatAdapter(AIChatPort):
         body: dict[str, object] = {
             "model": self._model,
             "messages": [{"role": m.role.value, "content": m.content} for m in request.messages],
-            self._token_limit_param: request.max_output_tokens,
+            self._token_limit_param: max(request.max_output_tokens, self._min_output_tokens),
         }
         if self._send_temperature:
             body["temperature"] = request.temperature
@@ -107,9 +110,26 @@ class OpenAICompatibleChatAdapter(AIChatPort):
             raise AiProviderProtocolError("AI provider returned an invalid completion") from exc
 
         usage = payload.get("usage") if isinstance(payload, dict) else None
+        cost: float | None = None
         if isinstance(usage, dict) and isinstance(usage.get("prompt_tokens"), int):
-            token_usage = TokenUsage(int(usage["prompt_tokens"]), int(usage.get("completion_tokens", 0) or 0))
+            details = usage.get("prompt_tokens_details")
+            cached = details.get("cached_tokens") if isinstance(details, dict) else None
+            token_usage = TokenUsage(
+                int(usage["prompt_tokens"]),
+                int(usage.get("completion_tokens", 0) or 0),
+                cached if isinstance(cached, int) else 0,
+            )
+            reported = usage.get("cost")
+            cost = float(reported) if isinstance(reported, int | float) and not isinstance(reported, bool) else None
         else:  # provider omitted usage: estimate so budgets still move
             prompt_chars = sum(len(m.content) for m in request.messages)
             token_usage = TokenUsage(prompt_chars // _CHARS_PER_TOKEN, len(text) // _CHARS_PER_TOKEN)
-        return ChatCompletion(text=text, usage=token_usage, model=str(payload.get("model", self._model)))
+        # Counts only, never content: lets the operator see how much of each prompt the provider's cache served.
+        logger.info(
+            "ai_usage model=%s prompt_tokens=%d cached_tokens=%d completion_tokens=%d",
+            self._model,
+            token_usage.prompt_tokens,
+            token_usage.cached_prompt_tokens,
+            token_usage.completion_tokens,
+        )
+        return ChatCompletion(text=text, usage=token_usage, model=str(payload.get("model", self._model)), cost_usd=cost)

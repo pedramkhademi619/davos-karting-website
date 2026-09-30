@@ -28,8 +28,7 @@ class FollowUpDetector:
 
     A heuristic, not understanding: it looks for words that point backwards, a leading "and/so", or a message made
     only of details (a day, a number). A wrong answer is harmless: a follow-up taken for a fresh question merely
-    misses the cache and reaches the model together with the conversation history; the reverse merely builds a
-    longer query.
+    reaches the model together with the conversation history unnecessarily; the reverse merely builds a longer query.
     """
 
     def __init__(self, normalizer: PersianTextNormalizer | None = None) -> None:

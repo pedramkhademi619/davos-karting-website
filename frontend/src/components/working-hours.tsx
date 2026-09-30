@@ -4,9 +4,9 @@ import { site } from "@/content/site";
 export function WorkingHours() {
   return (
     <>
-      {site.contact.hours.map((line) => (
-        <span key={line} className="block">
-          {line}
+      {site.contact.openingHours.map(({ label, text }) => (
+        <span key={label} className="block">
+          {label}: {text}
         </span>
       ))}
     </>

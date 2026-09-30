@@ -1,9 +1,8 @@
-"""Words that change the *answer* while barely changing the *embedding*.
+"""Words that change the *answer* of a question, used to tell a self-contained detail from a real follow-up.
 
-Dense embeddings rate "hours on Thursday" and "hours on Saturday" as near-identical questions, and so are
-"a 12-year-old of 140 cm" and "of 135 cm", "single-seater" and "two-seater", "can" and "cannot". Their answers
-differ, so a cached answer may
-only be reused when the question carries exactly the same words from this list (see ``QuerySignatureBuilder``).
+"Thursday?" or "12 years old?" on their own carry no topic, only a detail that would change an answer given
+next to it; ``FollowUpDetector`` treats a short message made only of these words (and numbers) as a follow-up
+even without a pointer word like "it" or "that".
 
 All entries are in the form produced by ``PersianTextNormalizer`` (Persian letters, ASCII digits, no punctuation).
 """

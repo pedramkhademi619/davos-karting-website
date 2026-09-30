@@ -16,6 +16,9 @@ detector = QuickTopicDetector()
         ("سلام ساعات کاری", QuickTopic.HOURS),
         ("تا چه ساعتی باز هستید؟", QuickTopic.HOURS),
         ("ساعت کاریتون چیه", QuickTopic.HOURS),
+        ("ساعت چند میتونم بیام؟", QuickTopic.HOURS),
+        ("چه ساعتی میتونیم بیایم", QuickTopic.HOURS),
+        ("کی باز هستید؟", QuickTopic.HOURS),
         ("چطور رزرو کنم؟", QuickTopic.BOOKING),
         ("چجوری نوبت بگیرم", QuickTopic.BOOKING),
         ("رزرو", QuickTopic.BOOKING),
@@ -51,6 +54,8 @@ def test_a_plain_question_about_one_topic_is_recognised(text: str, topic: QuickT
         "رزرو برای ۸ نفر",
         "شرایط سوار شدن دونفره چیه",  # not a quick topic
         "ساعت شروع سانس چنده",
+        "بچه ۱۲ ساله ساعت چند میتونه بیاد",  # an age changes the answer
+        "پنجشنبه ساعت چند بیایم",
         "یه پسر ۱۲ ساله میتونه رزرو کنه؟",
         "ساعت کاری " + "خیلی " * 10,  # too long
     ],

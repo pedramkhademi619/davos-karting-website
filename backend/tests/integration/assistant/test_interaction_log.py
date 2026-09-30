@@ -13,9 +13,9 @@ from davos.modules.assistant.application.use_cases.ask_assistant_command import 
 from davos.modules.assistant.application.use_cases.index_knowledge_entry_command import IndexKnowledgeEntryCommand
 from davos.modules.assistant.domain.enums.answer_outcome import AnswerOutcome
 from davos.modules.assistant.domain.enums.knowledge_source_type import KnowledgeSourceType
-from davos.modules.assistant.domain.value_objects.assistant_policy import AssistantPolicy
 from davos.shared_kernel.domain.errors.not_found_error import NotFoundError
 from tests.fakes.scripted_ai_chat import ScriptedAiChat
+from tests.fakes.standard_config import assistant_policy
 
 pytestmark = pytest.mark.integration
 
@@ -48,7 +48,7 @@ async def test_end_to_end_answer_uses_real_retrieval_and_persists_the_interactio
 
     assert answer.outcome is AnswerOutcome.ANSWERED
     assert [s.url for s in answer.sources] == ["/policies/cancellation"]
-    assert "لغو رزرو" in ai_chat.user_prompt  # the retrieved passage, not the whole site, was sent
+    assert "لغو رزرو" in ai_chat.system_prompt  # the small published base rides in the cached system message
     async with engine.connect() as conn:
         row = (await conn.execute(_SELECT_INTERACTION)).one()
     assert row.outcome == "answered" and row.prompt_tokens > 0
@@ -58,7 +58,7 @@ async def test_end_to_end_answer_uses_real_retrieval_and_persists_the_interactio
 async def test_unknown_topic_in_a_large_knowledge_base_is_answered_without_calling_the_model(
     container: ApplicationContainer, ai_chat: ScriptedAiChat
 ) -> None:
-    container._assistant_policy = AssistantPolicy(whole_knowledge_max_entries=0)  # "large": never sent whole
+    container._assistant_policy = assistant_policy(whole_knowledge_max_entries=0)  # "large": never sent whole
     await _seed(container)
     answer = await container.ask_assistant().execute(
         AskAssistantCommand(text="قیمت بیت کوین امروز چند است؟", client_ip="203.0.113.7")

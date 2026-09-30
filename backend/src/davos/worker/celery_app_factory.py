@@ -20,7 +20,9 @@ class CeleryAppFactory:
                 "davos.events.handle": {"queue": DispatcherQueues.CRITICAL},
                 "davos.outbox.relay": {"queue": DispatcherQueues.CRITICAL},
                 "davos.assistant.purge_interactions": {"queue": DispatcherQueues.AI},
-                "davos.assistant.purge_semantic_cache": {"queue": DispatcherQueues.AI},
+                "davos.payments.reconcile": {"queue": DispatcherQueues.CRITICAL},
+                "davos.reservations.expire_holds": {"queue": DispatcherQueues.CRITICAL},
+                "davos.notifications.refresh_sms_statuses": {"queue": DispatcherQueues.SMS},
             },
             # A task is acknowledged only after it finishes, so a crashed worker never loses work.
             task_acks_late=True,
@@ -39,7 +41,9 @@ class CeleryAppFactory:
                     "task": "davos.assistant.purge_interactions",
                     "schedule": 24 * 3600.0,
                 },
-                "purge-semantic-cache": {"task": "davos.assistant.purge_semantic_cache", "schedule": 24 * 3600.0},
+                "reconcile-payments": {"task": "davos.payments.reconcile", "schedule": 120.0},
+                "expire-reservation-holds": {"task": "davos.reservations.expire_holds", "schedule": 60.0},
+                "refresh-sms-statuses": {"task": "davos.notifications.refresh_sms_statuses", "schedule": 300.0},
             },
         )
 
