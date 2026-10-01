@@ -17,7 +17,7 @@ from davos.modules.assistant.domain.value_objects.query_embedding import QueryEm
 # Every vector goes in as text and is cast on the server, so the async driver needs no custom type codec.
 _FIND = text(
     """
-    SELECT id, signature, response, sources,
+    SELECT id, resolved_query, signature, response, sources,
            1 - (embedding <=> CAST(CAST(:embedding AS text) AS vector)) AS similarity
     FROM assistant_answer_cache
     WHERE is_active AND fingerprint = :fingerprint AND embedding_model = :model
@@ -97,6 +97,7 @@ class PgAnswerCache(AnswerCachePort):
         sources = json.loads(raw_sources) if isinstance(raw_sources, str) else raw_sources
         return CacheCandidate(
             entry_id=row["id"],
+            question=row["resolved_query"],
             signature=row["signature"],
             response=row["response"],
             sources=tuple(AnswerSource(title=s["title"], url=s["url"]) for s in sources),

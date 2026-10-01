@@ -44,6 +44,7 @@ class PolicyFactory:
     def answer_cache(settings: AppSettings) -> AnswerCachePolicy:
         return AnswerCachePolicy(
             similarity_threshold=settings.semantic_cache_similarity_threshold,
+            verify_from_similarity=settings.semantic_cache_verify_from_similarity,
             candidate_limit=settings.semantic_cache_candidate_limit,
             max_text_chars=settings.semantic_cache_max_text_chars,
         )

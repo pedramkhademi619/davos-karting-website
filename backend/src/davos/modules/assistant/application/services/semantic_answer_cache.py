@@ -8,11 +8,13 @@ from davos.modules.assistant.application.ports.answer_cache_port import AnswerCa
 from davos.modules.assistant.application.ports.embedding_port import EmbeddingPort
 from davos.modules.assistant.application.ports.embedding_unavailable_error import EmbeddingUnavailableError
 from davos.modules.assistant.application.services.answer_fingerprint import AnswerFingerprint
+from davos.modules.assistant.application.services.question_equivalence_verifier import QuestionEquivalenceVerifier
 from davos.modules.assistant.domain.services.cache_hit_selector import CacheHitSelector
 from davos.modules.assistant.domain.services.cacheable_question_detector import CacheableQuestionDetector
 from davos.modules.assistant.domain.services.query_signature_builder import QuerySignatureBuilder
 from davos.modules.assistant.domain.value_objects.answer_cache_policy import AnswerCachePolicy
 from davos.modules.assistant.domain.value_objects.answer_source import AnswerSource
+from davos.modules.assistant.domain.value_objects.cache_candidate import CacheCandidate
 from davos.modules.assistant.domain.value_objects.cache_probe import CacheProbe
 from davos.modules.assistant.domain.value_objects.cached_answer import CachedAnswer
 from davos.modules.assistant.domain.value_objects.new_cache_entry import NewCacheEntry
@@ -32,9 +34,11 @@ class SemanticAnswerCache:
     error) the question simply goes on to the language model, as if there were no cache.
 
     A stored answer is served only when all of these hold: the question is a general one (CacheableQuestionDetector),
-    the embedding similarity reaches the threshold, both questions have the same signature (same numbers and
-    discriminator words), the answer was written from the same texts, style notes, rules and models (fingerprint) by
-    the same embedding model, and nobody has retired it. Answers that cite the riding rules are never stored.
+    both questions have the same signature (same numbers and discriminator words), the answer was written from the
+    same texts, style notes, rules and models (fingerprint) by the same embedding model, nobody has retired it, and
+    either the questions are near-identical (similarity at the threshold) or they are close (at the lower floor) and
+    the language model confirms that one answer fits both (QuestionEquivalenceVerifier). Answers that cite the
+    riding rules are never stored.
     """
 
     def __init__(
@@ -46,6 +50,7 @@ class SemanticAnswerCache:
         policy: AnswerCachePolicy,
         clock: Clock,
         normalizer: PersianTextNormalizer | None = None,
+        verifier: QuestionEquivalenceVerifier | None = None,
     ) -> None:
         self._embedding = embedding
         self._cache = cache
@@ -56,6 +61,7 @@ class SemanticAnswerCache:
         self._cacheable = CacheableQuestionDetector()
         self._signatures = QuerySignatureBuilder(self._normalizer)
         self._selector = CacheHitSelector()
+        self._verifier = verifier
 
     async def probe(
         self, query: ResolvedQuery, passages: Sequence[RetrievedPassage], persona: str
@@ -92,7 +98,7 @@ class SemanticAnswerCache:
         except Exception as exc:
             logger.warning("answer cache lookup failed: %s", type(exc).__name__)
             return None
-        hit = self._selector.select(candidates, signature=probe.signature, threshold=self._policy.similarity_threshold)
+        hit = await self._choose(candidates, probe)
         if hit is None:
             return None
         try:
@@ -100,6 +106,25 @@ class SemanticAnswerCache:
         except Exception as exc:  # the count is a statistic: the customer still gets the answer
             logger.warning("answer cache hit not recorded: %s", type(exc).__name__)
         return CachedAnswer(entry_id=hit.entry_id, text=hit.response, sources=hit.sources, similarity=hit.similarity)
+
+    async def _choose(self, candidates: Sequence[CacheCandidate], probe: CacheProbe) -> CacheCandidate | None:
+        """A stored answer with the same signature that is near-identical, or, when the model confirms it, close."""
+        matching = self._selector.matching(candidates, signature=probe.signature)
+        if not matching:
+            return None
+        if matching[0].similarity >= self._policy.similarity_threshold:
+            return matching[0]
+        if self._verifier is None:
+            return None
+        close = [c for c in matching if c.similarity >= self._policy.verify_from_similarity]
+        for candidate in close[: self._policy.max_verifications]:
+            try:
+                if await self._verifier.same_question(candidate.question, probe.text):
+                    return candidate
+            except Exception as exc:  # a failing check only means this question is answered by the model
+                logger.warning("answer cache check failed: %s", type(exc).__name__)
+                return None
+        return None
 
     async def store(
         self, probe: CacheProbe, *, query: ResolvedQuery, answer: str, cited: Sequence[RetrievedPassage]

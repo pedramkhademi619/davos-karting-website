@@ -39,6 +39,21 @@ The API **refuses to start** in production when any of these hold: placeholder o
 
 Production: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d`.
 
+## Answer cache model (one download per server)
+
+The assistant's answer cache finds earlier questions with the same meaning using a small embedding model that runs inside each
+API process (no network call at run time). Its files are not in git: fetch them once on every machine that runs the API, from
+the repository root, and the compose file mounts `backend/models` read-only into the API container:
+
+```bash
+backend/.venv/Scripts/python.exe -m davos.tools.fetch_embedding_model backend/models/paraphrase-multilingual-minilm
+```
+
+It downloads three public files (about 124 MB) from pinned commits and refuses any whose SHA-256 differs. Without the folder the
+API starts normally with the cache off and every question goes to the language model. Each API worker process needs about
+310 MB with the model loaded (`API_WORKERS` x that, within `API_MEMORY_LIMIT`). To run offline, copy the folder from another
+machine. Settings: `SEMANTIC_CACHE_*` in `.env.example`; method and measurements: [ASSISTANT_EVALUATION.md](ASSISTANT_EVALUATION.md).
+
 ## Hosts: main site and booking subdomain
 
 One deployment serves two hostnames through the same nginx and web app:

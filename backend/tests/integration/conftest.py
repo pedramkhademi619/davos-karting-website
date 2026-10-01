@@ -22,6 +22,7 @@ from sqlalchemy.pool import NullPool
 
 from davos.composition.application_container import ApplicationContainer
 from davos.modules.assistant.adapters.budget.in_memory_ai_budget import InMemoryAiBudget
+from davos.modules.assistant.application.ports.embedding_port import EmbeddingPort
 from davos.modules.notifications.adapters.sms.recording_sms_gateway import RecordingSmsGateway
 from davos.platform.persistence.base import Base
 from davos.platform.persistence.model_registry import register_all_models
@@ -78,6 +79,8 @@ def test_settings() -> AppSettings:
         booking_integration_enabled=True,
         booking_webhook_secret=BOOKING_SECRET,
         assistant_questions_per_ip_per_hour=30,  # small, so the limit test stays quick
+        semantic_cache_enabled=False,  # the answer cache is on only in the tests that give the container an embedding
+        semantic_cache_verify_with_model=False,  # and its model check only where a test asks for it
     )
 
 
@@ -126,6 +129,12 @@ def quotes() -> FixedOrderQuotes:
 
 
 @pytest.fixture
+def embedding() -> EmbeddingPort | None:
+    """The answer cache's embedding model: none (cache off) unless a test module overrides this fixture."""
+    return None
+
+
+@pytest.fixture
 def container(
     test_settings: AppSettings,
     engine: AsyncEngine,
@@ -134,6 +143,7 @@ def container(
     ai_chat: ScriptedAiChat,
     gateway: ScriptedPaymentGateway,
     quotes: FixedOrderQuotes,
+    embedding: EmbeddingPort | None,
 ) -> ApplicationContainer:
     return ApplicationContainer(
         settings=test_settings,
@@ -146,4 +156,5 @@ def container(
         ai_budget=InMemoryAiBudget(daily_limit=1_000_000, clock=clock),
         payment_gateway=gateway,
         order_quotes=quotes,
+        embedding=embedding,
     )

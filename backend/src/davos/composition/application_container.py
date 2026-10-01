@@ -45,6 +45,7 @@ from davos.modules.assistant.application.ports.conversation_context_port import 
 from davos.modules.assistant.application.ports.embedding_port import EmbeddingPort
 from davos.modules.assistant.application.services.answer_fingerprint import AnswerFingerprint
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
+from davos.modules.assistant.application.services.question_equivalence_verifier import QuestionEquivalenceVerifier
 from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
 from davos.modules.assistant.application.use_cases.ask_assistant_use_case import AskAssistantUseCase
 from davos.modules.assistant.application.use_cases.index_knowledge_entry_use_case import IndexKnowledgeEntryUseCase
@@ -294,6 +295,17 @@ class ApplicationContainer:
             policy=PolicyFactory.answer_cache(settings),
             clock=self.clock,
             normalizer=self._normalizer,
+            verifier=self._build_verifier(),
+        )
+
+    def _build_verifier(self) -> QuestionEquivalenceVerifier | None:
+        """The model's check of near-identical questions; off when switched off or when no model is configured."""
+        if not self.settings.semantic_cache_verify_with_model or isinstance(self.ai_chat, DisabledAiChat):
+            return None
+        return QuestionEquivalenceVerifier(
+            chat=self.ai_chat,
+            budget=self.ai_budget,
+            timeout_seconds=self.settings.semantic_cache_verify_timeout_seconds,
         )
 
     async def warm_up_answer_cache(self) -> None:

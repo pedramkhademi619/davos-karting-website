@@ -11,6 +11,7 @@ class CacheCandidate:
     """A stored answer close to a new question, before the safety rules decide whether it may be served."""
 
     entry_id: uuid.UUID
+    question: str  # the normalised question this answer was written for
     signature: str
     response: str
     sources: tuple[AnswerSource, ...]

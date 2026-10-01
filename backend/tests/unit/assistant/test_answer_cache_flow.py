@@ -5,7 +5,9 @@ from __future__ import annotations
 import uuid
 
 from davos.modules.assistant.adapters.budget.in_memory_ai_budget import InMemoryAiBudget
+from davos.modules.assistant.application.ports.ai_provider_unavailable_error import AiProviderUnavailableError
 from davos.modules.assistant.application.services.answer_fingerprint import AnswerFingerprint
+from davos.modules.assistant.application.services.question_equivalence_verifier import QuestionEquivalenceVerifier
 from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
 from davos.modules.assistant.application.use_cases.ask_assistant_command import AskAssistantCommand
 from davos.modules.assistant.application.use_cases.ask_assistant_use_case import AskAssistantUseCase
@@ -14,7 +16,7 @@ from davos.modules.assistant.domain.enums.answer_outcome import AnswerOutcome
 from davos.modules.assistant.domain.enums.knowledge_source_type import KnowledgeSourceType
 from davos.modules.assistant.domain.value_objects.answer_cache_policy import AnswerCachePolicy
 from davos.platform.rate_limiting.in_memory_rate_limiter import InMemoryRateLimiter
-from tests.fakes.concept_embedding import ConceptEmbedding
+from tests.fakes.concept_embedding import BLUR_WORD, ConceptEmbedding
 from tests.fakes.fixed_clock import FixedClock
 from tests.fakes.in_memory_answer_cache import InMemoryAnswerCache
 from tests.fakes.passages import passage
@@ -44,7 +46,13 @@ class _Facts:
 class World:
     """One shared store and embedding model; ``ask`` builds the use case anew so a test can change what it reads."""
 
-    def __init__(self, *, cache_fails: bool = False, embedding: ConceptEmbedding | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        cache_fails: bool = False,
+        embedding: ConceptEmbedding | None = None,
+        verifier_says: str | BaseException | list[str | BaseException] | None = None,
+    ) -> None:
         self.clock = FixedClock()
         self.embedding = embedding or ConceptEmbedding()
         self.store = InMemoryAnswerCache(fail=cache_fails)
@@ -53,13 +61,28 @@ class World:
         self.passages = [service_passage()]
         self.persona = "لحن گرم"
         self.facts = _Facts()
+        # the model's check of close questions; absent unless a test gives it an answer
+        script = verifier_says if isinstance(verifier_says, list) else [verifier_says or ""]
+        self.verifier_chat = ScriptedAiChat(script[0], then=script[1:])
+        verifier = (
+            None
+            if verifier_says is None
+            else QuestionEquivalenceVerifier(
+                chat=self.verifier_chat,
+                budget=InMemoryAiBudget(daily_limit=1_000_000, clock=self.clock),
+                timeout_seconds=2.0,
+            )
+        )
         self.cache = SemanticAnswerCache(
             embedding=self.embedding,
             cache=self.store,
             fingerprint=AnswerFingerprint(
                 rules_version="r1", answer_models="m", embedding_model="concept-test-embedding"
             ),
-            policy=AnswerCachePolicy(similarity_threshold=0.9, candidate_limit=8, max_text_chars=400),
+            policy=AnswerCachePolicy(
+                similarity_threshold=0.9, verify_from_similarity=0.6, candidate_limit=8, max_text_chars=400
+            ),
+            verifier=verifier,
             clock=self.clock,
         )
 
@@ -215,3 +238,51 @@ async def test_a_vote_about_an_unknown_answer_is_still_not_found() -> None:
     except NotFoundError:
         return
     raise AssertionError("expected NotFoundError")
+
+
+# --- close, but not identical, questions: the language model's check decides ---------------------------------------
+CLOSE = f"{BLUR_WORD} پرداخت با چه درگاهیه؟"  # similarity 0.86 to PAYMENT: above the floor, below the threshold
+
+
+async def test_a_close_question_is_served_when_the_model_confirms_it_means_the_same() -> None:
+    world = World(verifier_says="YES")
+    await world.ask(PAYMENT)
+    answer = await world.ask(CLOSE)
+    assert answer.from_cache and world.chat.calls == 1
+    assert world.verifier_chat.calls == 2, "asked in both directions"
+
+
+async def test_a_close_question_is_answered_by_the_model_when_the_check_says_no() -> None:
+    world = World(verifier_says="NO")
+    await world.ask(PAYMENT)
+    answer = await world.ask(CLOSE)
+    assert not answer.from_cache and world.chat.calls == 2
+
+
+async def test_both_directions_must_agree() -> None:
+    world = World(verifier_says=["YES", "NO"])  # the first direction agrees, the second does not
+    await world.ask(PAYMENT)
+    answer = await world.ask(CLOSE)
+    assert not answer.from_cache and world.chat.calls == 2
+
+
+async def test_a_failing_check_only_sends_the_question_to_the_model() -> None:
+    world = World(verifier_says=AiProviderUnavailableError("down"))
+    await world.ask(PAYMENT)
+    answer = await world.ask(CLOSE)
+    assert answer.outcome is AnswerOutcome.ANSWERED and not answer.from_cache and world.chat.calls == 2
+
+
+async def test_without_the_check_a_close_question_is_never_served() -> None:
+    world = World()  # no verifier
+    await world.ask(PAYMENT)
+    answer = await world.ask(CLOSE)
+    assert not answer.from_cache and world.chat.calls == 2
+
+
+async def test_the_check_is_not_asked_below_the_floor_or_when_the_signature_differs() -> None:
+    world = World(verifier_says="YES")
+    await world.ask(PAYMENT)
+    await world.ask("باشگاه مشتریان فعاله؟")  # another topic: similarity 0
+    await world.ask(f"{BLUR_WORD} پرداخت تلفنی چطوریه؟")  # close, but "by phone" is not what was stored
+    assert world.verifier_chat.calls == 0

@@ -122,6 +122,11 @@ class AppSettings(BaseSettings):
     # backend/models). Empty or missing files = the cache stays off and every question goes to the language model.
     semantic_cache_model_dir: str
     semantic_cache_similarity_threshold: float  # cosine similarity of the two questions, measured, not guessed
+    # The model's check: a stored answer a little less similar than the threshold is served when the configured
+    # language model confirms that one answer fits both questions (a tiny request, a second or less).
+    semantic_cache_verify_with_model: bool
+    semantic_cache_verify_from_similarity: float
+    semantic_cache_verify_timeout_seconds: float  # a check that takes longer counts as no
     semantic_cache_candidate_limit: int  # nearest stored answers checked per question
     semantic_cache_max_text_chars: int  # a question is embedded up to this length
     semantic_cache_threads: int  # CPU threads the embedding model uses in each API process

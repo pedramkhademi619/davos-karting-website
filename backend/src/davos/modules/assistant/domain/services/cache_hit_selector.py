@@ -6,14 +6,9 @@ from davos.modules.assistant.domain.value_objects.cache_candidate import CacheCa
 
 
 class CacheHitSelector:
-    """Chooses which stored answer, if any, may serve a question.
+    """Which stored answers may be considered for a question: the ones with the same signature (the same numbers and
+    deciding words), the most similar first. Whether one of them is similar enough is the cache's decision."""
 
-    A candidate qualifies only when it is similar enough *and* carries the same signature (the same numbers and the
-    same discriminator words); among those the most similar wins.
-    """
-
-    def select(
-        self, candidates: Sequence[CacheCandidate], *, signature: str, threshold: float
-    ) -> CacheCandidate | None:
-        eligible = [c for c in candidates if c.signature == signature and c.similarity >= threshold]
-        return max(eligible, key=lambda candidate: candidate.similarity, default=None)
+    def matching(self, candidates: Sequence[CacheCandidate], *, signature: str) -> list[CacheCandidate]:
+        same = [c for c in candidates if c.signature == signature]
+        return sorted(same, key=lambda candidate: candidate.similarity, reverse=True)

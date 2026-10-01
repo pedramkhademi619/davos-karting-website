@@ -35,6 +35,7 @@ class InMemoryAnswerCache(AnswerCachePort):
         found = [
             CacheCandidate(
                 entry_id=stored.entry.entry_id,
+                question=stored.entry.resolved_query,
                 signature=stored.entry.signature,
                 response=stored.entry.response,
                 sources=stored.entry.sources,

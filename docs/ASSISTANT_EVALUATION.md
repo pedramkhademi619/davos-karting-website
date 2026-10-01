@@ -57,6 +57,32 @@ uses today (every published entry is sent), so the trigram search is not what is
   ignoring an injected fake price while quoting the real one is correct. The one real fault: advice about clothing that
   is only in a draft entry.
 
+## Answer cache (2026-10-01, branch `feature/semantic-cache`)
+
+`python -m davos.tools.evaluate_answer_cache [--verify]` runs the cache's own rules on `backend/evals/assistant/cache_pairs.jsonl`:
+25 pairs of one question in two wordings, 36 look-alike pairs with different answers (online/by phone, regular/holiday,
+cancel/book, minimum/maximum age, cash/instalments, hour/day, ...) and 6 pairs that must never be cached. It uses the real
+embedding model and, with `--verify`, the real check by `gemma-3-27b-it`; a few cents.
+
+* **Embedding similarity cannot separate them.** Paraphrases scored 0.23-0.95 and look-alikes 0.47-0.97 (cancel vs
+  book fee 0.83, "active?" vs "what is it?" 0.91, minimum vs maximum age 0.97). At the threshold with no false hit, only 1
+  of 25 paraphrases was served; after a stricter rule, 0. A first version of this cache (threshold 0.94) would have served
+  "cash" for "instalments" (0.947) and "maximum age" for "minimum age" (0.968).
+* **A check by the model, comparing the two questions, does.** Asked in both directions and required to agree, it rejected
+  all 36 look-alikes (12 of which no other rule stopped, 16 after the second round of harder pairs) and confirmed 11 of 25
+  paraphrases at floor 0.50 (16 at 0.40), at about 0.8 s. Comparing the *stored answer* with the new question was worse
+  (6 false yes of 42: a holiday-price question accepted the normal-price reply), so that variant was not used.
+* **Chosen settings:** threshold 0.99 (served without a check only above every look-alike seen), check from 0.50, check
+  timeout 5 s. The 0.99 level was found by the second round of look-alikes; the first round alone suggested 0.94.
+* **Live, local stack (gemma, 4 API workers):** a first question 4.9 s; the same words again 0.02 s; another wording of
+  the same meaning 1.1 s from the cache; "by phone" asked after "online" was answered by the model, not reused; a question
+  with an age, day and hour never cached. Memory: 307 MB per API worker with the model loaded (1.29 GB for four).
+* **Not proven:** 36 look-alike pairs with 0 false yes bounds the check's false-yes rate only to roughly 8 % (95 %), and the
+  pairs are one person's reading of what counts as "the same answer"; the check is gemma judging gemma's domain. The
+  other rules (general question, signature, fingerprint, no policy answers) and the "not helpful" vote are the safety net.
+  Set `SEMANTIC_CACHE_VERIFY_WITH_MODEL=false` to keep only near-identical text (threshold 0.99), or
+  `SEMANTIC_CACHE_ENABLED=false` for no cache.
+
 ## Results
 
 To be filled from `backend/evals/assistant/reports/` once gemma-3-27b-it has been evaluated and tuned. Known issue to

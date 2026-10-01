@@ -26,7 +26,9 @@ flowchart TD
   ALL --> CK
   G -- none, and no rule check --> R2[insufficient information + contact page<br/>NO model call]
   G --> CK[add computed passages last:<br/>live settings + rule checks for<br/>ages, height, day, hour, weights, group]
-  CK --> B{daily token budget<br/>reserve}
+  CK --> AC{answer cache: general question,<br/>stored answer with same signature<br/>and fingerprint?}
+  AC -- near-identical, or close and the model<br/>confirms one answer fits both --> HIT[stored answer<br/>NO answering call]
+  AC -- no --> B{daily token budget<br/>reserve}
   B -- exhausted --> F1[fallback: related links + contact page]
   B --> M[model call: main model, backup model on failure<br/>timeout, bulkhead, circuit breaker per model]
   M -- both fail --> F2[fallback: related links + contact page]
@@ -40,9 +42,33 @@ flowchart TD
   A -. in the background .-> CS[(remember the turn)]
 ```
 
-A local semantic answer cache (sentence-transformer embeddings + pgvector) was tried and removed 2026-09-23: the embedding
-model competed for CPU/RAM with the rest of the process and degraded ordinary answers. Its code is kept on the
-`feature/semantic-cache` git branch for reference, not on `main`. The conversation memory and the intent reset stay.
+## Answer cache (branch `feature/semantic-cache`)
+
+A general question that means the same as one answered before is answered from the stored answer: no answering call
+(about 3,500 tokens and 4-10 s with gemma-3-27b-it), and 0.02 s when the words are identical or about 1 s when a check by
+the model is needed. A first version (a 1.1 GB sentence-transformer inside the API) was removed 2026-09-23 because it
+starved the rest of the process; this one uses a 113 MB int8 ONNX model (paraphrase-multilingual-MiniLM-L12-v2, plus a 5 MB
+SentencePiece tokenizer, fetched once with `python -m davos.tools.fetch_embedding_model` and SHA-256 pinned), about 4 ms and
+about 200 MB per API worker process. Everything runs on this machine; the only remote call is the language model's.
+
+An embedding model measures topic, not detail, so similarity alone never decides (measured: paraphrases score 0.23-0.95,
+look-alike questions with a different answer 0.47-0.97, so no threshold separates them). A stored answer is served only when
+all of these hold:
+
+| Rule | Why |
+| --- | --- |
+| the question is a **general** one: no age, height, weekday, hour, weight, group size, "today", no follow-up or fragment, no personal data (`CacheableQuestionDetector`) | those are what an embedding ignores and what the answer depends on |
+| the stored question has the same **signature**: the same numbers and deciding words such as online/phone, regular/holiday, single/two-seater, child/adult, negations (`QuerySignatureBuilder`) | "online" and "by phone" are one embedding apart |
+| the answer was written from the same **fingerprint**: fixed rules, answering models, style notes, embedding model, and every passage it was written from, including the live admin prices (`AnswerFingerprint`) | editing a text or a price in the admin panel stops every older answer at once |
+| similarity at the **threshold** (0.99, practically the same text), or between the **floor** (0.50) and the threshold only when the configured model confirms that one answer fits both questions, asked in both directions, one word each (`QuestionEquivalenceVerifier`, about 0.8 s, two tiny requests) | the check rejected every look-alike in the evaluation; a failure, timeout, refused budget or disagreement means no |
+| the answer does not cite the riding rules (`policy` sources) | a wrong "yes" to a safety rule would be repeated to everybody |
+| nobody retired the entry: a customer's "not helpful" vote on a cached answer (or on the answer that was stored) deactivates it | the safety valve for the cases the rules miss |
+
+Answers are kept in PostgreSQL (`assistant_answer_cache`, pgvector, exact nearest-neighbour search inside one fingerprint)
+until retired; an answer whose fingerprint no longer matches is simply never found. Any failure (model not loaded,
+database down) sends the question on to the language model. `assistant_interactions.served_from_cache` and `cache_entry_id`
+give the hit ratio. Not done: an admin screen to review and retire stored answers (the data supports it).
+Measurement and numbers: [ASSISTANT_EVALUATION.md](ASSISTANT_EVALUATION.md). The conversation memory and the intent reset stay.
 
 ## Rule checks and live settings (numbers are compared by code, not by the model)
 

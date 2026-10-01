@@ -49,7 +49,7 @@ services:
       retries: 3
     networks: [edge]
     restart: unless-stopped
-    mem_limit: 256m  # includes the tmpfs page caches
+    mem_limit: ${PROXY_MEMORY_LIMIT:?set PROXY_MEMORY_LIMIT in .env}  # includes the tmpfs page caches
     <<: *hardening
 
   frontend:
@@ -74,7 +74,7 @@ services:
       replicas: ${FRONTEND_REPLICAS:?set FRONTEND_REPLICAS in .env}
     networks: [edge]
     restart: unless-stopped
-    mem_limit: 384m
+    mem_limit: ${FRONTEND_MEMORY_LIMIT:?set FRONTEND_MEMORY_LIMIT in .env}
 
   api:
     <<: [*backend-image, *hardening, *app-env-file]
@@ -91,9 +91,12 @@ services:
       # Owner-editable assistant content (see backend/knowledge/README.md); mounted read-only from the host below.
       ASSISTANT_PERSONA_FILE: /app/prompts/assistant_persona.txt
       ASSISTANT_KNOWLEDGE_DIR: /app/knowledge
+      # The answer cache's embedding model (fetch it once: see .env.example), mounted read-only below.
+      SEMANTIC_CACHE_MODEL_DIR: /app/models/paraphrase-multilingual-minilm
     volumes:
       - ./backend/prompts:/app/prompts:ro
       - ./backend/knowledge:/app/knowledge:ro
+      - ./backend/models:/app/models:ro
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -101,7 +104,7 @@ services:
         condition: service_healthy
     networks: [edge, backend]
     restart: unless-stopped
-    mem_limit: 1g
+    mem_limit: ${API_MEMORY_LIMIT:?set API_MEMORY_LIMIT in .env}
     stop_grace_period: 30s
 
   # One-shot, explicit migration job: replicas never migrate on their own start-up.
@@ -136,7 +139,7 @@ services:
       retries: 3
     networks: [backend]
     restart: unless-stopped
-    mem_limit: 512m
+    mem_limit: ${WORKER_MEMORY_LIMIT:?set WORKER_MEMORY_LIMIT in .env}
     stop_grace_period: 60s
 
   # Exactly one scheduler: never scale this service (duplicate beat processes duplicate scheduled jobs).
@@ -154,7 +157,7 @@ services:
       replicas: 1
     networks: [backend]
     restart: unless-stopped
-    mem_limit: 128m
+    mem_limit: ${SCHEDULER_MEMORY_LIMIT:?set SCHEDULER_MEMORY_LIMIT in .env}
 
   postgres:
     # postgres:16.4-alpine plus the pgvector extension (see postgres/Dockerfile). Same base image and libc as before, so
@@ -174,7 +177,7 @@ services:
       retries: 10
     networks: [backend]
     restart: unless-stopped
-    mem_limit: 512m
+    mem_limit: ${POSTGRES_MEMORY_LIMIT:?set POSTGRES_MEMORY_LIMIT in .env}
     stop_grace_period: 30s
 
   redis:
@@ -191,7 +194,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     networks: [backend]
     restart: unless-stopped
-    mem_limit: 256m
+    mem_limit: ${REDIS_MEMORY_LIMIT:?set REDIS_MEMORY_LIMIT in .env}
 
   minio:
     image: quay.io/minio/minio:RELEASE.2024-10-13T13-34-11Z  # Docker Hub no longer hosts MinIO images
@@ -208,7 +211,7 @@ services:
       retries: 5
     networks: [backend]
     restart: unless-stopped
-    mem_limit: 512m
+    mem_limit: ${MINIO_MEMORY_LIMIT:?set MINIO_MEMORY_LIMIT in .env}
 
 networks:
   edge: {}
