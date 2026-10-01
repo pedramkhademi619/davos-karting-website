@@ -33,4 +33,13 @@ NEGATIONS = word_set(
 QUALIFIERS = word_set("گواهینامه تجربه لباس وزن قد سن مجموع")
 UNITS = word_set("ساله سال سانت سانتی متر کیلو کیلوگرم گرم")  # they travel with numbers ("12 ساله", "140 سانت")
 
+# How something is done: "book online" and "book by phone" are one embedding apart and have different answers.
+# Only the adjective forms: "تلفن" alone is a noun ("the phone number"), not a way of booking.
+CHANNELS = word_set("آنلاین تلفنی حضوری")
+# Words that mean the same for the answer cache; the signature compares the first, so "اینترنتی" and "آنلاین" match.
+CHANNEL_SYNONYMS = {"اینترنتی": "آنلاین", "online": "آنلاین", "کودک": "بچه", "کودکان": "بچه"}
+
 DISCRIMINATOR_WORDS = NUMBER_WORDS | WEEKDAYS | DAY_KINDS | VEHICLES | PEOPLE | NEGATIONS | QUALIFIERS | UNITS
+# What the answer cache compares on top of the similarity of two questions (a superset: the follow-up detector
+# keeps using DISCRIMINATOR_WORDS, so a message made only of a channel word is not taken for a follow-up).
+CACHE_DISTINCTIONS = DISCRIMINATOR_WORDS | CHANNELS

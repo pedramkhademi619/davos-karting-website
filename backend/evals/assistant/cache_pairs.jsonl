@@ -1,0 +1,59 @@
+# Question pairs for the answer cache (format: davos/tools/cache_eval/cache_pair_loader.py; run:
+# python -m davos.tools.evaluate_answer_cache). "same": two ways of asking one question, the stored answer of one is
+# right for the other. "different": similar wording but a different answer, so one must never be served for the other.
+# The pairs are general questions on purpose: anything with an age, a weekday, an hour, a weight or a group size is
+# never cached (CacheableQuestionDetector), and the evaluation checks that too ("uncacheable").
+# --- same meaning, different words ---------------------------------------------------------------------------------
+{"id": "same-01", "kind": "same", "a": "قیمت هاتون چطوریه؟", "b": "قیمتتون چیه؟"}
+{"id": "same-02", "kind": "same", "a": "قیمتا چنده؟", "b": "هزینه سانس ها چقدره؟"}
+{"id": "same-03", "kind": "same", "a": "نرخ سانس ها چنده", "b": "قیمت هر سانس چقدره"}
+{"id": "same-04", "kind": "same", "a": "ساعت کاریتون چیه؟", "b": "تا کی بازید؟"}
+{"id": "same-05", "kind": "same", "a": "چطوری آنلاین نوبت بگیرم؟", "b": "چجوری میشه اینترنتی رزرو کرد؟"}
+{"id": "same-06", "kind": "same", "a": "میتونم رزروم رو کنسل کنم؟", "b": "لغو رزرو امکانش هست؟"}
+{"id": "same-07", "kind": "same", "a": "باشگاه مشتریان فعاله؟", "b": "میشه عضو باشگاه شد؟"}
+{"id": "same-08", "kind": "same", "a": "پرداخت با چه درگاهیه؟", "b": "با چه بانکی پول بدم؟"}
+{"id": "same-09", "kind": "same", "a": "بعد از انتخاب سانس چقدر وقت دارم پول بدم؟", "b": "چند دقیقه فرصت دارم برای پرداخت؟"}
+{"id": "same-10", "kind": "same", "a": "بعد از پرداخت کد رزرو کجا میاد؟", "b": "کد رزرو رو از کجا بگیرم؟"}
+{"id": "same-11", "kind": "same", "a": "تو هر سانس چند نفر میتونن سوار بشن؟", "b": "ظرفیت هر سانس چنده؟"}
+{"id": "same-12", "kind": "same", "a": "چند تا ماشین دارید؟", "b": "تعداد خودروها چنده؟"}
+{"id": "same-13", "kind": "same", "a": "شماره تلفن برای رزرو چنده؟", "b": "با چه شماره ای میتونم برای رزرو تماس بگیرم؟"}
+{"id": "same-14", "kind": "same", "a": "برای فردا میشه رزرو کرد؟", "b": "فردا نوبت دارید؟"}
+{"id": "same-15", "kind": "same", "a": "How much does it cost?", "b": "What are your prices?"}
+{"id": "same-16", "kind": "same", "a": "What time do you open?", "b": "What are your opening hours?"}
+{"id": "same-17", "kind": "same", "a": "How can I book?", "b": "How do I make a reservation?"}
+{"id": "same-18", "kind": "same", "a": "آدرس پیست کجاست؟", "b": "کجا هستید؟"}
+{"id": "same-19", "kind": "same", "a": "باشگاه مشتریان چیه؟", "b": "باشگاه داوس چه امکاناتی داره؟"}
+{"id": "same-20", "kind": "same", "a": "از چه درگاهی پرداخت میشه؟", "b": "درگاه پرداختتون کدومه؟"}
+{"id": "same-21", "kind": "same", "a": "آیا رزرو تلفنی هم دارید؟", "b": "میشه تلفنی نوبت گرفت؟"}
+{"id": "same-22", "kind": "same", "a": "لغو رزرو چطوریه؟", "b": "چطوری رزروم رو لغو کنم؟"}
+{"id": "same-23", "kind": "same", "a": "سلام، ببخشید قیمت هر خودرو چقدر میشه؟", "b": "هزینه هر ماشین چقدره؟"}
+{"id": "same-24", "kind": "same", "a": "آیا امکان رزرو آنلاین وجود دارد؟", "b": "از سایت هم میشه رزرو کرد؟"}
+{"id": "same-25", "kind": "same", "a": "چقدر باید پول بدم؟", "b": "قیمت چقدره؟"}
+# --- similar wording, different answer: must never share a stored answer -------------------------------------------
+{"id": "diff-01", "kind": "different", "a": "قیمت تک نفره روز عادی چنده؟", "b": "قیمت تک نفره روز تعطیل چنده؟"}
+{"id": "diff-02", "kind": "different", "a": "قیمت تک نفره چنده؟", "b": "قیمت دونفره چنده؟"}
+{"id": "diff-03", "kind": "different", "a": "رزرو آنلاین چطوریه؟", "b": "رزرو تلفنی چطوریه؟"}
+{"id": "diff-04", "kind": "different", "a": "آیا آنلاین میشه پرداخت کرد؟", "b": "آیا تلفنی میشه پرداخت کرد؟"}
+{"id": "diff-05", "kind": "different", "a": "بچه ها هم میتونن سوار بشن؟", "b": "بزرگسالها هم میتونن سوار بشن؟"}
+{"id": "diff-06", "kind": "different", "a": "میشه رزرو کرد؟", "b": "نمیشه رزرو کرد؟"}
+{"id": "diff-07", "kind": "different", "a": "هزینه لغو رزرو چقدره؟", "b": "هزینه رزرو چقدره؟"}
+{"id": "diff-08", "kind": "different", "a": "مدت نگه داشتن سانس برای پرداخت چقدره؟", "b": "مدت هر سانس چقدره؟"}
+{"id": "diff-09", "kind": "different", "a": "در هر سانس چند نفر جا دارد؟", "b": "در هر روز چند سانس داریم؟"}
+{"id": "diff-10", "kind": "different", "a": "باشگاه مشتریان فعاله؟", "b": "باشگاه مشتریان چیه؟"}
+{"id": "diff-11", "kind": "different", "a": "قیمت سانس چنده؟", "b": "مدت سانس چنده؟"}
+{"id": "diff-12", "kind": "different", "a": "شماره تلفن رزرو چنده؟", "b": "شماره رزرو من چیه؟"}
+{"id": "diff-13", "kind": "different", "a": "کد رزرو کجا میاد؟", "b": "کد تایید ورود کجا میاد؟"}
+{"id": "diff-14", "kind": "different", "a": "پرداخت چطوریه؟", "b": "برگشت پول چطوریه؟"}
+{"id": "diff-15", "kind": "different", "a": "اگر پرداخت موفق باشه چی میشه؟", "b": "اگر پرداخت ناموفق باشه چی میشه؟"}
+{"id": "diff-16", "kind": "different", "a": "رزرو آنلاین باز است؟", "b": "رزرو آنلاین بسته است؟"}
+{"id": "diff-17", "kind": "different", "a": "Can I book online?", "b": "Can I book by phone?"}
+{"id": "diff-18", "kind": "different", "a": "قیمت خودرو چقدره؟", "b": "قیمت لباس مناسب چقدره؟"}
+{"id": "diff-19", "kind": "different", "a": "ساعت شروع اولین سانس چنده؟", "b": "ساعت پایان آخرین سانس چنده؟"}
+{"id": "diff-20", "kind": "different", "a": "برای فردا میشه رزرو کرد؟", "b": "برای امروز میشه رزرو کرد؟"}
+# --- never cached, whatever the model thinks -------------------------------------------------------------------------
+{"id": "skip-01", "kind": "uncacheable", "a": "پسرم ۱۲ سالشه میتونه سوار بشه؟", "b": "پسرم ۱۳ سالشه میتونه سوار بشه؟"}
+{"id": "skip-02", "kind": "uncacheable", "a": "شنبه ساعت ۵ میتونم بیام؟", "b": "شنبه ساعت ۷ میتونم بیام؟"}
+{"id": "skip-03", "kind": "uncacheable", "a": "۹ نفر بزرگسالیم چند سانس لازمه؟", "b": "۱۰ نفر بزرگسالیم چند سانس لازمه؟"}
+{"id": "skip-04", "kind": "uncacheable", "a": "قدش ۱۴۵ ـه چی؟", "b": "و برای روز تعطیل؟"}
+{"id": "skip-05", "kind": "uncacheable", "a": "دو تا خانم ۶۵ کیلو هستیم دونفره میشه؟", "b": "دو تا خانم ۷۵ کیلو هستیم دونفره میشه؟"}
+{"id": "skip-06", "kind": "uncacheable", "a": "امروز میشه رزرو کرد؟", "b": "شماره من 09123456789 است، رزرو دارم؟"}

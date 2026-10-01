@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -98,9 +99,13 @@ def create_app(settings: AppSettings, container: ApplicationContainer | None = N
         owned = container is None
         app.state.container = container or ApplicationContainer.build(settings)
         await _run_startup_work(app.state.container)
+        # Every worker process loads the embedding model itself, in the background: the API answers at once and the
+        # first cached lookup does not pay the second the model takes to load.
+        app.state.warm_up = asyncio.create_task(app.state.container.warm_up_answer_cache())
         try:
             yield
         finally:
+            app.state.warm_up.cancel()
             if owned:
                 await app.state.container.aclose()
 

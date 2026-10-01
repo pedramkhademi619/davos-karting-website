@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 from davos.modules.administration.domain.value_objects.admin_security_policy import AdminSecurityPolicy
+from davos.modules.assistant.domain.value_objects.answer_cache_policy import AnswerCachePolicy
 from davos.modules.assistant.domain.value_objects.assistant_policy import AssistantPolicy
 from davos.modules.identity.application.use_cases.otp_rate_limit_policy import OtpRateLimitPolicy
 from davos.modules.identity.domain.value_objects.otp_policy import OtpPolicy
@@ -37,6 +38,14 @@ class PolicyFactory:
             lockout=timedelta(minutes=settings.admin_lockout_minutes),
             idle_timeout=timedelta(minutes=settings.admin_idle_timeout_minutes),
             logins_per_ip_per_15_minutes=settings.admin_logins_per_ip_per_15_minutes,
+        )
+
+    @staticmethod
+    def answer_cache(settings: AppSettings) -> AnswerCachePolicy:
+        return AnswerCachePolicy(
+            similarity_threshold=settings.semantic_cache_similarity_threshold,
+            candidate_limit=settings.semantic_cache_candidate_limit,
+            max_text_chars=settings.semantic_cache_max_text_chars,
         )
 
     @staticmethod

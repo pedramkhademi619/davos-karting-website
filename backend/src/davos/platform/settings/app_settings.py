@@ -115,6 +115,16 @@ class AppSettings(BaseSettings):
     # Short follow-up memory ("و برای پنجشنبه؟"), kept in Redis.
     conversation_context_turns: int
     conversation_context_ttl_seconds: int
+    # Answer cache: a general question that means the same as one answered before is answered from the stored answer,
+    # found by meaning with a small embedding model on this machine (docs/ASSISTANT_EVALUATION.md).
+    semantic_cache_enabled: bool
+    # Folder made by `python -m davos.tools.fetch_embedding_model` (docker-compose.yml sets the API's to the mounted
+    # backend/models). Empty or missing files = the cache stays off and every question goes to the language model.
+    semantic_cache_model_dir: str
+    semantic_cache_similarity_threshold: float  # cosine similarity of the two questions, measured, not guessed
+    semantic_cache_candidate_limit: int  # nearest stored answers checked per question
+    semantic_cache_max_text_chars: int  # a question is embedded up to this length
+    semantic_cache_threads: int  # CPU threads the embedding model uses in each API process
 
     # ---- payments: PAYMENT_PROVIDER picks the gateway; its credentials come only from the environment ----------------
     payment_provider: str  # mellat | zarinpal

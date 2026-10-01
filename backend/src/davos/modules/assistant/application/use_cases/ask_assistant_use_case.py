@@ -21,6 +21,7 @@ from davos.modules.assistant.application.ports.knowledge_search_port import Know
 from davos.modules.assistant.application.services.booking_facts_passage import BookingFactsPassage
 from davos.modules.assistant.application.services.eligibility_check_service import EligibilityCheckService
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
+from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
 from davos.modules.assistant.application.use_cases.ask_assistant_command import AskAssistantCommand
 from davos.modules.assistant.domain.entities.assistant_interaction import AssistantInteraction
 from davos.modules.assistant.domain.enums.answer_outcome import AnswerOutcome
@@ -36,6 +37,7 @@ from davos.modules.assistant.domain.services.small_talk_detector import SmallTal
 from davos.modules.assistant.domain.value_objects.answer_source import AnswerSource
 from davos.modules.assistant.domain.value_objects.assistant_policy import AssistantPolicy
 from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
+from davos.modules.assistant.domain.value_objects.cached_answer import CachedAnswer
 from davos.modules.assistant.domain.value_objects.chat_message import ChatMessage
 from davos.modules.assistant.domain.value_objects.conversation_turn import ConversationTurn
 from davos.modules.assistant.domain.value_objects.grounding_result import GroundingResult
@@ -98,6 +100,7 @@ class AskAssistantUseCase:
         resolver: QueryResolver | None = None,
         checks: EligibilityCheckService | None = None,
         booking_facts: BookingFactsPort | None = None,
+        answer_cache: SemanticAnswerCache | None = None,
         canary_factory: Callable[[], str] = lambda: secrets.token_hex(8),
     ) -> None:
         self._search = search
@@ -117,6 +120,7 @@ class AskAssistantUseCase:
         self._resolver = resolver or QueryResolver()
         self._checks = checks or EligibilityCheckService()
         self._booking_facts = booking_facts
+        self._answer_cache = answer_cache
         self._live = BookingFactsPassage()
         self._canary_factory = canary_factory
         self._prompt_builder = PromptBuilder(max_passage_chars=policy.max_passage_chars)
@@ -202,6 +206,21 @@ class AskAssistantUseCase:
 
         canary = self._canary_factory()
         persona = self._persona.text() if self._persona is not None else ""
+        # A general question that means the same as one answered before is answered from the cache: no tokens, no wait.
+        probe = await self._answer_cache.probe(resolved, passages, persona) if self._answer_cache is not None else None
+        if probe is not None and self._answer_cache is not None:
+            cached = await self._answer_cache.lookup(probe)
+            if cached is not None:
+                await self._remember(command, resolved, cached.text)
+                return await self._finish(
+                    command,
+                    question,
+                    AnswerOutcome.ANSWERED,
+                    cached.text,
+                    passages=[],
+                    suggest_ticket=False,
+                    cached=cached,
+                )
         prompt = self._prompt_builder.build(question, specific, canary, persona, history, shared=shared)
         reserved = self._estimate_tokens(prompt)
         if not await self._budget.try_reserve(reserved):
@@ -251,6 +270,9 @@ class AskAssistantUseCase:
 
         cited = [passages[i - 1] for i in grounding.cited_indices]
         await self._remember(command, resolved, grounding.text)
+        stored_as = None
+        if probe is not None and self._answer_cache is not None:
+            stored_as = await self._answer_cache.store(probe, query=resolved, answer=grounding.text, cited=cited)
         return await self._finish(
             command,
             question,
@@ -259,6 +281,7 @@ class AskAssistantUseCase:
             passages=cited,
             suggest_ticket=False,
             usage=usage,
+            cache_entry_id=stored_as,
         )
 
     def _ground(self, text: str, passages: Sequence[RetrievedPassage], canary: str) -> GroundingResult:
@@ -396,11 +419,19 @@ class AskAssistantUseCase:
         passages: list[RetrievedPassage],
         suggest_ticket: bool,
         usage: TokenUsage | None = None,
+        cached: CachedAnswer | None = None,
+        cache_entry_id: uuid.UUID | None = None,
     ) -> SupportAnswer:
+        """``cached``: the answer came from the cache. ``cache_entry_id``: the model's answer was stored under this id.
+        Either way the interaction remembers the entry, so a "not helpful" vote can retire it."""
         now = self._clock.now()
         interaction_id = uuid.uuid4()
         passages = [p for p in passages if not p.computed]  # computed text is not a page a customer can open
-        shown = tuple(AnswerSource(title=p.title, url=p.url) for p in passages)
+        if cached is not None:
+            shown = cached.sources
+            cache_entry_id = cached.entry_id
+        else:
+            shown = tuple(AnswerSource(title=p.title, url=p.url) for p in passages)
         interaction = AssistantInteraction(
             interaction_id=interaction_id,
             occurred_at=now,
@@ -412,6 +443,8 @@ class AskAssistantUseCase:
             user_id=command.user_id if command.consent_to_store else None,
             question_text=question.text if command.consent_to_store else None,
             answer_text=text if command.consent_to_store else None,
+            cache_entry_id=cache_entry_id,
+            served_from_cache=cached is not None,
         )
         try:
             await self._interactions.record(interaction)
@@ -423,4 +456,5 @@ class AskAssistantUseCase:
             sources=shown,
             suggest_ticket=suggest_ticket,
             interaction_id=interaction_id,
+            from_cache=cached is not None,
         )

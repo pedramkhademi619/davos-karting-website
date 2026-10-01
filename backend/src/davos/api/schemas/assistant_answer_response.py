@@ -11,3 +11,4 @@ class AssistantAnswerResponse(BaseModel):
     sources: list[AnswerSourceResponse]
     suggest_ticket: bool
     interaction_id: uuid.UUID | None
+    from_cache: bool  # a stored answer to a question that means the same: no model call, no wait

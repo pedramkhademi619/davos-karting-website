@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
+from davos.modules.assistant.application.ports.feedback_recorded import FeedbackRecorded
 from davos.modules.assistant.application.ports.interaction_log_port import InteractionLogPort
 from davos.modules.assistant.domain.entities.assistant_interaction import AssistantInteraction
 
@@ -17,8 +18,9 @@ class RecordingInteractionLog(InteractionLogPort):
             raise RuntimeError("database is down")
         self.items.append(interaction)
 
-    async def record_feedback(self, interaction_id: uuid.UUID, *, helpful: bool) -> bool:
-        return any(i.interaction_id == interaction_id for i in self.items)
+    async def record_feedback(self, interaction_id: uuid.UUID, *, helpful: bool) -> FeedbackRecorded | None:
+        found = next((i for i in self.items if i.interaction_id == interaction_id), None)
+        return None if found is None else FeedbackRecorded(cache_entry_id=found.cache_entry_id)
 
     async def count_in_conversation(self, conversation_id: uuid.UUID) -> int:
         return sum(1 for i in self.items if i.conversation_id == conversation_id)

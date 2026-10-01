@@ -31,7 +31,9 @@ from davos.modules.assistant.adapters.ai.resilient_ai_chat import ResilientAiCha
 from davos.modules.assistant.adapters.budget.redis_ai_budget import RedisAiBudget
 from davos.modules.assistant.adapters.context.in_memory_conversation_context import InMemoryConversationContext
 from davos.modules.assistant.adapters.context.redis_conversation_context import RedisConversationContext
+from davos.modules.assistant.adapters.embedding.onnx_sentence_embedding import OnnxSentenceEmbedding
 from davos.modules.assistant.adapters.knowledge.text_file_knowledge_source import TextFileKnowledgeSource
+from davos.modules.assistant.adapters.persistence.pg_answer_cache import PgAnswerCache
 from davos.modules.assistant.adapters.persistence.pg_trgm_knowledge_search import PgTrgmKnowledgeSearch
 from davos.modules.assistant.adapters.persistence.sqlalchemy_interaction_log import SqlAlchemyInteractionLog
 from davos.modules.assistant.adapters.persistence.sqlalchemy_knowledge_index import SqlAlchemyKnowledgeIndex
@@ -40,6 +42,10 @@ from davos.modules.assistant.application.ports.ai_budget_port import AiBudgetPor
 from davos.modules.assistant.application.ports.ai_chat_port import AIChatPort
 from davos.modules.assistant.application.ports.assistant_persona_port import AssistantPersonaPort
 from davos.modules.assistant.application.ports.conversation_context_port import ConversationContextPort
+from davos.modules.assistant.application.ports.embedding_port import EmbeddingPort
+from davos.modules.assistant.application.services.answer_fingerprint import AnswerFingerprint
+from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
+from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
 from davos.modules.assistant.application.use_cases.ask_assistant_use_case import AskAssistantUseCase
 from davos.modules.assistant.application.use_cases.index_knowledge_entry_use_case import IndexKnowledgeEntryUseCase
 from davos.modules.assistant.application.use_cases.purge_expired_interactions_use_case import (
@@ -190,6 +196,7 @@ class ApplicationContainer:
         http_client: httpx.AsyncClient | None = None,
         assistant_persona: AssistantPersonaPort | None = None,
         conversation_context: ConversationContextPort | None = None,
+        embedding: EmbeddingPort | None = None,
     ) -> None:
         self.settings = settings
         self.engine = engine
@@ -226,6 +233,8 @@ class ApplicationContainer:
                 ttl_seconds=settings.conversation_context_ttl_seconds,
             )
         )
+        self._embedding = embedding or self._build_embedding(settings)
+        self._answer_cache = self._build_answer_cache()
         self._outbox = OutboxRecorder(serializer=EventSerializer(), clock=clock)
         self._otp_hasher = HmacOtpHasher(settings.otp_hmac_secret.get_secret_value())
         self._tokens = Sha256SessionTokenService()
@@ -262,6 +271,35 @@ class ApplicationContainer:
             order_quotes=SandboxOrderQuotePort() if settings.payments_sandbox_orders_enabled else None,
             http_client=http_client,
         )
+
+    @staticmethod
+    def _build_embedding(settings: AppSettings) -> EmbeddingPort | None:
+        """The answer cache's local embedding model, or None when the cache is switched off."""
+        if not settings.semantic_cache_enabled or not settings.semantic_cache_model_dir:
+            return None
+        return OnnxSentenceEmbedding(settings.semantic_cache_model_dir, threads=settings.semantic_cache_threads)
+
+    def _build_answer_cache(self) -> SemanticAnswerCache | None:
+        if self._embedding is None:
+            return None
+        settings = self.settings
+        return SemanticAnswerCache(
+            embedding=self._embedding,
+            cache=PgAnswerCache(self.session_factory),
+            fingerprint=AnswerFingerprint(
+                rules_version=PromptBuilder.rules_version(),
+                answer_models=f"{settings.ai_model}|{settings.ai_fallback_model}",
+                embedding_model=self._embedding.model_name,
+            ),
+            policy=PolicyFactory.answer_cache(settings),
+            clock=self.clock,
+            normalizer=self._normalizer,
+        )
+
+    async def warm_up_answer_cache(self) -> None:
+        """Loads the embedding model in this process (the API calls it at start-up, in the background)."""
+        if self._embedding is not None:
+            await self._embedding.warm_up()
 
     def dev_otp_code(self, raw_mobile: str) -> str | None:
         """The code just sent to this number, for local development only.
@@ -435,10 +473,13 @@ class ApplicationContainer:
             context=self._conversation_context,
             normalizer=self._normalizer,
             booking_facts=self._booking_facts,
+            answer_cache=self._answer_cache,
         )
 
     def submit_assistant_feedback(self) -> SubmitFeedbackUseCase:
-        return SubmitFeedbackUseCase(interactions=SqlAlchemyInteractionLog(self.session_factory))
+        return SubmitFeedbackUseCase(
+            interactions=SqlAlchemyInteractionLog(self.session_factory), answer_cache=self._answer_cache
+        )
 
     def index_knowledge_entry(self) -> IndexKnowledgeEntryUseCase:
         return IndexKnowledgeEntryUseCase(
