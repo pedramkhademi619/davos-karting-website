@@ -10,6 +10,7 @@ from davos.modules.assistant.domain.services.party_facts_extractor import PartyF
 from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
 from davos.modules.assistant.domain.value_objects.conversation_turn import ConversationTurn
 from davos.modules.assistant.domain.value_objects.eligibility_rules import EligibilityRules
+from davos.modules.assistant.domain.value_objects.party_facts import PartyFacts
 from davos.modules.assistant.domain.value_objects.retrieved_passage import RetrievedPassage
 
 CHECK_ENTRY_ID = uuid.UUID("5a1e7c0d-0000-4000-8000-00000000c4ec")
@@ -33,25 +34,9 @@ class EligibilityCheckService:
         self, question: str, history: Sequence[ConversationTurn] = (), booking: BookingFacts | None = None
     ) -> RetrievedPassage | None:
         """``booking`` carries the admin panel's kart counts and booking days; without it the defaults apply."""
-        facts = self._extractor.extract(question)
+        facts = self._with_previous_question(self._extractor.extract(question), history)
         if facts.is_empty:
             return None
-        if history and not facts.ages and not facts.group_size:
-            # a follow-up that adds a detail ("قدش ۱۵۰ـه"): check it together with the people named just before
-            earlier = self._extractor.extract(history[-1].question)
-            if earlier.ages or earlier.group_size:
-                facts = replace(
-                    earlier,
-                    height_cm=facts.height_cm or earlier.height_cm,
-                    weekday=facts.weekday if facts.weekday is not None else earlier.weekday,
-                    weekday_name=facts.weekday_name or earlier.weekday_name,
-                    at=facts.at or earlier.at,
-                    weights_kg=facts.weights_kg or earlier.weights_kg,
-                    has_licence=facts.has_licence if facts.has_licence is not None else earlier.has_licence,
-                    mentions_two_seater=facts.mentions_two_seater or earlier.mentions_two_seater,
-                    mentions_today=facts.mentions_today,
-                    mentions_booking=facts.mentions_booking,
-                )
         rules = self._rules.for_booking(booking) if booking is not None else self._rules
         lines = EligibilityAdvisor(rules).advise(facts)
         if not lines:
@@ -64,4 +49,26 @@ class EligibilityCheckService:
             url=CHECK_URL,
             score=1.0,
             computed=True,
+        )
+
+    def _with_previous_question(self, facts: PartyFacts, history: Sequence[ConversationTurn]) -> PartyFacts:
+        """A follow-up that adds a detail ("قدش ۱۵۰ـه", "پس قیمتش چقدره؟") is checked together with the people named
+        just before. A question that names people itself stands alone."""
+        if not history or facts.ages or facts.group_size:
+            return facts
+        earlier = self._extractor.extract(history[-1].question)
+        if not (earlier.ages or earlier.group_size):
+            return facts
+        return replace(
+            earlier,
+            height_cm=facts.height_cm or earlier.height_cm,
+            weekday=facts.weekday if facts.weekday is not None else earlier.weekday,
+            weekday_name=facts.weekday_name or earlier.weekday_name,
+            at=facts.at or earlier.at,
+            weights_kg=facts.weights_kg or earlier.weights_kg,
+            has_licence=facts.has_licence if facts.has_licence is not None else earlier.has_licence,
+            mentions_two_seater=facts.mentions_two_seater or earlier.mentions_two_seater,
+            mentions_today=facts.mentions_today,
+            mentions_booking=facts.mentions_booking,
+            asks_if_open=facts.asks_if_open,
         )

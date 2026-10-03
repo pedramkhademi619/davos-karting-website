@@ -65,6 +65,9 @@ def _arguments() -> argparse.Namespace:
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--judge-model", help="a second, stronger model that grades the replies too")
     parser.add_argument("--only", help="comma-separated categories or case ids")
+    parser.add_argument(
+        "--no-support-check", action="store_true", help="skip the answer support check (measures what it adds)"
+    )
     parser.add_argument("--label", default="")
     parser.add_argument("--judge-repeats", type=int, default=1, help="how many repeats the judge reads")
     parser.add_argument("--max-cost", type=float, default=1.0, help="USD; stop once the reported spend passes it")
@@ -87,6 +90,7 @@ def _config(args: argparse.Namespace, settings: AppSettings) -> RunConfig:
         label=args.label,
         max_cost_usd=args.max_cost,
         judge_repeats=args.judge_repeats,
+        support_check=settings.ai_support_check_enabled and not args.no_support_check,
     )
 
 

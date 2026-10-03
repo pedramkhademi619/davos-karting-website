@@ -11,6 +11,7 @@ from davos.modules.assistant.application.ports.ai_not_configured_error import Ai
 from davos.modules.assistant.application.ports.ai_provider_rate_limited_error import AiProviderRateLimitedError
 from davos.modules.assistant.application.ports.ai_provider_timeout_error import AiProviderTimeoutError
 from davos.modules.assistant.application.ports.ai_provider_unavailable_error import AiProviderUnavailableError
+from davos.modules.assistant.application.services.answer_support_verifier import AnswerSupportVerifier
 from davos.modules.assistant.application.use_cases.ask_assistant_command import AskAssistantCommand
 from davos.modules.assistant.application.use_cases.ask_assistant_use_case import AskAssistantUseCase
 from davos.modules.assistant.domain.enums.answer_outcome import AnswerOutcome
@@ -44,6 +45,7 @@ class Harness:
         log_fails: bool = False,
         persona: str | None = None,
         then: list[str | BaseException] | None = None,
+        support_check: bool = False,
     ) -> None:
         self.clock = FixedClock()
         self.chat = ScriptedAiChat(reply, then=then)
@@ -59,6 +61,11 @@ class Harness:
             clock=self.clock,
             policy=policy or assistant_policy(),
             persona=StaticPersona(persona) if persona is not None else None,
+            support_verifier=(
+                AnswerSupportVerifier(chat=self.chat, budget=self.budget, timeout_seconds=2.0)
+                if support_check
+                else None
+            ),
             canary_factory=lambda: CANARY,
         )
 
@@ -484,3 +491,30 @@ async def test_without_the_settings_the_assistant_still_answers() -> None:
     answer = await h.ask()
     assert answer.outcome is AnswerOutcome.ANSWERED
     assert "تنظیمات فعلی رزرو" not in h.chat.user_prompt
+
+
+async def test_an_answer_the_cited_sources_do_not_back_is_replaced_by_the_honest_reply() -> None:
+    h = Harness(reply="متاسفم، امکانش نیست [1].", then=["NO"], support_check=True)
+    answer = await h.ask()
+    assert answer.outcome is AnswerOutcome.INSUFFICIENT_INFORMATION
+    assert answer.suggest_ticket and "امکانش نیست" not in answer.text
+    assert h.chat.calls == 2
+
+
+async def test_an_answer_the_sources_back_is_shown_after_the_check() -> None:
+    h = Harness(reply="لغو ممکن است [1].", then=["YES"], support_check=True)
+    answer = await h.ask()
+    assert answer.outcome is AnswerOutcome.ANSWERED and answer.text == "لغو ممکن است."
+
+
+async def test_the_check_runs_only_on_the_cited_sources() -> None:
+    cited, other = passage(title="لغو", text="لغو رزرو ممکن است."), passage(title="دیگر", text="متن بی‌ربط دیگر")
+    h = Harness(reply="لغو ممکن است [1].", passages=[cited, other], then=["YES"], support_check=True)
+    await h.ask()
+    checked = h.chat.requests[-1].messages[1].content
+    assert "لغو رزرو ممکن است." in checked and "بی‌ربط" not in checked
+
+
+async def test_a_failing_check_never_takes_the_answer_down() -> None:
+    h = Harness(reply="لغو ممکن است [1].", then=[AiProviderTimeoutError("slow")], support_check=True)
+    assert (await h.ask()).outcome is AnswerOutcome.ANSWERED

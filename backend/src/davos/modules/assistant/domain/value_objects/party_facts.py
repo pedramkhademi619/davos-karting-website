@@ -22,6 +22,7 @@ class PartyFacts:
     mentions_today: bool = False
     mentions_booking: bool = False
     adults_only: bool = False
+    asks_if_open: bool = False  # "بازید؟" / "کار می‌کنید؟": the question is whether the track is open at that time
 
     @property
     def is_empty(self) -> bool:

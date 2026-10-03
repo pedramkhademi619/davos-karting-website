@@ -18,6 +18,7 @@ from davos.modules.assistant.application.ports.chat_completion_request import Ch
 from davos.modules.assistant.application.ports.conversation_context_port import ConversationContextPort
 from davos.modules.assistant.application.ports.interaction_log_port import InteractionLogPort
 from davos.modules.assistant.application.ports.knowledge_search_port import KnowledgeSearchPort
+from davos.modules.assistant.application.services.answer_support_verifier import AnswerSupportVerifier, SupportCheck
 from davos.modules.assistant.application.services.booking_facts_passage import BookingFactsPassage
 from davos.modules.assistant.application.services.eligibility_check_service import EligibilityCheckService
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
@@ -101,6 +102,7 @@ class AskAssistantUseCase:
         checks: EligibilityCheckService | None = None,
         booking_facts: BookingFactsPort | None = None,
         answer_cache: SemanticAnswerCache | None = None,
+        support_verifier: AnswerSupportVerifier | None = None,
         canary_factory: Callable[[], str] = lambda: secrets.token_hex(8),
     ) -> None:
         self._search = search
@@ -121,6 +123,7 @@ class AskAssistantUseCase:
         self._checks = checks or EligibilityCheckService()
         self._booking_facts = booking_facts
         self._answer_cache = answer_cache
+        self._support_verifier = support_verifier
         self._live = BookingFactsPassage()
         self._canary_factory = canary_factory
         self._prompt_builder = PromptBuilder(max_passage_chars=policy.max_passage_chars)
@@ -269,6 +272,21 @@ class AskAssistantUseCase:
             )
 
         cited = [passages[i - 1] for i in grounding.cited_indices]
+        # The check reads what the answer cites plus the passages computed for this question (a few lines each): the
+        # model often cites the neighbouring entry while the number it states comes from the computed one.
+        evidence = [p for i, p in enumerate(passages, 1) if i in grounding.cited_indices or p.computed]
+        support = await self._support_check(question.text, grounding.text, evidence)
+        usage = usage + support.usage
+        if not support.supported:
+            return await self._finish(
+                command,
+                question,
+                AnswerOutcome.INSUFFICIENT_INFORMATION,
+                messages.INSUFFICIENT_INFORMATION,
+                passages=[],
+                suggest_ticket=True,
+                usage=usage,
+            )
         await self._remember(command, resolved, grounding.text)
         stored_as = None
         if probe is not None and self._answer_cache is not None:
@@ -283,6 +301,12 @@ class AskAssistantUseCase:
             usage=usage,
             cache_entry_id=stored_as,
         )
+
+    async def _support_check(self, question: str, answer: str, evidence: Sequence[RetrievedPassage]) -> SupportCheck:
+        """The second look at a grounded answer, against ``evidence``."""
+        if self._support_verifier is None:
+            return SupportCheck(supported=True)
+        return await self._support_verifier.check(question, answer, evidence)
 
     def _ground(self, text: str, passages: Sequence[RetrievedPassage], canary: str) -> GroundingResult:
         return self._guard.evaluate(

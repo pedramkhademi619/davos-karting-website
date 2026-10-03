@@ -66,3 +66,10 @@ def test_licence_yes_and_no() -> None:
 def test_nothing_is_invented_from_a_plain_question() -> None:
     assert extract("قیمت‌ها چقدره؟").is_empty
     assert extract("آدرس کجاست؟").is_empty
+
+
+def test_asking_whether_the_track_is_open_is_recognised() -> None:
+    extract = PartyFactsExtractor().extract
+    assert extract("سه شنبه ساعت ۱۱ شب بازید؟").asks_if_open
+    assert extract("ساعت ۱۰ باز هستین؟").asks_if_open
+    assert not extract("پسرم ۱۴ سالشه ساعت ۱۷ بیام؟").asks_if_open

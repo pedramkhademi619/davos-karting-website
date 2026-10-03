@@ -12,7 +12,18 @@ _ANSWERED = frozenset({AnswerOutcome.ANSWERED, AnswerOutcome.QUICK_ANSWER})
 _DECLINED = frozenset({AnswerOutcome.INSUFFICIENT_INFORMATION, AnswerOutcome.REFUSED_UNSAFE_INPUT})
 _FAILED = frozenset({AnswerOutcome.FALLBACK_PROVIDER_UNAVAILABLE, AnswerOutcome.FALLBACK_BUDGET_EXHAUSTED})
 # A grounded reply that still declines ("این رو نمی‌دونم، از تماس با ما بپرسید") is a correct refusal.
-_DECLINE_MARKERS = ("اطلاعاتی ندارم", "اطلاعی ندارم", "نمیدونم", "نمیدانم", "در منابع", "تماس با ما")
+_DECLINE_MARKERS = (
+    "اطلاعاتی ندارم",
+    "اطلاعی ندارم",
+    "اطلاعات نیست",
+    "نمیدونم",
+    "نمیدانم",
+    "در منابع",
+    "توی منابع",
+    "منابع نیست",
+    "دسترسی ندارم",
+    "تماس با ما",
+)
 _CONTACT_WORDS = ("تماس", "هماهنگ", "پشتیبانی")
 
 
@@ -40,13 +51,13 @@ class CaseGrader:
             ok = outcome is AnswerOutcome.SMALL_TALK
             return CaseGrade(ok, "ok" if ok else f"expected small talk, got {outcome.value}", verdict)
         if kind is ExpectationKind.REFUSE:
-            ok = outcome in _DECLINED or any(m in normalized for m in _DECLINE_MARKERS)
+            ok = outcome in _DECLINED or self._declines(normalized)
             return CaseGrade(ok, "ok" if ok else "answered instead of declining", verdict)
         if kind is ExpectationKind.DEFER:
             if outcome in _DECLINED:
                 return CaseGrade(True, "ok", verdict)
             markers = [a for group in case.must for a in group] or list(self._contact_markers)
-            ok = any(GradingText.normalize(m) in normalized for m in markers)
+            ok = any(GradingText.normalize(m) in normalized for m in markers) or self._declines(normalized)
             return CaseGrade(ok, "ok" if ok else "answered without deferring to the venue", verdict)
 
         if outcome not in _ANSWERED:
@@ -64,3 +75,7 @@ class CaseGrader:
             if not any(GradingText.normalize(alternative) in normalized for alternative in group):
                 return CaseGrade(False, f"missing «{group[0]}»", verdict)
         return CaseGrade(True, "ok", verdict)
+
+    @staticmethod
+    def _declines(normalized: str) -> bool:
+        return any(GradingText.normalize(m) in normalized for m in _DECLINE_MARKERS)

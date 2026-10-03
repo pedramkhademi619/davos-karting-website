@@ -134,3 +134,80 @@ def test_the_rules_match_the_published_knowledge() -> None:
     assert f"بین {fa(rules.rear_seat_min_age)} تا {fa(rules.rear_seat_max_age)} سال" in double
     assert f"{fa(rules.front_seat_min_age)} سال یا بیشتر" in double
     assert f"زیر {fa(rules.light_pair_max_total_kg)} کیلوگرم" in double
+
+
+def test_a_group_plan_states_its_total_price_computed_by_code() -> None:
+    """The model once said 4,950,000 for nine adults; nine single-seaters are 9 x 790,000 = 7,110,000."""
+    text = advise("۹ نفر بزرگسالیم، چند سانس لازمه و چقدر میشه؟")
+    assert "۹ خودرو تک‌نفره" in text
+    assert "در روز عادی ۷ میلیون و ۱۱۰ هزار تومان" in text
+    assert "در روز تعطیل ۸ میلیون و ۴۶۰ هزار تومان" in text  # 9 x 940,000
+
+
+def test_the_price_follows_the_day_asked_about() -> None:
+    text = advise("۹ نفر بزرگسالیم، یکشنبه چقدر میشه؟")
+    assert "در روز عادی (یکشنبه): ۷ میلیون و ۱۱۰ هزار تومان" in text and "تعطیل" not in text.split("هزینه کل")[1]
+    assert "در روز تعطیل (جمعه): ۸ میلیون و ۴۶۰ هزار تومان" in advise("۹ نفر بزرگسالیم، جمعه چقدر میشه؟")
+
+
+def test_a_group_with_a_child_pays_for_the_two_seater_the_child_rides_in() -> None:
+    # 8 people with one 10 year old: 7 drive, one of them in front of the child -> 6 single-seaters + 1 two-seater
+    text = advise("۸ نفریم، یکیمون بچه ۱۰ ساله است و بقیه بزرگسال با گواهینامه")
+    assert "۶ خودرو تک‌نفره و ۱ خودرو دونفره" in text
+    assert "۵ میلیون و ۷۴۰ هزار تومان" in text  # 6 x 790,000 + 1,000,000
+
+
+def test_without_the_live_prices_no_total_is_made_up() -> None:
+    text = " ".join(
+        EligibilityAdvisor(EligibilityRules(singles_per_session=6, doubles_per_session=1)).advise(
+            PartyFactsExtractor().extract("۹ نفر بزرگسالیم")
+        )
+    )
+    assert "سانس" in text and "هزینه کل" not in text
+
+
+def test_an_adult_with_a_child_may_share_the_two_seater() -> None:
+    text = advise("من ۳۵ سالمه گواهینامه دارم، میتونم با پسر ۸ سالم دونفره سوار بشیم؟")
+    assert "نتیجه: بله، با هم می‌توانند سوار خودرو دونفره شوند" in text
+    assert "به شرط داشتن گواهینامه" not in text.split("نتیجه: بله، با هم")[1].split(":")[0]
+
+
+def test_an_adult_without_a_licence_may_not_drive_the_two_seater_with_a_child() -> None:
+    assert "نتیجه: نه" in advise("من ۳۵ سالمه گواهینامه ندارم، میتونم با پسر ۸ سالم دونفره سوار بشیم؟")
+
+
+def test_an_adult_with_a_child_and_an_unknown_licence_is_asked_for_it() -> None:
+    assert "به شرط داشتن گواهینامه" in advise("من ۳۵ سالمه با پسر ۸ سالم دونفره سوار بشیم؟")
+
+
+def test_a_fifteen_year_old_gets_an_undecided_verdict_not_a_yes() -> None:
+    text = advise("۱۵ سالمه میتونم تک نفره برم؟")
+    assert "نتیجه: قطعی نیست" in text and "نتیجه: بله" not in text
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("سه شنبه ساعت ۱۱ شب بازید؟", "نتیجه: بله"),
+        ("چهارشنبه ساعت ۱۴ بازید؟", "نتیجه: نه"),
+        ("سه شنبه ساعت ۱۲:۳۰ شب بازید؟", "نتیجه: نه"),  # after midnight only Thursday, Friday and holidays
+        ("پنجشنبه ساعت ۱۲:۳۰ شب بازید؟", "نتیجه: بله"),
+        ("ساعت ۱۲:۳۰ شب بازید؟", "فقط در پنجشنبه، جمعه و روزهای تعطیل"),
+        ("ساعت ۱۱ صبح باز هستید؟", "نتیجه: نه"),
+    ],
+)
+def test_opening_hours_are_compared_by_code(text: str, expected: str) -> None:
+    assert expected in advise(text)
+
+
+def test_a_question_about_the_hour_without_asking_if_open_adds_no_opening_verdict() -> None:
+    assert "بامداد" not in advise("پسرم ۱۴ سالشه قدش ۱۴۱، چهارشنبه ساعت ۱۷ میتونه برونه؟")
+
+
+def test_the_opening_hours_match_the_published_knowledge() -> None:
+    rules = EligibilityRules()
+    text = (KNOWLEDGE / "working-hours.txt").read_text(encoding="utf-8")
+    fa = lambda n: str(n).translate(_FA)  # noqa: E731
+    assert f"ساعت کاری {fa(rules.opens_at.hour)} تا ۲۴" in text
+    assert f"{fa(rules.opens_at.hour)} تا {fa(rules.late_closes_at.hour)} بامداد" in text
+    assert "پنجشنبه، جمعه" in text and rules.late_closing_weekdays == {3, 4}

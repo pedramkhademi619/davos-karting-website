@@ -173,3 +173,19 @@ def test_personal_data_is_recognised(text: str) -> None:
 
 def test_ordinary_numbers_are_not_personal_data() -> None:
     assert not SensitiveTextDetector().contains_sensitive("۹ نفر در ساعت ۱۶:۳۰ با ۷۹۰ هزار تومان")
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "سلام ۱۴ سالمه ساعت ۵ میتونم بیام؟",  # yes if Saturday-Wednesday and taller than 140 cm
+        "سلام ۱۴ سالمه ساعت ۲۱ میتونم بیام؟",  # no: outside 15:00-18:00
+        "14 سالمه ساعت 5 میتونم بیام؟",
+        "۱۴ سالمه، قدم ۱۵۰، شنبه ساعت ۵ میتونم بیام؟",
+        "۱۴ سالمه، قدم ۱۵۰، شنبه ساعت ۲۱ میتونم بیام؟",
+    ],
+)
+def test_a_childs_age_and_hour_questions_never_use_the_cache_at_all(question: str) -> None:
+    """The case that made the first version of the cache unsafe: "I'm 14, can I come at 5?" and "...at 21?" are nearly
+    the same sentence to an embedding model and have opposite answers. They are never looked up and never stored."""
+    assert not allowed(question)

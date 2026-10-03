@@ -104,3 +104,23 @@ def test_brackets_that_are_not_citations_are_left_alone() -> None:
     result = evaluate("کد رزرو شما [DV-7Q2K] است [1].")
     assert result.cited_indices == (1,)
     assert result.text == "کد رزرو شما [DV-7Q2K] است."
+
+
+@pytest.mark.parametrize(
+    ("raw", "shown"),
+    [
+        (">نه، متاسفانه نمی‌تونه [1].", "نه، متاسفانه نمی‌تونه."),
+        ("> نه، متاسفانه نمی‌تونه [1].", "نه، متاسفانه نمی‌تونه."),
+        ("، حداقل ۲ سانس لازم دارید [1].", "حداقل ۲ سانس لازم دارید."),
+        ("- آره، می‌تونید [1].", "آره، می‌تونید."),
+        ("• آره، می‌تونید [1].", "آره، می‌تونید."),
+        ("پاسخ: > آره [1].", "آره."),
+    ],
+)
+def test_marks_a_model_puts_before_its_first_word_are_removed(raw: str, shown: str) -> None:
+    """gemma-3-27b-it starts some answers with ">" or a comma; a customer must not see that."""
+    assert evaluate(raw).text == shown
+
+
+def test_a_leading_number_is_not_mistaken_for_a_mark() -> None:
+    assert evaluate("۷۹۰ هزار تومان [1].").text == "۷۹۰ هزار تومان."

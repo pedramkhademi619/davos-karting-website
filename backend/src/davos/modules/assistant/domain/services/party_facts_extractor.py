@@ -47,6 +47,8 @@ _WEEKDAY_NAMES = {5: "شنبه", 6: "یکشنبه", 0: "دوشنبه", 1: "سه�
 _GROUP = re.compile(r"(\d{1,2})\s*(?:تا\s*)?نفر(یم|ید|ین|ن|ه)?(?![\w])")
 _LETTERS = str.maketrans("يك‌", "یک ", "ـ")  # Arabic letters, zero-width joiner, kashida
 _TWO_SEATER = re.compile(r"(?:دو|2)\s*نفره")
+# "بازید؟", "باز هستید؟", "باز است؟", "کار می‌کنید؟": asking whether it is open at a given time
+_OPEN = re.compile(r"(?<![\w])(?:باز(?:ید|ین)|باز\s+(?:هستید|هستین|است)|کار\s+می\s*کنید)(?![\w])")
 _LICENCE_YES = re.compile(r"گواهینامه\s*(?:هم\s*)?(?:دار|داشت)")
 _LICENCE_NO = re.compile(r"گواهینامه\s*(?:هم\s*)?ندار|بدون\s*گواهینامه|گواهینامه\s*(?:هم\s*)?نگرفت")
 
@@ -76,6 +78,7 @@ class PartyFactsExtractor:
             mentions_women="خانم" in text or re.search(r"(?<![\w])زن(?![\w])", text) is not None,
             mentions_today="امروز" in text,
             mentions_booking="رزرو" in text or "نوبت" in text,
+            asks_if_open=bool(_OPEN.search(text)),
             adults_only="بزرگسال" in text and not any(a < 16 for a in ages) and "بچه" not in text,
         )
 

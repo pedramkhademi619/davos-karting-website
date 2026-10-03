@@ -286,3 +286,13 @@ async def test_the_check_is_not_asked_below_the_floor_or_when_the_signature_diff
     await world.ask("باشگاه مشتریان فعاله؟")  # another topic: similarity 0
     await world.ask(f"{BLUR_WORD} پرداخت تلفنی چطوریه؟")  # close, but "by phone" is not what was stored
     assert world.verifier_chat.calls == 0
+
+
+async def test_the_same_child_at_five_and_at_nine_in_the_evening_are_never_mixed_up() -> None:
+    world = World()
+    five = await world.ask("سلام ۱۴ سالمه ساعت ۵ میتونم بیام؟")
+    nine = await world.ask("سلام ۱۴ سالمه ساعت ۲۱ میتونم بیام؟")
+    again = await world.ask("سلام ۱۴ سالمه ساعت ۵ میتونم بیام؟")
+    assert not (five.from_cache or nine.from_cache or again.from_cache)
+    assert world.chat.calls == 3, "every one of them is answered by the model with its own rule checks"
+    assert world.store.entries == [] and world.embedding.embedded == [], "and none touched the cache"

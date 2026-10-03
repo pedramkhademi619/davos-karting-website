@@ -12,6 +12,7 @@ from davos.modules.assistant.application.ports.ai_chat_port import AIChatPort
 from davos.modules.assistant.application.ports.assistant_persona_port import AssistantPersonaPort
 from davos.modules.assistant.application.ports.booking_facts_port import BookingFactsPort
 from davos.modules.assistant.application.ports.knowledge_search_port import KnowledgeSearchPort
+from davos.modules.assistant.application.services.answer_support_verifier import AnswerSupportVerifier
 from davos.modules.assistant.application.use_cases.ask_assistant_command import AskAssistantCommand
 from davos.modules.assistant.application.use_cases.ask_assistant_use_case import AskAssistantUseCase
 from davos.modules.assistant.domain.value_objects.assistant_policy import AssistantPolicy
@@ -120,10 +121,16 @@ class EvalRunner:
         )
 
     def _use_case(self, chat: AIChatPort, context: InMemoryConversationContext) -> AskAssistantUseCase:
+        budget = InMemoryAiBudget(daily_limit=100_000_000, clock=self._clock)
+        verifier = (
+            AnswerSupportVerifier(chat=chat, budget=budget, timeout_seconds=self._config.timeout_seconds)
+            if self._config.support_check
+            else None
+        )
         return AskAssistantUseCase(
             search=self._search,
             chat=chat,
-            budget=InMemoryAiBudget(daily_limit=100_000_000, clock=self._clock),
+            budget=budget,
             interactions=NullInteractionLog(),
             rate_limiter=InMemoryRateLimiter(self._clock),
             clock=self._clock,
@@ -131,6 +138,7 @@ class EvalRunner:
             persona=self._persona,
             context=context,
             booking_facts=self._booking_facts,
+            support_verifier=verifier,
         )
 
     @staticmethod

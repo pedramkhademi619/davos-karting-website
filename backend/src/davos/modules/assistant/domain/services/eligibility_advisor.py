@@ -5,6 +5,7 @@ from datetime import time
 from davos.modules.assistant.domain.services.group_session_planner import GroupSessionPlanner
 from davos.modules.assistant.domain.value_objects.eligibility_rules import EligibilityRules
 from davos.modules.assistant.domain.value_objects.party_facts import PartyFacts
+from davos.modules.assistant.domain.value_objects.toman_text import TomanText
 
 _PERSIAN_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 _WEEKDAY_NAMES = {5: "شنبه", 6: "یکشنبه", 0: "دوشنبه", 1: "سه‌شنبه", 2: "چهارشنبه", 3: "پنجشنبه", 4: "جمعه"}
@@ -34,6 +35,7 @@ class EligibilityAdvisor:
         for age in dict.fromkeys(facts.ages):
             lines.extend(self._age(age, facts))
         lines.extend(self._two_seater(facts))
+        lines.extend(self._opening(facts))
         lines.extend(self._booking_day(facts))
         lines.extend(self._group(facts))
         return lines
@@ -59,8 +61,8 @@ class EligibilityAdvisor:
             ]
         if age == r.unclear_age:
             return [
-                f"{who}: برای رانندگی تک‌نفره شرط روشنی تعیین نشده و باید هنگام رزرو با مجموعه هماهنگ شود. "
-                "می‌تواند روی صندلی عقب خودرو دونفره بنشیند."
+                f"{who}: نتیجه: قطعی نیست؛ برای رانندگی تک‌نفره در این سن شرط روشنی تعیین نشده و باید هنگام رزرو "
+                "با مجموعه هماهنگ شود (نه «بله» بگو و نه «نه»). می‌تواند روی صندلی عقب خودرو دونفره بنشیند."
             ]
         if age < r.front_seat_min_age:
             return [
@@ -129,6 +131,8 @@ class EligibilityAdvisor:
         children = [a for a in facts.ages if r.rear_seat_min_age <= a <= r.rear_seat_max_age]
         adults = [a for a in facts.ages if a > r.rear_seat_max_age]
         two_adults = len(adults) >= 2 or facts.adults_only
+        if facts.mentions_two_seater and children and not facts.weights_kg:
+            lines.extend(self._adult_with_child(facts, adults=[a for a in adults if a >= r.front_seat_min_age]))
         if facts.mentions_two_seater and not children and not facts.weights_kg and two_adults:
             lines.append(
                 "نتیجه: نه. دو بزرگسال نمی‌توانند با هم سوار خودرو دونفره شوند، چون نفر عقب باید کودک "
@@ -137,6 +141,41 @@ class EligibilityAdvisor:
                 f"وزن زیر {_fa(r.light_pair_max_total_kg)} کیلوگرم است. هر بزرگسال می‌تواند تک‌نفره برود."
             )
         return lines
+
+    def _adult_with_child(self, facts: PartyFacts, *, adults: list[int]) -> list[str]:
+        """An adult driver with a child on the rear seat: the case the two-seater exists for."""
+        r = self._r
+        if not adults:
+            return []
+        seat = f"کودک {_fa(r.rear_seat_min_age)} تا {_fa(r.rear_seat_max_age)} ساله پشت بزرگسال روی صندلی عقب می‌نشیند"
+        if facts.has_licence is False:
+            return [f"نتیجه: نه. راننده خودرو دونفره باید گواهینامه داشته باشد؛ {seat}، ولی بدون گواهینامه ممکن نیست."]
+        condition = "" if facts.has_licence else " به شرط داشتن گواهینامه و توانایی رانندگی"
+        return [f"نتیجه: بله، با هم می‌توانند سوار خودرو دونفره شوند{condition}: {seat}."]
+
+    # ------------------------------------------------------------------ opening hours
+    def _opening(self, facts: PartyFacts) -> list[str]:
+        """ "Are you open at ...?": the hour is compared with the owner's opening hours here, not by the model."""
+        r = self._r
+        if not facts.asks_if_open or facts.at is None:
+            return []
+        at, opens, late_until = facts.at, r.opens_at, r.late_closes_at
+        hours = (
+            f"پیست شنبه تا چهارشنبه ساعت {_clock(opens)} تا ۲۴ (نیمه‌شب) باز است؛ پنجشنبه، جمعه و روزهای تعطیل "
+            f"ساعت {_clock(opens)} تا {_clock(late_until)} بامداد روز بعد."
+        )
+        when = f"ساعت {_clock(at)}"
+        if at >= opens:
+            return [f"نتیجه: بله، {when} باز است. {hours}"]
+        if at > late_until:
+            return [f"نتیجه: نه، {when} باز نیست. {hours}"]
+        late_days = "پنجشنبه، جمعه و روزهای تعطیل"
+        if facts.weekday is None:
+            return [f"نتیجه: {when} فقط در {late_days} باز است. {hours}"]
+        day = facts.weekday_name
+        if facts.weekday in r.late_closing_weekdays:
+            return [f"نتیجه: بله، {when} {day} باز است. {hours}"]
+        return [f"نتیجه: نه، {when} {day} باز نیست؛ بعد از ۲۴ فقط در {late_days} باز است. {hours}"]
 
     # ------------------------------------------------------------------ booking day
     def _booking_day(self, facts: PartyFacts) -> list[str]:
@@ -148,6 +187,29 @@ class EligibilityAdvisor:
             closed = "، ".join(_WEEKDAY_NAMES[d] for d in _WEEK_ORDER if d in r.booking_closed_weekdays)
             lines.append(f"نتیجه: نه. برای {facts.weekday_name} رزرو نداریم (روزهای بدون رزرو: {closed}).")
         return lines
+
+    def _cost(self, plan: list[tuple[int, int]], facts: PartyFacts) -> str:
+        """What the plan costs, added up here: the model is not asked to multiply. One single-seater per driver who is
+        not in front of a child, one two-seater per child in the rear. Said for the day asked about, else for both
+        kinds of day."""
+        r = self._r
+        prices = (r.normal_single_toman, r.normal_double_toman, r.holiday_single_toman, r.holiday_double_toman)
+        if any(price is None for price in prices):
+            return ""  # without the live prices nothing is quoted
+        normal_single, normal_double, holiday_single, holiday_double = (int(price or 0) for price in prices)
+        doubles = sum(children for _, children in plan)
+        singles = sum(driving - children for driving, children in plan)
+        normal = singles * normal_single + doubles * normal_double
+        holiday = singles * holiday_single + doubles * holiday_double
+        cars = f"{_fa(singles)} خودرو تک‌نفره" + (f" و {_fa(doubles)} خودرو دونفره" if doubles else "")
+        if facts.weekday is not None:
+            is_holiday = facts.weekday in r.holiday_weekdays
+            kind, total = ("تعطیل", holiday) if is_holiday else ("عادی", normal)
+            return f" هزینه کل برای {cars} در روز {kind} ({facts.weekday_name}): {TomanText.say(total)}."
+        return (
+            f" هزینه کل برای {cars}: در روز عادی {TomanText.say(normal)} و در روز تعطیل {TomanText.say(holiday)} "
+            "(قیمت هر خودرو برای یک سانس است)."
+        )
 
     # ------------------------------------------------------------------ groups
     def _group(self, facts: PartyFacts) -> list[str]:
@@ -181,6 +243,7 @@ class EligibilityAdvisor:
             f"سبک‌وزن)، پس ظرفیت هر سانس {_fa(singles)} نفر است و حداکثر به {_fa(singles + 2 * doubles)} نفر می‌رسد. "
             "چیدمان: " + "؛ ".join(parts) + "."
         )
+        line += self._cost(plan, facts)
         if rear > drivers:
             line += (
                 " هر کودکِ صندلی عقب یک راننده ۱۸ سال به بالای گواهینامه‌دار لازم دارد؛ چون بزرگسال کمتر از کودکان است،"

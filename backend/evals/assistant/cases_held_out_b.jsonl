@@ -1,0 +1,13 @@
+# Held-out set B: written BEFORE the tuned rule 8 was measured and never used to change the prompt (set A, cases_held_out.jsonl, was used once to tune it).
+{"id": "heldoutb-01", "category": "held_out_unknown_b", "question": "صندلی ماشین بچه برای نوزاد دارید؟", "kind": "defer"}
+{"id": "heldoutb-02", "category": "held_out_unknown_b", "question": "بلیط یا کارت هدیه میفروشید؟", "kind": "defer"}
+{"id": "heldoutb-03", "category": "held_out_unknown_b", "question": "میتونم لباس تیم خودمون رو بپوشم؟", "kind": "defer"}
+{"id": "heldoutb-04", "category": "held_out_unknown_b", "question": "روزهای برفی یا بارونی هم کار میکنید؟", "kind": "defer"}
+{"id": "heldoutb-05", "category": "held_out_unknown_b", "question": "شماره حساب برای کارت به کارت دارید؟", "kind": "defer"}
+{"id": "heldoutb-06", "category": "held_out_unknown_b", "question": "میشه رکورد دور خودم رو ببینم؟", "kind": "defer"}
+{"id": "heldoutb-07", "category": "held_out_unknown_b", "question": "سن مجاز برای همراه چنده؟", "kind": "defer"}
+{"id": "heldoutb-08", "category": "held_out_unknown_b", "question": "آب معدنی یا نوشیدنی خنک میفروشید؟", "kind": "defer"}
+{"id": "heldoutb-09", "category": "held_out_unknown_b", "question": "حداقل تعداد نفرات برای گروه چنده؟", "kind": "defer"}
+{"id": "heldoutb-10", "category": "held_out_unknown_b", "question": "میتونم به جای خودم یکی دیگه رو بفرستم؟", "kind": "defer"}
+{"id": "heldoutb-11", "category": "held_out_unknown_b", "question": "دستگاه خودپرداز نزدیکتونه؟", "kind": "defer"}
+{"id": "heldoutb-12", "category": "held_out_unknown_b", "question": "آیا کارت ملی لازمه؟", "kind": "defer"}

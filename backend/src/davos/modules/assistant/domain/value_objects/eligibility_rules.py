@@ -30,11 +30,19 @@ class EligibilityRules:
     rear_seat_max_age: int = 15
     front_seat_min_age: int = 18  # and a driving licence
     light_pair_max_total_kg: int = 130  # two light women: total strictly BELOW this
+    opens_at: time = time(15, 0)  # opening hours, kept identical to backend/knowledge/working-hours.txt
+    late_closing_weekdays: frozenset[int] = frozenset({3, 4})  # Thursday, Friday (and public holidays) close later
+    late_closes_at: time = time(1, 0)  # on those days it is open until 01:00; on the others until 24:00
     # From the admin panel's booking settings (for_booking); unknown until then:
     singles_per_session: int | None = None
     doubles_per_session: int | None = None
     booking_closed_weekdays: frozenset[int] = frozenset()
     same_day_booking: bool | None = None
+    normal_single_toman: int | None = None
+    normal_double_toman: int | None = None
+    holiday_single_toman: int | None = None
+    holiday_double_toman: int | None = None
+    holiday_weekdays: frozenset[int] = frozenset()
 
     def for_booking(self, facts: BookingFacts) -> EligibilityRules:
         return replace(
@@ -43,4 +51,9 @@ class EligibilityRules:
             doubles_per_session=facts.doubles_per_session,
             booking_closed_weekdays=facts.closed_weekdays,
             same_day_booking=facts.min_days_ahead == 0,
+            normal_single_toman=facts.normal_single_toman,
+            normal_double_toman=facts.normal_double_toman,
+            holiday_single_toman=facts.holiday_single_toman,
+            holiday_double_toman=facts.holiday_double_toman,
+            holiday_weekdays=facts.holiday_weekdays,
         )

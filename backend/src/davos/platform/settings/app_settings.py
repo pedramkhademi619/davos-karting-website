@@ -89,6 +89,9 @@ class AppSettings(BaseSettings):
     ai_api_key: SecretStr
     ai_model: str
     ai_timeout_seconds: float
+    # Before an answer is shown, a second small request asks whether the sources it cites really say what it claims.
+    ai_support_check_enabled: bool
+    ai_support_check_timeout_seconds: float  # a check that takes longer is skipped and the answer is shown
     ai_token_limit_param: str  # max_tokens, or max_completion_tokens for providers and reasoning models that want it
     ai_send_temperature: bool  # some reasoning models reject a temperature
     ai_temperature: float

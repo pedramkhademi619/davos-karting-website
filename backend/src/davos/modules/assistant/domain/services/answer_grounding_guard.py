@@ -19,6 +19,8 @@ _SPACE_BEFORE_PUNCTUATION = re.compile(r"\s+([.،؛؟!:])")  # what removing "[1
 # Some models glitch into Chinese, Japanese or Korean mid-sentence; such an answer is not shown as it is.
 _FOREIGN_SCRIPT = re.compile(r"[぀-ヿ㐀-䶿一-鿿가-힯]")
 _LEADING_LABEL = re.compile(r"^(?:پاسخ\s*)?[:：]\s*")  # "پاسخ:" copied from the style examples
+# Marks some models put before the first word: a quote ">", a leftover comma or colon, a list dash or bullet.
+_LEADING_JUNK = re.compile(r"^[\s>:：،,;*•\-–—]+")
 
 
 class AnswerGroundingGuard:
@@ -44,7 +46,7 @@ class AnswerGroundingGuard:
 
         if _FOREIGN_SCRIPT.search(text):
             return GroundingResult(GroundingKind.UNGROUNDED)
-        text = _MARKDOWN_LINK.sub(r"\1", _LEADING_LABEL.sub("", text))
+        text = _LEADING_JUNK.sub("", _MARKDOWN_LINK.sub(r"\1", _LEADING_LABEL.sub("", text)))
         numbers = (int(DigitNormalizer.to_ascii(n)) for c in _CITATION.findall(text) for n in _NUMBER.findall(c))
         cited = tuple(sorted({n for n in numbers if 1 <= n <= passage_count}))
         if not cited:

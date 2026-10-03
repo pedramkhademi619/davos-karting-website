@@ -5,6 +5,7 @@ import uuid
 from davos.modules.assistant.domain.enums.knowledge_source_type import KnowledgeSourceType
 from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
 from davos.modules.assistant.domain.value_objects.retrieved_passage import RetrievedPassage
+from davos.modules.assistant.domain.value_objects.toman_text import TomanText
 
 LIVE_ENTRY_ID = uuid.UUID("5a1e7c0d-0000-4000-8000-00000000b00c")
 LIVE_TITLE = "تنظیمات فعلی رزرو، قیمت و ظرفیت"
@@ -17,20 +18,6 @@ _WEEK_ORDER = (5, 6, 0, 1, 2, 3, 4)  # the Iranian week starts on Saturday
 
 def _fa(value: object) -> str:
     return str(value).translate(_PERSIAN_DIGITS)
-
-
-def _toman(amount: int) -> str:
-    """790000 -> "۷۹۰ هزار تومان", 1200000 -> "یک میلیون و ۲۰۰ هزار تومان", the way prices are said in Persian."""
-    millions, rest = divmod(amount, 1_000_000)
-    thousands, units = divmod(rest, 1_000)
-    parts = []
-    if millions:
-        parts.append("یک میلیون" if millions == 1 else f"{_fa(millions)} میلیون")
-    if thousands:
-        parts.append(f"{_fa(thousands)} هزار")
-    if units or not parts:
-        parts.append(_fa(units))
-    return " و ".join(parts) + " تومان"
 
 
 def _days(days: frozenset[int]) -> str:
@@ -55,9 +42,9 @@ class BookingFactsPassage:
         holidays = _days(facts.holiday_weekdays)
         holiday_days = f"{holidays} و تعطیلات رسمی" if holidays else "تعطیلات رسمی"
         return (
-            f"روزهای عادی: خودرو تک‌نفره {_toman(facts.normal_single_toman)} و خودرو دونفره "
-            f"{_toman(facts.normal_double_toman)}. روزهای تعطیل ({holiday_days}): خودرو تک‌نفره "
-            f"{_toman(facts.holiday_single_toman)} و خودرو دونفره {_toman(facts.holiday_double_toman)}. "
+            f"روزهای عادی: خودرو تک‌نفره {TomanText.say(facts.normal_single_toman)} و خودرو دونفره "
+            f"{TomanText.say(facts.normal_double_toman)}. روزهای تعطیل ({holiday_days}): خودرو تک‌نفره "
+            f"{TomanText.say(facts.holiday_single_toman)} و خودرو دونفره {TomanText.say(facts.holiday_double_toman)}. "
             "قیمت هر خودرو برای یک سانس است."
         )
 

@@ -44,6 +44,7 @@ from davos.modules.assistant.application.ports.assistant_persona_port import Ass
 from davos.modules.assistant.application.ports.conversation_context_port import ConversationContextPort
 from davos.modules.assistant.application.ports.embedding_port import EmbeddingPort
 from davos.modules.assistant.application.services.answer_fingerprint import AnswerFingerprint
+from davos.modules.assistant.application.services.answer_support_verifier import AnswerSupportVerifier
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
 from davos.modules.assistant.application.services.question_equivalence_verifier import QuestionEquivalenceVerifier
 from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
@@ -308,6 +309,16 @@ class ApplicationContainer:
             timeout_seconds=self.settings.semantic_cache_verify_timeout_seconds,
         )
 
+    def _build_support_verifier(self) -> AnswerSupportVerifier | None:
+        """The check that the cited sources back an answer; off when switched off or when no model is configured."""
+        if not self.settings.ai_support_check_enabled or isinstance(self.ai_chat, DisabledAiChat):
+            return None
+        return AnswerSupportVerifier(
+            chat=self.ai_chat,
+            budget=self.ai_budget,
+            timeout_seconds=self.settings.ai_support_check_timeout_seconds,
+        )
+
     async def warm_up_answer_cache(self) -> None:
         """Loads the embedding model in this process (the API calls it at start-up, in the background)."""
         if self._embedding is not None:
@@ -486,6 +497,7 @@ class ApplicationContainer:
             normalizer=self._normalizer,
             booking_facts=self._booking_facts,
             answer_cache=self._answer_cache,
+            support_verifier=self._build_support_verifier(),
         )
 
     def submit_assistant_feedback(self) -> SubmitFeedbackUseCase:
