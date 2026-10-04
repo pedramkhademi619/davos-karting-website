@@ -2,7 +2,7 @@
 
 ## Topology (single host, Docker Compose)
 
-`reverse-proxy` (nginx, unprivileged) -> `frontend`, `api`; `api`/`worker`/`scheduler` -> `postgres`, `redis`, `minio`.
+`reverse-proxy` (nginx, unprivileged) -> `frontend`, `api`; `api`/`worker`/`scheduler` -> `postgres`, `redis`.
 Data services sit on an `internal` network with no route to the internet. Images run as non-root, read-only root filesystem,
 all capabilities dropped, `no-new-privileges`, memory limits set. Base images are pinned by tag; Python dependencies by
 `requirements.lock`.
@@ -11,7 +11,7 @@ all capabilities dropped, `no-new-privileges`, memory limits set. Base images ar
 | --- | --- |
 | `migrate` | one-shot `alembic upgrade head`; `api` and `worker` wait for it. **Replicas never migrate on start.** |
 | `frontend` | `FRONTEND_REPLICAS` (default 3) Next.js processes; every page is rendered per request (it carries its own CSP nonce), about 25-35 pages/s per replica |
-| `api` | `API_WORKERS` (default 4) uvicorn worker processes; stateless (sessions in PostgreSQL, rate limits/budgets in Redis); one worker does the start-up work (knowledge sync, first admin) under a PostgreSQL advisory lock |
+| `api` | `API_WORKERS` (default 4) uvicorn worker processes; stateless (sessions in PostgreSQL, rate limits/budgets in Redis); one worker does the start-up work (knowledge seed on an empty database, first admin) under a PostgreSQL advisory lock |
 | `worker` | all four queues by default; run extra workers with one `-Q` each to scale SMS/AI/export independently |
 | `scheduler` | **exactly one**; never scale (duplicate beat processes duplicate jobs) |
 
@@ -99,7 +99,7 @@ sh scripts/restore-postgres.sh backups/davos-<stamp>.dump   # restores into NEW 
 ```
 
 Verified on this repository's compose stack: a dump of a database at migration 0006 (with a probe row) restored into a fresh
-database with 12 tables and the probe row intact. Not yet covered: object-storage (MinIO) backup, off-host copies, scheduled
+database with 12 tables and the probe row intact. Not yet covered: off-host copies, scheduled
 runs, restore-time targets. Schedule the script from the host and copy dumps off-machine.
 
 ## Scaling path

@@ -13,6 +13,7 @@ from davos.api.middleware.request_id_middleware import RequestIdMiddleware
 from davos.api.middleware.security_headers_middleware import SecurityHeadersMiddleware
 from davos.api.v1.routers import (
     account_router,
+    admin_assistant_router,
     admin_auth_router,
     admin_customers_router,
     admin_dashboard_router,
@@ -45,7 +46,7 @@ async def _run_startup_work(container: ApplicationContainer) -> None:
             if not mine:
                 logger.info("another API process is doing the start-up work")
                 return
-            await _sync_assistant_knowledge(container)
+            await _seed_assistant_knowledge(container)
             await _bootstrap_owner(container)
     except Exception:
         logger.exception("start-up work failed; the API starts anyway")
@@ -68,21 +69,22 @@ async def _bootstrap_owner(container: ApplicationContainer) -> None:
         logger.warning("first admin account created from ADMIN_BOOTSTRAP_USERNAME; remove the password from .env now")
 
 
-async def _sync_assistant_knowledge(container: ApplicationContainer) -> None:
-    """Publishes the owner's knowledge files at start-up. A problem is logged and never stops the API from starting."""
-    use_case = container.sync_knowledge_documents()
+async def _seed_assistant_knowledge(container: ApplicationContainer) -> None:
+    """Fills an empty knowledge base from the owner's files at start-up. A problem is logged and never stops the API."""
+    use_case = container.seed_knowledge_from_documents()
     if use_case is None:
         return
     try:
         report = await use_case.execute()
     except Exception:
-        logger.exception("assistant knowledge sync failed; the assistant keeps whatever was published before")
+        logger.exception("assistant knowledge could not be seeded from the files; the assistant keeps what it has")
         return
+    if report.skipped_because_not_empty:
+        return  # the database is the source of truth; the files only start a fresh installation
     logger.info(
-        "assistant knowledge synced: published=%d drafts=%d removed=%d problems=%d",
-        report.published,
+        "assistant knowledge seeded from files: imported=%d drafts=%d problems=%d",
+        report.imported,
         report.drafts,
-        report.removed,
         len(report.problems),
     )
     for problem in report.problems:
@@ -146,6 +148,7 @@ def create_app(settings: AppSettings, container: ApplicationContainer | None = N
         admin_dashboard_router,
         admin_reservations_router,
         admin_settings_router,
+        admin_assistant_router,
         admin_customers_router,
         admin_payments_router,
         admin_sms_router,

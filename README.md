@@ -13,7 +13,7 @@ PostgreSQL, Redis, Celery). The web app and admin panel are **not built yet** (s
 | Payments: state machine, Zarinpal adapter, callback verification, reconciliation | implemented, tested against the documented contract; **live sandbox not verified** |
 | Booking integration: signed webhooks, replay/duplicate/out-of-order handling, verified return page | implemented, tested; OIDC SSO handoff **not implemented** |
 | Transactional outbox, Celery worker + single scheduler, isolated queues | implemented, tested (no event consumers registered yet) |
-| Docker Compose stack, controlled migration job, non-root images, backup/restore scripts | implemented; data services, migrate, api, worker, scheduler and minio verified healthy locally |
+| Docker Compose stack, controlled migration job, non-root images, backup/restore scripts | implemented; data services, migrate, api, worker and scheduler verified healthy locally |
 | Public website | **partly built.** Light, premium pages (home with the track map traced from a satellite image, `/faq`, `/contact`) and the assistant chat box, the only thing that calls the API; no dead links. Phone, hours, booking rule and FAQ come from the owner (booking is by phone); prices, e-mail and street address are not shown because they are unconfirmed. The map's scenery is a simplified redraw and it is not a survey. See [docs/LIMITATIONS.md](docs/LIMITATIONS.md) |
 | Customer dashboard, admin panel, CMS, SEO | **not implemented** |
 
@@ -24,7 +24,7 @@ The precise, per-task record is in [docs/TASKS.md](docs/TASKS.md); everything no
 
 ```bash
 cp .env.example .env            # development placeholders only
-docker compose up --build       # postgres, redis, migrate (one-shot), api, worker, scheduler, frontend, proxy, minio
+docker compose up --build       # postgres, redis, migrate (one-shot), api, worker, scheduler, frontend, proxy
 ```
 
 * Site and API behind the proxy: `http://localhost:${HTTP_PORT}` (default 80; if another program holds port 80, set e.g.

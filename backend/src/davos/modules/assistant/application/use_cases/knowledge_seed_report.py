@@ -4,8 +4,8 @@ from davos.modules.assistant.application.ports.knowledge_document_problem import
 
 
 @dataclass(frozen=True)
-class KnowledgeSyncReport:
-    published: int
+class KnowledgeSeedReport:
+    imported: int
     drafts: int
-    removed: int
+    skipped_because_not_empty: bool
     problems: tuple[KnowledgeDocumentProblem, ...]

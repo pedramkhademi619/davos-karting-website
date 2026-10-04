@@ -30,3 +30,8 @@ class AnswerCachePort(ABC):
     @abstractmethod
     async def deactivate(self, entry_id: uuid.UUID) -> None:
         """Stops serving the entry (a customer found its answer not helpful, or a person retired it)."""
+
+    @abstractmethod
+    async def rewrite(self, entry: NewCacheEntry) -> bool:
+        """Replaces question, answer, vector and fingerprint of the entry with the same id (use count and creation
+        time stay) and makes it active; False when there is no such entry."""

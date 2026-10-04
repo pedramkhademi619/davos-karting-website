@@ -74,6 +74,10 @@ async def test_everything_under_admin_needs_a_staff_session(admin_api: httpx.Asy
         "/api/v1/admin/customers",
         "/api/v1/admin/payments",
         "/api/v1/admin/sms/messages",
+        "/api/v1/admin/assistant/overview",
+        "/api/v1/admin/assistant/interactions",
+        "/api/v1/admin/assistant/cache",
+        "/api/v1/admin/assistant/knowledge",
     ):
         assert (await admin_api.get(path)).status_code == 401, path
 
@@ -233,3 +237,99 @@ async def test_the_dashboard_summarises_today(admin_api: httpx.AsyncClient) -> N
     await login(admin_api)
     dashboard = (await admin_api.get("/api/v1/admin/dashboard")).json()
     assert dashboard["online_booking_enabled"] is True and dashboard["today_confirmed"] == 0
+
+
+async def test_staff_review_the_assistant_but_only_the_owner_retires_or_deletes_stored_answers(
+    admin_api: httpx.AsyncClient,
+) -> None:
+    owner = await login(admin_api)
+    await admin_api.post(
+        "/api/v1/admin/users",
+        json={"username": "reza", "display_name": "رضا", "password": STAFF_PASSWORD, "role": "staff"},
+        headers=owner,
+    )
+    admin_api.cookies.clear()
+    staff = await login(admin_api, "reza", STAFF_PASSWORD)
+
+    overview = await admin_api.get("/api/v1/admin/assistant/overview", params={"days": 7})
+    assert overview.status_code == 200 and overview.json()["questions"] == 0
+    assert (await admin_api.get("/api/v1/admin/assistant/interactions", params={"show": "unanswered"})).json()[
+        "total"
+    ] == 0
+    assert (await admin_api.get("/api/v1/admin/assistant/cache")).json() == {"items": [], "total": 0}
+    assert (await admin_api.get("/api/v1/admin/assistant/knowledge")).status_code == 200
+    assert (await admin_api.get("/api/v1/admin/assistant/overview", params={"days": 0})).status_code == 422
+
+    missing = "6f1c0a52-0000-4000-8000-000000000001"
+    forbidden = await admin_api.post(
+        f"/api/v1/admin/assistant/cache/{missing}/active", json={"active": False}, headers=staff
+    )
+    assert forbidden.status_code == 403
+    assert (await admin_api.delete(f"/api/v1/admin/assistant/cache/{missing}", headers=staff)).status_code == 403
+
+    admin_api.cookies.clear()
+    owner = await login(admin_api)
+    assert (await admin_api.delete(f"/api/v1/admin/assistant/cache/{missing}", headers=owner)).status_code == 404
+    assert (await admin_api.delete("/api/v1/admin/assistant/cache/not-an-id", headers=owner)).status_code == 404
+
+
+async def test_the_owner_manages_the_assistants_knowledge_and_staff_only_read_it(admin_api: httpx.AsyncClient) -> None:
+    owner = await login(admin_api)
+    await admin_api.post(
+        "/api/v1/admin/users",
+        json={"username": "reza", "display_name": "رضا", "password": STAFF_PASSWORD, "role": "staff"},
+        headers=owner,
+    )
+    text = {"source_type": "service", "title": "پارکینگ", "body": "پارکینگ رایگان داریم.", "url": "/contact"}
+
+    created = await admin_api.post("/api/v1/admin/assistant/knowledge", json=text, headers=owner)
+    assert created.status_code == 201
+    entry_id = created.json()["entry_id"]
+    changed = await admin_api.put(
+        f"/api/v1/admin/assistant/knowledge/{entry_id}", json={**text, "body": "پارکینگ جلوی در است."}, headers=owner
+    )
+    assert changed.json()["body"] == "پارکینگ جلوی در است."
+    catalog = (await admin_api.get("/api/v1/admin/assistant/knowledge")).json()
+    assert [e["title"] for e in catalog["entries"]] == ["پارکینگ"]
+    assert (
+        catalog["sent_whole"] and catalog["max_entries"] >= 1 and catalog["total_chars"] == len("پارکینگ جلوی در است.")
+    )
+
+    outside = await admin_api.post(
+        "/api/v1/admin/assistant/knowledge", json={**text, "url": "https://evil.example"}, headers=owner
+    )
+    assert outside.status_code == 422
+    bad_type = await admin_api.post(
+        "/api/v1/admin/assistant/knowledge", json={**text, "source_type": "ticket"}, headers=owner
+    )
+    assert bad_type.status_code == 422
+
+    admin_api.cookies.clear()
+    staff = await login(admin_api, "reza", STAFF_PASSWORD)
+    assert (await admin_api.get("/api/v1/admin/assistant/knowledge")).status_code == 200
+    assert (await admin_api.post("/api/v1/admin/assistant/knowledge", json=text, headers=staff)).status_code == 403
+    assert (
+        await admin_api.put(f"/api/v1/admin/assistant/knowledge/{entry_id}", json=text, headers=staff)
+    ).status_code == 403
+    assert (await admin_api.delete(f"/api/v1/admin/assistant/knowledge/{entry_id}", headers=staff)).status_code == 403
+
+    admin_api.cookies.clear()
+    owner = await login(admin_api)
+    assert (await admin_api.delete(f"/api/v1/admin/assistant/knowledge/{entry_id}", headers=owner)).status_code == 204
+    assert (await admin_api.delete(f"/api/v1/admin/assistant/knowledge/{entry_id}", headers=owner)).status_code == 404
+    assert (
+        await admin_api.put("/api/v1/admin/assistant/knowledge/not-an-id", json=text, headers=owner)
+    ).status_code == 404
+
+
+async def test_writing_a_stored_answer_says_so_when_the_answer_store_is_switched_off(
+    admin_api: httpx.AsyncClient,
+) -> None:
+    owner = await login(admin_api)
+    body = {"question": "قیمت چنده؟", "answer": "از صفحه رزرو ببینید."}
+    added = await admin_api.post("/api/v1/admin/assistant/cache", json=body, headers=owner)
+    assert added.status_code == 422 and "خاموش" in added.json()["message"]
+    edited = await admin_api.put(
+        "/api/v1/admin/assistant/cache/6f1c0a52-0000-4000-8000-000000000001", json=body, headers=owner
+    )
+    assert edited.status_code == 422

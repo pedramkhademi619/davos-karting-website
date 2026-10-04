@@ -35,7 +35,9 @@ from davos.modules.assistant.adapters.embedding.onnx_sentence_embedding import O
 from davos.modules.assistant.adapters.knowledge.text_file_knowledge_source import TextFileKnowledgeSource
 from davos.modules.assistant.adapters.persistence.pg_answer_cache import PgAnswerCache
 from davos.modules.assistant.adapters.persistence.pg_trgm_knowledge_search import PgTrgmKnowledgeSearch
+from davos.modules.assistant.adapters.persistence.sqlalchemy_assistant_admin import SqlAlchemyAssistantAdmin
 from davos.modules.assistant.adapters.persistence.sqlalchemy_interaction_log import SqlAlchemyInteractionLog
+from davos.modules.assistant.adapters.persistence.sqlalchemy_knowledge_admin import SqlAlchemyKnowledgeAdmin
 from davos.modules.assistant.adapters.persistence.sqlalchemy_knowledge_index import SqlAlchemyKnowledgeIndex
 from davos.modules.assistant.adapters.persona.file_assistant_persona import FileAssistantPersona
 from davos.modules.assistant.application.ports.ai_budget_port import AiBudgetPort
@@ -45,18 +47,21 @@ from davos.modules.assistant.application.ports.conversation_context_port import 
 from davos.modules.assistant.application.ports.embedding_port import EmbeddingPort
 from davos.modules.assistant.application.services.answer_fingerprint import AnswerFingerprint
 from davos.modules.assistant.application.services.answer_support_verifier import AnswerSupportVerifier
+from davos.modules.assistant.application.services.curated_answer_service import CuratedAnswerService
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
 from davos.modules.assistant.application.services.question_equivalence_verifier import QuestionEquivalenceVerifier
 from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
 from davos.modules.assistant.application.use_cases.ask_assistant_use_case import AskAssistantUseCase
+from davos.modules.assistant.application.use_cases.assistant_review_use_case import AssistantReviewUseCase
 from davos.modules.assistant.application.use_cases.index_knowledge_entry_use_case import IndexKnowledgeEntryUseCase
+from davos.modules.assistant.application.use_cases.manage_knowledge_use_case import ManageKnowledgeUseCase
 from davos.modules.assistant.application.use_cases.purge_expired_interactions_use_case import (
     PurgeExpiredInteractionsUseCase,
 )
-from davos.modules.assistant.application.use_cases.submit_feedback_use_case import SubmitFeedbackUseCase
-from davos.modules.assistant.application.use_cases.sync_knowledge_documents_use_case import (
-    SyncKnowledgeDocumentsUseCase,
+from davos.modules.assistant.application.use_cases.seed_knowledge_from_documents_use_case import (
+    SeedKnowledgeFromDocumentsUseCase,
 )
+from davos.modules.assistant.application.use_cases.submit_feedback_use_case import SubmitFeedbackUseCase
 from davos.modules.assistant.domain.value_objects.persian_text_normalizer import PersianTextNormalizer
 from davos.modules.booking.adapters.persistence.sqlalchemy_booking_record_repository import (
     SqlAlchemyBookingRecordRepository,
@@ -500,6 +505,9 @@ class ApplicationContainer:
             support_verifier=self._build_support_verifier(),
         )
 
+    def assistant_review(self) -> AssistantReviewUseCase:
+        return AssistantReviewUseCase(admin=SqlAlchemyAssistantAdmin(self.session_factory), clock=self.clock)
+
     def submit_assistant_feedback(self) -> SubmitFeedbackUseCase:
         return SubmitFeedbackUseCase(
             interactions=SqlAlchemyInteractionLog(self.session_factory), answer_cache=self._answer_cache
@@ -510,13 +518,32 @@ class ApplicationContainer:
             index=SqlAlchemyKnowledgeIndex(self.session_factory, self._normalizer), clock=self.clock
         )
 
-    def sync_knowledge_documents(self) -> SyncKnowledgeDocumentsUseCase | None:
-        """Publishes the owner's knowledge .txt files; None when no folder is configured."""
+    def seed_knowledge_from_documents(self) -> SeedKnowledgeFromDocumentsUseCase | None:
+        """Fills an empty knowledge base from the .txt documents; None when no folder is configured."""
         if not self.settings.assistant_knowledge_dir:
             return None
-        return SyncKnowledgeDocumentsUseCase(
+        return SeedKnowledgeFromDocumentsUseCase(
             index=SqlAlchemyKnowledgeIndex(self.session_factory, self._normalizer),
             source=TextFileKnowledgeSource(self.settings.assistant_knowledge_dir),
+            clock=self.clock,
+        )
+
+    def curated_answers(self) -> CuratedAnswerService | None:
+        """Writing and correcting stored answers by hand; None when the answer cache is switched off."""
+        if self._embedding is None:
+            return None
+        return CuratedAnswerService(
+            embedding=self._embedding,
+            cache=PgAnswerCache(self.session_factory),
+            policy=PolicyFactory.answer_cache(self.settings),
+            clock=self.clock,
+            normalizer=self._normalizer,
+        )
+
+    def manage_knowledge(self) -> ManageKnowledgeUseCase:
+        return ManageKnowledgeUseCase(
+            admin=SqlAlchemyKnowledgeAdmin(self.session_factory, self._normalizer),
+            policy=self._assistant_policy,
             clock=self.clock,
         )
 

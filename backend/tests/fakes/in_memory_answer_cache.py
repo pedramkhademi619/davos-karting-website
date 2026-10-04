@@ -6,6 +6,7 @@ from datetime import datetime
 
 from davos.modules.assistant.application.ports.answer_cache_port import AnswerCachePort
 from davos.modules.assistant.domain.value_objects.cache_candidate import CacheCandidate
+from davos.modules.assistant.domain.value_objects.curated_answer import CURATED_FINGERPRINT
 from davos.modules.assistant.domain.value_objects.new_cache_entry import NewCacheEntry
 from davos.modules.assistant.domain.value_objects.query_embedding import QueryEmbedding
 
@@ -43,7 +44,7 @@ class InMemoryAnswerCache(AnswerCachePort):
             )
             for stored in self.entries
             if stored.active
-            and stored.entry.fingerprint == fingerprint
+            and stored.entry.fingerprint in (fingerprint, CURATED_FINGERPRINT)
             and stored.entry.embedding_model == embedding_model
         ]
         return sorted(found, key=lambda c: c.similarity, reverse=True)[:limit]
@@ -63,3 +64,12 @@ class InMemoryAnswerCache(AnswerCachePort):
         for stored in self.entries:
             if stored.entry.entry_id == entry_id:
                 stored.active = False
+
+    async def rewrite(self, entry: NewCacheEntry) -> bool:
+        self._check()
+        for stored in self.entries:
+            if stored.entry.entry_id == entry.entry_id:
+                stored.entry = entry
+                stored.active = True
+                return True
+        return False

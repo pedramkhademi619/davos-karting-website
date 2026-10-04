@@ -228,3 +228,56 @@ export type AdminUser = {
   last_login_at: string | null;
   created_at: string;
 };
+
+export type AssistantOverview = {
+  days: number;
+  questions: number;
+  by_outcome: Record<string, number>;
+  served_from_cache: number;
+  helpful_votes: number;
+  not_helpful_votes: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  cached_answers_active: number;
+  cached_answers_total: number;
+  knowledge_entries: number;
+};
+
+export type AssistantInteraction = {
+  interaction_id: string;
+  occurred_at: string;
+  outcome: string;
+  question_text: string | null;
+  answer_text: string | null;
+  helpful: boolean | null;
+  served_from_cache: boolean;
+  tokens: number;
+};
+
+export type CachedAnswer = {
+  entry_id: string;
+  question: string;
+  answer: string;
+  hit_count: number;
+  is_active: boolean;
+  is_curated: boolean;
+  created_at: string;
+  last_used_at: string;
+};
+
+export type KnowledgeEntry = {
+  entry_id: string;
+  source_type: string;
+  title: string;
+  body: string;
+  url: string;
+  updated_at: string;
+};
+
+export type KnowledgeCatalog = {
+  entries: KnowledgeEntry[];
+  max_entries: number;
+  max_chars: number;
+  total_chars: number;
+  sent_whole: boolean;
+};

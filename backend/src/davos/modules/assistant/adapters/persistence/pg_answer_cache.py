@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from davos.modules.assistant.application.ports.answer_cache_port import AnswerCachePort
 from davos.modules.assistant.domain.value_objects.answer_source import AnswerSource
 from davos.modules.assistant.domain.value_objects.cache_candidate import CacheCandidate
+from davos.modules.assistant.domain.value_objects.curated_answer import CURATED_FINGERPRINT
 from davos.modules.assistant.domain.value_objects.new_cache_entry import NewCacheEntry
 from davos.modules.assistant.domain.value_objects.query_embedding import QueryEmbedding
 
@@ -20,7 +21,7 @@ _FIND = text(
     SELECT id, resolved_query, signature, response, sources,
            1 - (embedding <=> CAST(CAST(:embedding AS text) AS vector)) AS similarity
     FROM assistant_answer_cache
-    WHERE is_active AND fingerprint = :fingerprint AND embedding_model = :model
+    WHERE is_active AND fingerprint IN (:fingerprint, :curated) AND embedding_model = :model
     ORDER BY embedding <=> CAST(CAST(:embedding AS text) AS vector)
     LIMIT :limit
     """
@@ -33,6 +34,15 @@ _INSERT = text(
     VALUES
         (:id, :original_query, :resolved_query, :signature, CAST(CAST(:embedding AS text) AS vector), :model,
          :fingerprint, :response, CAST(CAST(:sources AS text) AS jsonb), 0, true, :created_at, :created_at)
+    """
+)
+_REWRITE = text(
+    """
+    UPDATE assistant_answer_cache
+    SET original_query = :original_query, resolved_query = :resolved_query, signature = :signature,
+        embedding = CAST(CAST(:embedding AS text) AS vector), embedding_model = :model, fingerprint = :fingerprint,
+        response = :response, sources = CAST(CAST(:sources AS text) AS jsonb), is_active = true
+    WHERE id = :id
     """
 )
 _HIT = text("UPDATE assistant_answer_cache SET hit_count = hit_count + 1, last_used_at = :at WHERE id = :id")
@@ -58,6 +68,7 @@ class PgAnswerCache(AnswerCachePort):
                 {
                     "embedding": _literal(embedding),
                     "fingerprint": fingerprint,
+                    "curated": CURATED_FINGERPRINT,
                     "model": embedding_model,
                     "limit": limit,
                 },
@@ -65,23 +76,13 @@ class PgAnswerCache(AnswerCachePort):
             return [self._candidate(row) for row in rows.mappings()]
 
     async def store(self, entry: NewCacheEntry) -> None:
-        sources = json.dumps([{"title": s.title, "url": s.url} for s in entry.sources], ensure_ascii=False)
         async with self._session_factory() as session, session.begin():
-            await session.execute(
-                _INSERT,
-                {
-                    "id": entry.entry_id,
-                    "original_query": entry.original_query,
-                    "resolved_query": entry.resolved_query,
-                    "signature": entry.signature,
-                    "embedding": _literal(entry.embedding),
-                    "model": entry.embedding_model,
-                    "fingerprint": entry.fingerprint,
-                    "response": entry.response,
-                    "sources": sources,
-                    "created_at": entry.created_at,
-                },
-            )
+            await session.execute(_INSERT, {**self._entry_values(entry), "created_at": entry.created_at})
+
+    async def rewrite(self, entry: NewCacheEntry) -> bool:
+        async with self._session_factory() as session, session.begin():
+            result = await session.execute(_REWRITE, self._entry_values(entry))
+            return bool(result.rowcount)  # type: ignore[attr-defined]
 
     async def record_hit(self, entry_id: uuid.UUID, at: datetime) -> None:
         async with self._session_factory() as session, session.begin():
@@ -90,6 +91,21 @@ class PgAnswerCache(AnswerCachePort):
     async def deactivate(self, entry_id: uuid.UUID) -> None:
         async with self._session_factory() as session, session.begin():
             await session.execute(_DEACTIVATE, {"id": entry_id})
+
+    @staticmethod
+    def _entry_values(entry: NewCacheEntry) -> dict[str, Any]:
+        sources = json.dumps([{"title": s.title, "url": s.url} for s in entry.sources], ensure_ascii=False)
+        return {
+            "id": entry.entry_id,
+            "original_query": entry.original_query,
+            "resolved_query": entry.resolved_query,
+            "signature": entry.signature,
+            "embedding": _literal(entry.embedding),
+            "model": entry.embedding_model,
+            "fingerprint": entry.fingerprint,
+            "response": entry.response,
+            "sources": sources,
+        }
 
     @staticmethod
     def _candidate(row: Any) -> CacheCandidate:

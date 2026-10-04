@@ -1,4 +1,4 @@
-"""Knowledge files on disk -> the real database -> the real ask flow, with only the AI provider scripted."""
+"""Knowledge files on disk seed an empty database -> the real ask flow, with only the AI provider scripted."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ from davos.composition.application_container import ApplicationContainer
 from davos.modules.assistant.adapters.persistence.sqlalchemy_knowledge_index import SqlAlchemyKnowledgeIndex
 from davos.modules.assistant.application.use_cases.ask_assistant_command import AskAssistantCommand
 from davos.modules.assistant.application.use_cases.index_knowledge_entry_command import IndexKnowledgeEntryCommand
-from davos.modules.assistant.application.use_cases.sync_knowledge_documents_use_case import (
-    SyncKnowledgeDocumentsUseCase,
+from davos.modules.assistant.application.use_cases.seed_knowledge_from_documents_use_case import (
+    SeedKnowledgeFromDocumentsUseCase,
 )
 from davos.modules.assistant.domain.entities.knowledge_entry import KnowledgeEntry
 from davos.modules.assistant.domain.enums.answer_outcome import AnswerOutcome
@@ -26,9 +26,9 @@ BOOKING = "title: چطور نوبت رزرو کنم؟\nurl: /\ntype: service\n\n
 AGE_DRAFT = "title: محدودیت سنی و قد\nurl: /faq\nstatus: draft\n\nحداقل سن مجاز دوازده سال است."
 
 
-def _sync_use_case(container: ApplicationContainer, folder: Path) -> SyncKnowledgeDocumentsUseCase:
+def _seed_use_case(container: ApplicationContainer, folder: Path) -> SeedKnowledgeFromDocumentsUseCase:
     container.settings = container.settings.model_copy(update={"assistant_knowledge_dir": str(folder)})
-    use_case = container.sync_knowledge_documents()
+    use_case = container.seed_knowledge_from_documents()
     assert use_case is not None
     return use_case
 
@@ -43,8 +43,8 @@ async def test_files_on_disk_become_answerable_with_a_source_and_drafts_never_re
     (tmp_path / "booking.txt").write_text(BOOKING, encoding="utf-8")
     (tmp_path / "age.txt").write_text(AGE_DRAFT, encoding="utf-8")
 
-    report = await _sync_use_case(container, tmp_path).execute()
-    assert (report.published, report.drafts, report.problems) == (1, 1, ())
+    report = await _seed_use_case(container, tmp_path).execute()
+    assert (report.imported, report.drafts, report.problems) == (1, 1, ())
 
     answer = await _ask(container, "چطور نوبت رزرو کنم؟")
     assert answer.outcome is AnswerOutcome.ANSWERED
@@ -62,36 +62,29 @@ async def test_files_on_disk_become_answerable_with_a_source_and_drafts_never_re
     )
 
 
-async def test_deleting_a_file_or_turning_it_into_a_draft_takes_it_away_from_the_assistant(
-    container: ApplicationContainer, ai_chat: ScriptedAiChat, tmp_path: Path
+async def test_edits_and_deletions_made_in_the_panel_survive_a_restart(
+    container: ApplicationContainer, tmp_path: Path
 ) -> None:
+    """The files only start a fresh installation: running the seed again must not undo the owner's work."""
     file = tmp_path / "booking.txt"
     file.write_text(BOOKING, encoding="utf-8")
-    await _sync_use_case(container, tmp_path).execute()
-    assert (await _ask(container, "چطور نوبت رزرو کنم؟")).outcome is AnswerOutcome.ANSWERED
+    await _seed_use_case(container, tmp_path).execute()
+    manage = container.manage_knowledge()
+    entry = (await manage.catalog()).entries[0]
+    await manage.update(entry.entry_id, source_type=entry.source_type, title=entry.title, body="متن تازه", url="/")
 
-    file.write_text(BOOKING.replace("type: service", "type: service\nstatus: draft"), encoding="utf-8")
-    report = await _sync_use_case(container, tmp_path).execute()
-    assert (report.published, report.drafts, report.removed) == (0, 1, 1)
-    assert (await _ask(container, "چطور نوبت رزرو کنم؟")).outcome is AnswerOutcome.INSUFFICIENT_INFORMATION
-
-
-async def test_an_edited_file_replaces_the_old_text_in_place(container: ApplicationContainer, tmp_path: Path) -> None:
-    file = tmp_path / "booking.txt"
-    file.write_text(BOOKING, encoding="utf-8")
-    await _sync_use_case(container, tmp_path).execute()
     file.write_text(BOOKING.replace("آنلاین", "تلفنی"), encoding="utf-8")
-    await _sync_use_case(container, tmp_path).execute()
+    report = await _seed_use_case(container, tmp_path).execute()
 
-    index = SqlAlchemyKnowledgeIndex(container.session_factory, PersianTextNormalizer())
-    assert await index.refs_with_prefix("file:") == [(KnowledgeSourceType.SERVICE, "file:booking")]
-    found = await container.knowledge_search().search(
-        SearchQuery.from_text("نوبت تلفنی", PersianTextNormalizer()), limit=3
-    )
-    assert [p.text for p in found] == [BOOKING.split("\n\n", 1)[1].replace("آنلاین", "تلفنی")]
+    assert report.skipped_because_not_empty
+    assert [e.body for e in (await manage.catalog()).entries] == ["متن تازه"]
+    await manage.delete(entry.entry_id)
+    assert (await manage.catalog()).entries == ()
 
 
-async def test_entries_from_other_publishers_survive_a_sync(container: ApplicationContainer, tmp_path: Path) -> None:
+async def test_any_existing_entry_stops_the_files_from_being_read(
+    container: ApplicationContainer, tmp_path: Path
+) -> None:
     await container.index_knowledge_entry().execute(
         IndexKnowledgeEntryCommand(
             source_type=KnowledgeSourceType.POLICY,
@@ -102,9 +95,11 @@ async def test_entries_from_other_publishers_survive_a_sync(container: Applicati
             published=True,
         )
     )
-    await _sync_use_case(container, tmp_path).execute()  # an empty folder: nothing from files exists
+    (tmp_path / "booking.txt").write_text(BOOKING, encoding="utf-8")
+    await _seed_use_case(container, tmp_path).execute()
     index = SqlAlchemyKnowledgeIndex(container.session_factory, PersianTextNormalizer())
     assert await index.refs_with_prefix("cms-") == [(KnowledgeSourceType.POLICY, "cms-42")]
+    assert await index.refs_with_prefix("file:") == []  # the booking file was not imported
 
 
 async def test_the_prefix_lookup_treats_sql_wildcards_literally(container: ApplicationContainer) -> None:
@@ -129,7 +124,7 @@ async def test_a_small_knowledge_base_answers_casual_questions_that_a_keyword_ga
 ) -> None:
     (tmp_path / "booking.txt").write_text(BOOKING, encoding="utf-8")
     (tmp_path / "hours.txt").write_text(HOURS, encoding="utf-8")
-    await _sync_use_case(container, tmp_path).execute()
+    await _seed_use_case(container, tmp_path).execute()
 
     # In real life this phrasing scores about 0.21 against the booking entry, below the 0.3 gate.
     answer = await _ask(container, "می‌خوام برای آخر هفته یه نوبت بگیرم، از کجا شروع کنم؟")
@@ -143,7 +138,7 @@ async def test_the_whole_knowledge_base_is_returned_best_match_first(
 ) -> None:
     (tmp_path / "booking.txt").write_text(BOOKING, encoding="utf-8")
     (tmp_path / "hours.txt").write_text(HOURS, encoding="utf-8")
-    await _sync_use_case(container, tmp_path).execute()
+    await _seed_use_case(container, tmp_path).execute()
 
     query = SearchQuery.from_text("ساعت کاری", PersianTextNormalizer())
     passages = await container.knowledge_search().all_entries_if_small(query, max_entries=12, max_total_chars=8000)
@@ -158,7 +153,7 @@ async def test_a_large_knowledge_base_is_not_sent_whole_and_uses_the_relevance_g
     for number in range(13):  # one more than the 12-entry limit
         body = f"title: موضوع شماره {number}\nurl: /faq\n\nمتن یگانه {'الف' * (number + 3)} برای موضوع."
         (tmp_path / f"topic{number}.txt").write_text(body, encoding="utf-8")
-    await _sync_use_case(container, tmp_path).execute()
+    await _seed_use_case(container, tmp_path).execute()
 
     query = SearchQuery.from_text("می‌خوام یه چیزی بپرسم", PersianTextNormalizer())
     assert await container.knowledge_search().all_entries_if_small(query, max_entries=12, max_total_chars=8000) == []
@@ -170,7 +165,7 @@ async def test_too_much_text_also_switches_off_the_whole_knowledge_mode(
     container: ApplicationContainer, tmp_path: Path
 ) -> None:
     (tmp_path / "big.txt").write_text("title: بزرگ\nurl: /faq\n\n" + "متن " * 500, encoding="utf-8")
-    await _sync_use_case(container, tmp_path).execute()
+    await _seed_use_case(container, tmp_path).execute()
     query = SearchQuery.from_text("متن", PersianTextNormalizer())
     assert await container.knowledge_search().all_entries_if_small(query, max_entries=12, max_total_chars=1000) == []
     assert (

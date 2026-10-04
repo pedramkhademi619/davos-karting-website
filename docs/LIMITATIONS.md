@@ -87,8 +87,7 @@ Nothing below is claimed as delivered.
 ## Implemented but not verified externally
 
 * **Zarinpal**: adapter follows the documented contract; no merchant id, so no live sandbox call was made.
-* **MinIO**: compose uses `quay.io/minio/minio:RELEASE.2024-10-13T13-34-11Z` (Docker Hub no longer hosts MinIO images). It starts
-  and reports healthy, but nothing in the backend uses object storage yet (`ObjectStoragePort` is not implemented).
+* **Object storage**: none. The compose file once had a MinIO service that nothing used; it was removed on 2026-10-04 because its image is no longer published (Docker Hub and quay.io both refuse it). Add an S3-compatible service together with the code that needs it.
 * **AI provider**: exercised by the automated tests only through fakes and recorded response shapes. By hand, on 2026-09-21, about
   35 questions went to a real gateway (GapGPT, `gemma-3-27b-it`), and later an 18-question set was run several times. Most answers
   were right, but **the runs varied**: while the wording was being tuned most had one to three riding-eligibility mistakes (a

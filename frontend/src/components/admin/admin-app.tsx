@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type ComponentType, type FormEvent, type SVGProps } from "react";
 import { AdminSessionContext, makeSession } from "@/components/admin/admin-session";
+import { AssistantTab } from "@/components/admin/assistant-tab";
 import { CustomersTab } from "@/components/admin/customers-tab";
 import { DashboardTab } from "@/components/admin/dashboard-tab";
 import { PaymentsTab } from "@/components/admin/payments-tab";
@@ -11,7 +12,7 @@ import { SettingsTab } from "@/components/admin/settings-tab";
 import { SmsTab } from "@/components/admin/sms-tab";
 import { UsersTab } from "@/components/admin/users-tab";
 import { buttonClasses } from "@/components/button-link";
-import { CalendarIcon, CardIcon, GaugeIcon, LogoutIcon, SettingsIcon, SmsIcon, UserIcon, UsersIcon } from "@/components/icons";
+import { CalendarIcon, CardIcon, ChatIcon, GaugeIcon, LogoutIcon, SettingsIcon, SmsIcon, UserIcon, UsersIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { SpeedLines } from "@/components/speed-lines";
 import { Alert } from "@/components/ui/alert";
@@ -19,7 +20,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { api, errorMessage } from "@/lib/api";
 import type { AdminMe } from "@/lib/types";
 
-type TabKey = "dashboard" | "reservations" | "customers" | "payments" | "sms" | "settings" | "users";
+type TabKey = "dashboard" | "reservations" | "customers" | "payments" | "sms" | "assistant" | "settings" | "users";
 
 const TABS: { key: TabKey; label: string; icon: ComponentType<SVGProps<SVGSVGElement>>; ownerOnly?: boolean }[] = [
   { key: "dashboard", label: "داشبورد", icon: GaugeIcon },
@@ -27,6 +28,7 @@ const TABS: { key: TabKey; label: string; icon: ComponentType<SVGProps<SVGSVGEle
   { key: "customers", label: "مشتریان", icon: UserIcon },
   { key: "payments", label: "پرداخت‌ها", icon: CardIcon },
   { key: "sms", label: "پنل پیامک", icon: SmsIcon },
+  { key: "assistant", label: "دستیار هوشمند", icon: ChatIcon },
   { key: "settings", label: "تنظیمات و قیمت‌ها", icon: SettingsIcon },
   { key: "users", label: "کاربران پنل", icon: UsersIcon },
 ];
@@ -114,6 +116,7 @@ export function AdminApp() {
           {tab === "customers" && <CustomersTab />}
           {tab === "payments" && <PaymentsTab />}
           {tab === "sms" && <SmsTab />}
+          {tab === "assistant" && <AssistantTab />}
           {tab === "settings" && <SettingsTab />}
           {tab === "users" && <UsersTab />}
         </main>
