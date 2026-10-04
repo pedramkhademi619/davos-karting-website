@@ -22,7 +22,7 @@ HELLO = EvalCase("h", "small_talk", "سلام", ExpectationKind.SMALL_TALK)
 
 def runner(chat: ScriptedAiChat, **config: object) -> EvalRunner:
     return EvalRunner(
-        config=RunConfig(model="fake-model", **config),  # type: ignore[arg-type]
+        config=RunConfig(model="fake-model", support_check=False, **config),  # type: ignore[arg-type]
         chat=chat,
         search=FileKnowledgeSearch(TextFileKnowledgeSource(BACKEND / "knowledge")),
         persona=FileAssistantPersona(str(BACKEND / "prompts" / "assistant_persona.txt")),

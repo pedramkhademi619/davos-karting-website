@@ -1,0 +1,2159 @@
+{
+ "summary": {
+  "date": "2026-10-04 18:42 UTC",
+  "commit": "051fd91+dirty",
+  "rules_version": "96bf316fc6d7e1b9",
+  "persona_sha": "770ff29135c7",
+  "knowledge_sha": "5f1bfb6b6ebd",
+  "judge_model": "",
+  "spent_usd": "0.0153",
+  "aborted": "",
+  "model": "gemma-3-27b-it",
+  "label": "held_out_final",
+  "cases": 24,
+  "repeats": 3,
+  "runs": 72,
+  "pass_rate": 0.9583333333333334,
+  "pass_rate_ci95": [
+   0.8845072317804198,
+   0.9857291926441228
+  ],
+  "pass_rate_without_provider_failures": 0.9583333333333334,
+  "pass_all_repeats": 0.9583333333333334,
+  "by_category": {
+   "held_out_unknown": [
+    69,
+    72
+   ]
+  },
+  "outcomes": {
+   "insufficient_information": 66,
+   "answered": 6
+  },
+  "model_answered_share": 1.0,
+  "repair_share": 0.2361111111111111,
+  "provider_failures": 0,
+  "mean_prompt_tokens": 3597.6944444444443,
+  "mean_completion_tokens": 13.541666666666666,
+  "cached_prompt_share": 0.7261440583089479,
+  "usd_per_1000_questions": 0.21260047222222223,
+  "latency_p50_s": 1.1405677999998716,
+  "latency_p95_s": 3.59415469999999
+ },
+ "runs": [
+  {
+   "id": "heldout-01",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "حیوان خانگی هم میتونم با خودم بیارم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.35,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3464,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015393,
+     "latency_s": 1.3479393000000073,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-02",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "قلیان یا سیگار توی مجموعه آزاده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.48,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015345,
+     "latency_s": 1.480866300000116,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-03",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "تماشاچی هم میتونه بیاد داخل و فقط نگاه کنه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 3.21,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3464,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 55,
+     "cost_usd": 0.00017643,
+     "latency_s": 2.392776500000082,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 604,
+     "cached_prompt_tokens": 512,
+     "completion_tokens": 3,
+     "cost_usd": 2.919e-05,
+     "latency_s": 0.8190022999999655,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-04",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "ناهار یا غذا سفارش بدیم برامون میارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.94,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015385,
+     "latency_s": 0.9346213000001171,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-05",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "بچه شیرخوار دارم، جایی برای نگهداریش هست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.18,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3465,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000413335,
+     "latency_s": 1.1828168000001824,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-06",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "اقساطی هم میشه پرداخت کرد؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 2.93,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3456,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 37,
+     "cost_usd": 0.00016769,
+     "latency_s": 2.136174600000004,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 537,
+     "cached_prompt_tokens": 480,
+     "completion_tokens": 3,
+     "cost_usd": 2.511e-05,
+     "latency_s": 0.7970286000002034,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-07",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "برای مراسم عروسی یا نامزدی پیست رو اجاره میدید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "متاسفم، اجاره دادن پیست برای مراسم عروسی یا نامزدی در دستور کار ما نیست. می‌تونید برای هماهنگی‌های ویژه با پشتیبانی از طریق صفحه «تماس با ما» در سایت ارتباط برقرار کنید.",
+   "latency_s": 3.47,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3465,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 57,
+     "cost_usd": 0.00017741,
+     "latency_s": 2.810988899999984,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 605,
+     "cached_prompt_tokens": 512,
+     "completion_tokens": 3,
+     "cost_usd": 2.927e-05,
+     "latency_s": 0.6570842999999513,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-08",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "میتونم با دوربین گوپرو خودم فیلم بگیرم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.66,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015361,
+     "latency_s": 0.6605211999999483,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-09",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "برای فرد ویلچری هم امکانات دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.11,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015345,
+     "latency_s": 1.1093384000000697,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-10",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "من آسم دارم میتونم سوار شم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.06,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015361,
+     "latency_s": 1.0551350000000639,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-11",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "ماسک و دستکش خودتون میدید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.16,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015353,
+     "latency_s": 1.1623744000000897,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-12",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "برای شرکت ما قرارداد سازمانی دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.16,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000412383,
+     "latency_s": 1.1606426999999258,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-13",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "کیف و کوله ام رو کجا بذارم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "متاسفم، درباره جای گذاشتن کیف و کوله اطلاعاتی ندارم.",
+   "latency_s": 3.39,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 23,
+     "cost_usd": 0.00041634,
+     "latency_s": 2.028472400000055,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 568,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 3,
+     "cost_usd": 6.8192e-05,
+     "latency_s": 1.3574945999998818,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-14",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "ظرفیت پارکینگ ماشین چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.08,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015353,
+     "latency_s": 1.0831579000000602,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-15",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "نماز اونجا میشه خوند؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.04,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015345,
+     "latency_s": 1.0420234999999138,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-16",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "ایستگاه مترو نزدیک شماست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.97,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015337,
+     "latency_s": 1.9698097999998936,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-17",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "اینترنت رایگان دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.99,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3456,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015329,
+     "latency_s": 0.9861900999999307,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-18",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "دوربین مداربسته هست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.12,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3453,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000411907,
+     "latency_s": 1.1175111000000015,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-19",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "سن مربی‌های شما چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.28,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015353,
+     "latency_s": 1.278928599999972,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-20",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "ماشین‌هاتون چند اسب بخار قدرت دارن؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.25,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3465,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015401,
+     "latency_s": 1.2463860000000295,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-21",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "سرعت ماشین‌ها چقدره؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.07,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015345,
+     "latency_s": 1.0684757999999874,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-22",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "با پول نقد هم میشه پرداخت کرد؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.96,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 22,
+     "cost_usd": 0.0001611,
+     "latency_s": 1.0768465999999535,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 522,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 3,
+     "cost_usd": 6.2718e-05,
+     "latency_s": 0.8844799999999395,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-23",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "برای دانش‌آموزا تخفیف مدرسه ای دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفانه نه، تخفیف مدرسه ای نداریم. فعلا فقط باشگاه مشتریان داریم که هنوز راه نیفتاده.",
+   "latency_s": 3.4,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 33,
+     "cost_usd": 0.000418459,
+     "latency_s": 1.9411595999999918,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 636,
+     "cached_prompt_tokens": 224,
+     "completion_tokens": 3,
+     "cost_usd": 4.327e-05,
+     "latency_s": 1.4598435000000336,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-24",
+   "category": "held_out_unknown",
+   "repeat": 1,
+   "question": "پیست سرپوشیده است یا روباز؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.96,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015369,
+     "latency_s": 0.9600462999999309,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-01",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "حیوان خانگی هم میتونم با خودم بیارم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.37,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015385,
+     "latency_s": 1.3741408000000774,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-02",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "قلیان یا سیگار توی مجموعه آزاده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.36,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015377,
+     "latency_s": 1.3589786000000004,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-03",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "تماشاچی هم میتونه بیاد داخل و فقط نگاه کنه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 3.72,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3466,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 57,
+     "cost_usd": 0.00017749,
+     "latency_s": 2.567410099999961,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 703,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 3,
+     "cost_usd": 8.4257e-05,
+     "latency_s": 1.1556812999999693,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-04",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "ناهار یا غذا سفارش بدیم برامون میارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.94,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000413097,
+     "latency_s": 1.9359540999998899,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-05",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "بچه شیرخوار دارم، جایی برای نگهداریش هست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.13,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000413097,
+     "latency_s": 1.1263148000000456,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-06",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "اقساطی هم میشه پرداخت کرد؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 2.43,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 32,
+     "cost_usd": 0.00016568,
+     "latency_s": 1.604714400000148,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 532,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 3,
+     "cost_usd": 6.3908e-05,
+     "latency_s": 0.8243812000000617,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-07",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "برای مراسم عروسی یا نامزدی پیست رو اجاره میدید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 3.59,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3465,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 43,
+     "cost_usd": 0.00017111,
+     "latency_s": 2.2265209999998206,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 593,
+     "cached_prompt_tokens": 544,
+     "completion_tokens": 3,
+     "cost_usd": 2.703e-05,
+     "latency_s": 1.3668961999999283,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-08",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "میتونم با دوربین گوپرو خودم فیلم بگیرم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.19,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015361,
+     "latency_s": 1.186717499999986,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-09",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "برای فرد ویلچری هم امکانات دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.12,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015345,
+     "latency_s": 1.120302600000059,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-10",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "من آسم دارم میتونم سوار شم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "متاسفم، ولی در مورد این موضوع اطلاعاتی نداریم. برای پرسش‌هایی که پاسخشان در این مجموعه نیست، می‌تونید از صفحه «تماس با ما» در سایت استفاده کنید.",
+   "latency_s": 3.27,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 49,
+     "cost_usd": 0.00017333,
+     "latency_s": 2.4825166999999055,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 591,
+     "cached_prompt_tokens": 512,
+     "completion_tokens": 3,
+     "cost_usd": 2.815e-05,
+     "latency_s": 0.7834792000001016,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-11",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "ماسک و دستکش خودتون میدید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.89,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015353,
+     "latency_s": 0.8892203000000336,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-12",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "برای شرکت ما قرارداد سازمانی دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.85,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3456,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000412264,
+     "latency_s": 0.8505150999999387,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-13",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "کیف و کوله ام رو کجا بذارم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.97,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015377,
+     "latency_s": 0.9739085000001069,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-14",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "ظرفیت پارکینگ ماشین چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.14,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015369,
+     "latency_s": 1.1399926999999934,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-15",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "نماز اونجا میشه خوند؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.98,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3455,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000412145,
+     "latency_s": 0.975216699999919,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-16",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "ایستگاه مترو نزدیک شماست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.11,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3456,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015329,
+     "latency_s": 1.1100272000001041,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-17",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "اینترنت رایگان دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.19,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3456,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000412264,
+     "latency_s": 1.1859739999999874,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-18",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "دوربین مداربسته هست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.87,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3452,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015297,
+     "latency_s": 0.8675163000000339,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-19",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "سن مربی‌های شما چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.12,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3454,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015313,
+     "latency_s": 1.1157301000000643,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-20",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "ماشین‌هاتون چند اسب بخار قدرت دارن؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.0,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3464,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015393,
+     "latency_s": 1.0015482000001157,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-21",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "سرعت ماشین‌ها چقدره؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.24,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015353,
+     "latency_s": 1.2390462000000753,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-22",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "با پول نقد هم میشه پرداخت کرد؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 2.57,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 29,
+     "cost_usd": 0.00016425,
+     "latency_s": 1.7131696999999804,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 529,
+     "cached_prompt_tokens": 480,
+     "completion_tokens": 3,
+     "cost_usd": 2.447e-05,
+     "latency_s": 0.8523081999999249,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-23",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "برای دانش‌آموزا تخفیف مدرسه ای دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفانه نه، تخفیف مدرسه ای نداریم. فعلاً فقط باشگاه مشتریان داریم که هنوز راه‌اندازی نشده.",
+   "latency_s": 3.5,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 34,
+     "cost_usd": 0.00016674,
+     "latency_s": 2.5998723000000155,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 637,
+     "cached_prompt_tokens": 256,
+     "completion_tokens": 3,
+     "cost_usd": 4.207e-05,
+     "latency_s": 0.9003520000001117,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-24",
+   "category": "held_out_unknown",
+   "repeat": 2,
+   "question": "پیست سرپوشیده است یا روباز؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.97,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015345,
+     "latency_s": 0.9740209000001414,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-01",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "حیوان خانگی هم میتونم با خودم بیارم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.04,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015377,
+     "latency_s": 1.0403155999999854,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-02",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "قلیان یا سیگار توی مجموعه آزاده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.42,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015377,
+     "latency_s": 1.4197764000000461,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-03",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "تماشاچی هم میتونه بیاد داخل و فقط نگاه کنه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 3.93,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 41,
+     "cost_usd": 0.00017005,
+     "latency_s": 3.0735839999999826,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 590,
+     "cached_prompt_tokens": 544,
+     "completion_tokens": 3,
+     "cost_usd": 2.679e-05,
+     "latency_s": 0.8592069999999694,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-04",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "ناهار یا غذا سفارش بدیم برامون میارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.43,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015385,
+     "latency_s": 1.427456900000152,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-05",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "بچه شیرخوار دارم، جایی برای نگهداریش هست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.79,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3464,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.00027937,
+     "latency_s": 1.7882912000000033,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-06",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "اقساطی هم میشه پرداخت کرد؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 2.49,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 34,
+     "cost_usd": 0.0001665,
+     "latency_s": 1.7107539999999517,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 534,
+     "cached_prompt_tokens": 496,
+     "completion_tokens": 3,
+     "cost_usd": 2.423e-05,
+     "latency_s": 0.7825864999999794,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-07",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "برای مراسم عروسی یا نامزدی پیست رو اجاره میدید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 3.96,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3464,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 47,
+     "cost_usd": 0.000421616,
+     "latency_s": 3.251134100000172,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 595,
+     "cached_prompt_tokens": 544,
+     "completion_tokens": 3,
+     "cost_usd": 2.719e-05,
+     "latency_s": 0.7060410999999931,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-08",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "میتونم با دوربین گوپرو خودم فیلم بگیرم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.13,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.00027913,
+     "latency_s": 1.126155400000016,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-09",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "برای فرد ویلچری هم امکانات دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.12,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015361,
+     "latency_s": 1.121094899999889,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-10",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "من آسم دارم میتونم سوار شم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.75,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015361,
+     "latency_s": 0.7473288000001048,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-11",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "ماسک و دستکش خودتون میدید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.05,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015361,
+     "latency_s": 1.0519514000000072,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-12",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "برای شرکت ما قرارداد سازمانی دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.03,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015337,
+     "latency_s": 1.0293674999998075,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-13",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "کیف و کوله ام رو کجا بذارم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.9,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015361,
+     "latency_s": 0.9004086999998435,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-14",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "ظرفیت پارکینگ ماشین چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.2,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015345,
+     "latency_s": 1.2007882999998856,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-15",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "نماز اونجا میشه خوند؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.14,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015337,
+     "latency_s": 1.14074329999994,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-16",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "ایستگاه مترو نزدیک شماست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.8,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015353,
+     "latency_s": 0.8006273000000874,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-17",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "اینترنت رایگان دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.05,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015337,
+     "latency_s": 1.04849779999995,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-18",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "دوربین مداربسته هست؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.84,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3455,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015321,
+     "latency_s": 0.8412287999999535,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-19",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "سن مربی‌های شما چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.97,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015337,
+     "latency_s": 0.971261800000093,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-20",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "ماشین‌هاتون چند اسب بخار قدرت دارن؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.99,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015385,
+     "latency_s": 0.9905283000000509,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-21",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "سرعت ماشین‌ها چقدره؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.0,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 5,
+     "cost_usd": 0.00015345,
+     "latency_s": 1.0021621000000778,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-22",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "با پول نقد هم میشه پرداخت کرد؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 2.39,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 22,
+     "cost_usd": 0.0001611,
+     "latency_s": 1.410437100000081,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 522,
+     "cached_prompt_tokens": 496,
+     "completion_tokens": 3,
+     "cost_usd": 2.327e-05,
+     "latency_s": 0.9791694999998981,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-23",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "برای دانش‌آموزا تخفیف مدرسه ای دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفانه نه، تخفیف مدرسه‌ای نداریم. فعلاً فقط باشگاه مشتریان داریم که هنوز راه‌اندازی نشده.",
+   "latency_s": 2.27,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 3136,
+     "completion_tokens": 34,
+     "cost_usd": 0.00016682,
+     "latency_s": 1.6095989000000372,
+     "failed": false,
+     "error": ""
+    },
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 637,
+     "cached_prompt_tokens": 608,
+     "completion_tokens": 3,
+     "cost_usd": 2.799e-05,
+     "latency_s": 0.6623233000000255,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldout-24",
+   "category": "held_out_unknown",
+   "repeat": 3,
+   "question": "پیست سرپوشیده است یا روباز؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.05,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000412502,
+     "latency_s": 1.0463890999999421,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  }
+ ]
+}

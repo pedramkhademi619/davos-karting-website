@@ -18,7 +18,7 @@ from davos.modules.assistant.application.ports.chat_completion_request import Ch
 from davos.modules.assistant.application.ports.conversation_context_port import ConversationContextPort
 from davos.modules.assistant.application.ports.interaction_log_port import InteractionLogPort
 from davos.modules.assistant.application.ports.knowledge_search_port import KnowledgeSearchPort
-from davos.modules.assistant.application.services.answer_support_verifier import AnswerSupportVerifier, SupportCheck
+from davos.modules.assistant.application.services.answer_support_verifier import AnswerSupportVerifier
 from davos.modules.assistant.application.services.booking_facts_passage import BookingFactsPassage
 from davos.modules.assistant.application.services.eligibility_check_service import EligibilityCheckService
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
@@ -48,6 +48,7 @@ from davos.modules.assistant.domain.value_objects.resolved_query import Resolved
 from davos.modules.assistant.domain.value_objects.retrieved_passage import RetrievedPassage
 from davos.modules.assistant.domain.value_objects.search_query import SearchQuery
 from davos.modules.assistant.domain.value_objects.support_answer import SupportAnswer
+from davos.modules.assistant.domain.value_objects.support_check import SupportCheck
 from davos.modules.assistant.domain.value_objects.token_usage import TokenUsage
 from davos.shared_kernel.application.clock import Clock
 from davos.shared_kernel.application.rate_limiter import RateLimiter

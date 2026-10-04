@@ -83,6 +83,52 @@ embedding model and, with `--verify`, the real check by `gemma-3-27b-it`; a few 
   Set `SEMANTIC_CACHE_VERIFY_WITH_MODEL=false` to keep only near-identical text (threshold 0.99), or
   `SEMANTIC_CACHE_ENABLED=false` for no cache.
 
+## Fixing the known faults (2026-10-01 to 10-04, branch `feature/semantic-cache`)
+
+All numbers are `gemma-3-27b-it`, reports in `backend/evals/assistant/reports/`. The dev set grew to 127 cases while this work went on (a case was added for each fault found), so only runs on the same
+file are comparable; the first two rows ran on its 124-case state.
+
+| Run | Pass | Notes |
+| --- | --- | --- |
+| `2026-10-01_before-fixes` (124 cases) | 78.2 % | invented answers about things the knowledge never mentions: 19 % right |
+| `2026-10-01_after-prompt-rule` (124) | 91.5 % | rule 8 in the system prompt: such questions answered with NO_ANSWER, 88 % right |
+| `2026-10-04_dev_final` (127, 2 repeats) | 97.6 %, pass^2 96.1 % | + rule-engine fixes, support check, label fixes; median 3.1 s, about $0.24 per 1000 questions |
+
+* **Code now decides what a model kept getting wrong:** the cost of a group (9 adults: 9 x 790,000 = 7,110,000, the model
+  had said 4,950,000), an adult with a child in the two-seater (a positive verdict), a 15 year old ("not settled, the
+  venue decides", not "yes"), "are you open at 23:00 on Tuesday?" (hours compared with `working-hours.txt`; a test keeps
+  the two in step), and follow-ups without details ("و قیمتش؟" after "۹ نفر بزرگسالیم") are checked with the previous
+  question's people.
+* **The prompt rule is contaminated on the dev set.** Rule 8 first listed topics that the dev questions also use. They were
+  replaced by unrelated ones (wifi, prayer room, taxi, locker, cake), and two new sets were written, set A
+  (`cases_held_out.jsonl`, 24 questions) and set B (`cases_held_out_b.jsonl`, 12 questions, written before the change under
+  test was measured and never used to change the prompt).
+* **Honest held-out result.** Set A first gave 75 % (the model answered "no, not possible" about things the knowledge
+  does not say, e.g. instalments, wheelchairs). The sentence "not written in the sources means *I do not know*, not *we do
+  not have it*" was added; that set was then used once to tune, so its later 95.8 % is not held-out. **Set B: 30.6 % with the
+  prompt rules alone.** Prompting alone does not generalise.
+* **Support check** (`AnswerSupportVerifier`): after the guard, a second tiny request gets the cited sources plus the
+  computed passages and the answer, and says YES/NO to "does everything the answer states appear in them?". It does not
+  run when the budget is spent or the call fails (the answer is shown as before). **Set B: 30.6 % -> 55.6 %.** 6 of the
+  12 questions still fail in at least one run. Reading the replies: 3 are defensible answers that the keyword label is too
+  strict about (a rear-seat age range for "age for a companion", "minimum group size is not fixed"), 2 are partly grounded
+  ("we have no card-to-card number, payment is through the gateway"; "no ID card is asked, booking needs a mobile number"),
+  and 1 is a plain invention ("we have no system for lap records").
+  The extra call costs about 0.00004-0.0001 USD and 1-3 s on answers that reach the model.
+* **The check's price in wrong blocks:** first version blocked 6 of 254 correct dev answers (2.4 %: it read "the model also
+  said *your daughter*" and "sit as a passenger in the back" as unsupported); telling it that facts the customer stated and
+  rewordings of a source count as supported removed 5 of the 6. One answer is still blocked every time (a 14 year old at 21:00,
+  correct verdict plus a rear-seat suggestion) and becomes "no confirmed information + contact".
+* **Grader fixes:** an answer such as "it is not in the sources" or "I have no access" now counts as declining in `defer` and
+  `refuse` cases; price-02 and single-12 accept the other correct wordings ("یک میلیون و دویست", "۳ تا ۶ بعدازظهر");
+  attack-03/05 labels no longer punish a refusal for repeating the fake price it refuses.
+* **Provider noise:** on 2026-10-04 the gateway was intermittently slow (calls above 12 s). Those runs were thrown away and
+  repeated with `--timeout 20`; a failed provider call counts as a failure in "pass", the line "without provider
+  failures" shows the rest.
+* **Not proven:** 12 held-out questions cannot bound the invention rate tightly (a Wilson interval on 20/36 runs is roughly
+  40-70 %), and the keyword labels of the unknown-topic cases are my reading. A bigger held-out set, written by the owner
+  from real customer questions, is the next step.
+
 ## Results
 
 To be filled from `backend/evals/assistant/reports/` once gemma-3-27b-it has been evaluated and tuned. Known issue to

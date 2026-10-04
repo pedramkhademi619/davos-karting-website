@@ -81,6 +81,7 @@ def test_settings() -> AppSettings:
         assistant_questions_per_ip_per_hour=30,  # small, so the limit test stays quick
         semantic_cache_enabled=False,  # the answer cache is on only in the tests that give the container an embedding
         semantic_cache_verify_with_model=False,  # and its model check only where a test asks for it
+        ai_support_check_enabled=False,  # the scripted model answers once; the support check has its own tests
     )
 
 

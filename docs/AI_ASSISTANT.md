@@ -37,8 +37,10 @@ flowchart TD
   RP --> GU2{grounding guard}
   GU2 -- still not showable --> R2
   GU -- leak / NO_ANSWER --> R2
-  GU --> A[answer + cited stored sources]
-  GU2 --> A
+  GU --> SV{support check: do the cited sources and<br/>the computed passages say what the answer claims?}
+  GU2 --> SV
+  SV -- no --> R2
+  SV -- yes, or the check could not run --> A[answer + cited stored sources]
   A -. in the background .-> CS[(remember the turn)]
 ```
 
@@ -200,6 +202,7 @@ Put these in the repository's `.env` (never commit it; the key stays on the serv
 | `AI_FALLBACK_MODEL`, `AI_FALLBACK_TOKEN_LIMIT_PARAM`, `AI_FALLBACK_SEND_TEMPERATURE`, `AI_FALLBACK_MIN_OUTPUT_TOKENS` | optional backup model on the same provider, asked only when the main model fails |
 | `AI_DAILY_TOKEN_BUDGET` | shared daily budget, default 400000. A question costs roughly 2-5k tokens (the knowledge passages are sent), so about 100-200 model-answered questions a day fit; raise it if the site is busy |
 | `AI_TIMEOUT_SECONDS`, `AI_MAX_CONCURRENCY`, `AI_MAX_OUTPUT_TOKENS` | timeout (12), concurrent calls (8), reply cap (400) |
+| `AI_SUPPORT_CHECK_ENABLED`, `AI_SUPPORT_CHECK_TIMEOUT_SECONDS` | the second look at every answer: a tiny request asks whether the cited sources (and the computed checks) say what the answer claims; an answer they do not back becomes "no confirmed information". A check that fails or times out (5 s) lets the answer through |
 | `CONVERSATION_CONTEXT_*` | the short follow-up memory (Redis) |
 | `ASSISTANT_PERSONA_FILE`, `ASSISTANT_KNOWLEDGE_DIR` | set by `docker-compose.yml` to the mounted `backend/prompts` and `backend/knowledge` |
 
