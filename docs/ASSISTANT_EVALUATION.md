@@ -92,7 +92,7 @@ file are comparable; the first two rows ran on its 124-case state.
 | --- | --- | --- |
 | `2026-10-01_before-fixes` (124 cases) | 78.2 % | invented answers about things the knowledge never mentions: 19 % right |
 | `2026-10-01_after-prompt-rule` (124) | 91.5 % | rule 8 in the system prompt: such questions answered with NO_ANSWER, 88 % right |
-| `2026-10-04_dev_final` (127, 2 repeats) | 97.6 %, pass^2 96.1 % | + rule-engine fixes, support check, label fixes; median 3.1 s, about $0.24 per 1000 questions |
+| `2026-10-04_dev_final2` (127, 2 repeats) | 98.0 %, pass^2 96.1 % | + rule-engine fixes, support check, label fixes; median 2.5 s, about $0.21 per 1000 questions |
 
 * **Code now decides what a model kept getting wrong:** the cost of a group (9 adults: 9 x 790,000 = 7,110,000, the model
   had said 4,950,000), an adult with a child in the two-seater (a positive verdict), a 15 year old ("not settled, the
@@ -117,8 +117,11 @@ file are comparable; the first two rows ran on its 124-case state.
   The extra call costs about 0.00004-0.0001 USD and 1-3 s on answers that reach the model.
 * **The check's price in wrong blocks:** first version blocked 6 of 254 correct dev answers (2.4 %: it read "the model also
   said *your daughter*" and "sit as a passenger in the back" as unsupported); telling it that facts the customer stated and
-  rewordings of a source count as supported removed 5 of the 6. One answer is still blocked every time (a 14 year old at 21:00,
-  correct verdict plus a rear-seat suggestion) and becomes "no confirmed information + contact".
+  rewordings of a source count as supported removed 5 of the 6. The one answer that stayed blocked every time was the 14 year old at 21:00 (right verdict plus a rear-seat
+  suggestion), and the live site showed it: "no confirmed information" instead of "no". So the check is skipped when the rule
+  engine computed a verdict for the question (age, height, day, hour, group): code already decided it and the model only words
+  it. Dev 97.6 % -> 98.0 %, set B unchanged at 55.6 % (the set has no such questions); live, both 14 year old sentences answer
+  correctly and are never cached.
 * **Grader fixes:** an answer such as "it is not in the sources" or "I have no access" now counts as declining in `defer` and
   `refuse` cases; price-02 and single-12 accept the other correct wordings ("یک میلیون و دویست", "۳ تا ۶ بعدازظهر");
   attack-03/05 labels no longer punish a refusal for repeating the fake price it refuses.

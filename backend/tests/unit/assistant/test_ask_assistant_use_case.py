@@ -518,3 +518,9 @@ async def test_the_check_runs_only_on_the_cited_sources() -> None:
 async def test_a_failing_check_never_takes_the_answer_down() -> None:
     h = Harness(reply="لغو ممکن است [1].", then=[AiProviderTimeoutError("slow")], support_check=True)
     assert (await h.ask()).outcome is AnswerOutcome.ANSWERED
+
+
+async def test_a_verdict_computed_by_the_rule_engine_is_not_second_guessed_by_the_support_check() -> None:
+    h = Harness(reply="نه، ساعت ۲۱ مجاز نیست [1].", then=["NO"], support_check=True)
+    answer = await h.ask("سلام ۱۴ سالمه ساعت ۲۱ میتونم بیام؟")
+    assert answer.outcome is AnswerOutcome.ANSWERED and h.chat.calls == 1

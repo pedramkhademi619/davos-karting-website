@@ -20,7 +20,10 @@ from davos.modules.assistant.application.ports.interaction_log_port import Inter
 from davos.modules.assistant.application.ports.knowledge_search_port import KnowledgeSearchPort
 from davos.modules.assistant.application.services.answer_support_verifier import AnswerSupportVerifier
 from davos.modules.assistant.application.services.booking_facts_passage import BookingFactsPassage
-from davos.modules.assistant.application.services.eligibility_check_service import EligibilityCheckService
+from davos.modules.assistant.application.services.eligibility_check_service import (
+    CHECK_ENTRY_ID,
+    EligibilityCheckService,
+)
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
 from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
 from davos.modules.assistant.application.use_cases.ask_assistant_command import AskAssistantCommand
@@ -305,7 +308,9 @@ class AskAssistantUseCase:
 
     async def _support_check(self, question: str, answer: str, evidence: Sequence[RetrievedPassage]) -> SupportCheck:
         """The second look at a grounded answer, against ``evidence``."""
-        if self._support_verifier is None:
+        if self._support_verifier is None or any(p.entry_id == CHECK_ENTRY_ID for p in evidence):
+            # A verdict the rule engine computed (age, height, day, hour, group) is already decided by code; the
+            # model only words it. Measured: the check blocked correct "no" verdicts for extra friendly clauses.
             return SupportCheck(supported=True)
         return await self._support_verifier.check(question, answer, evidence)
 
