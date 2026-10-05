@@ -17,15 +17,18 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Inlined at build time; docker-compose.yml passes them from .env (no defaults here, so a value lives only in .env):
-# the main site and the booking subdomain (src/lib/urls.ts; an empty booking URL keeps booking on the main site), and
+# the main site, the booking subdomain and the staff panel's subdomain (src/lib/urls.ts; an empty one keeps that part
+# on the main site), and
 # the venue's phone number and location (src/lib/venue.ts).
 ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_BOOKING_URL
+ARG NEXT_PUBLIC_ADMIN_URL
 ARG NEXT_PUBLIC_CONTACT_PHONE
 ARG NEXT_PUBLIC_VENUE_LATITUDE
 ARG NEXT_PUBLIC_VENUE_LONGITUDE
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
     NEXT_PUBLIC_BOOKING_URL=$NEXT_PUBLIC_BOOKING_URL \
+    NEXT_PUBLIC_ADMIN_URL=$NEXT_PUBLIC_ADMIN_URL \
     NEXT_PUBLIC_CONTACT_PHONE=$NEXT_PUBLIC_CONTACT_PHONE \
     NEXT_PUBLIC_VENUE_LATITUDE=$NEXT_PUBLIC_VENUE_LATITUDE \
     NEXT_PUBLIC_VENUE_LONGITUDE=$NEXT_PUBLIC_VENUE_LONGITUDE

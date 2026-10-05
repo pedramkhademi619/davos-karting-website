@@ -48,6 +48,7 @@ def test_development_accepts_placeholders() -> None:
         ({"kavenegar_api_key": ""}, "KAVENEGAR_API_KEY"),
         ({"public_base_url": "http://davoskarting.ir"}, "PUBLIC_BASE_URL"),
         ({"booking_base_url": "http://booking.davoskarting.ir"}, "BOOKING_BASE_URL"),
+        ({"admin_base_url": "http://admin.davoskarting.ir"}, "ADMIN_BASE_URL"),
         (
             {
                 "payments_enabled": True,
@@ -87,11 +88,14 @@ def test_the_bank_returns_customers_to_the_booking_subdomain_when_there_is_one()
 
 def test_the_sites_own_addresses_are_always_trusted_origins() -> None:
     settings = production(
-        booking_base_url="https://booking.davoskarting.ir", cors_allowed_origins=["https://x.example"]
+        booking_base_url="https://booking.davoskarting.ir",
+        admin_base_url="https://admin.davoskarting.ir/",
+        cors_allowed_origins=["https://x.example"],
     )
     assert settings.trusted_origins == {
         "https://davoskarting.ir",
         "https://booking.davoskarting.ir",
+        "https://admin.davoskarting.ir",
         "https://x.example",
     }
     local = example_settings(public_base_url="http://localhost:8088", cors_allowed_origins=[])

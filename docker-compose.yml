@@ -60,6 +60,7 @@ services:
         # Baked into the web app at build time (rebuild the frontend after changing them in .env).
         NEXT_PUBLIC_SITE_URL: ${PUBLIC_BASE_URL:?set PUBLIC_BASE_URL in .env}
         NEXT_PUBLIC_BOOKING_URL: ${BOOKING_BASE_URL?set BOOKING_BASE_URL in .env (empty = no subdomain)}
+        NEXT_PUBLIC_ADMIN_URL: ${ADMIN_BASE_URL?set ADMIN_BASE_URL in .env (empty = the panel stays at /admin)}
         NEXT_PUBLIC_CONTACT_PHONE: ${CONTACT_PHONE:?set CONTACT_PHONE in .env}
         NEXT_PUBLIC_VENUE_LATITUDE: ${VENUE_LATITUDE:?set VENUE_LATITUDE in .env}
         NEXT_PUBLIC_VENUE_LONGITUDE: ${VENUE_LONGITUDE:?set VENUE_LONGITUDE in .env}

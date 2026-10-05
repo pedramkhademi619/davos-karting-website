@@ -37,6 +37,9 @@ class AppSettings(BaseSettings):
     # Online booking on its own subdomain (the booking page, sign-in, the customer's tickets, the payment result).
     # Empty = everything on PUBLIC_BASE_URL.
     booking_base_url: str
+    # The staff panel on its own subdomain (the panel's cookie then never exists on the customer-facing hosts).
+    # Empty = the panel stays at /admin on PUBLIC_BASE_URL.
+    admin_base_url: str
     # Extra origins allowed to call the API from a browser; the two site addresses above are always allowed.
     cors_allowed_origins: list[str]
     # The venue's phone number (bookings by phone, questions): shown on the site and quoted by the assistant.
@@ -178,10 +181,14 @@ class AppSettings(BaseSettings):
     def trusted_origins(self) -> frozenset[str]:
         """Origins whose browser requests may change state: the site's own addresses plus CORS_ALLOWED_ORIGINS.
 
-        The main site and the booking subdomain are always trusted, so forgetting to list one of them cannot silently
-        break every sign-in, hold and payment with a 403.
+        The main site, the booking subdomain and the staff panel's subdomain are always trusted, so forgetting to
+        list one of them cannot silently break every sign-in, hold, payment and panel action with a 403.
         """
-        own = (self._origin_of(self.public_base_url), self._origin_of(self.booking_base_url))
+        own = (
+            self._origin_of(self.public_base_url),
+            self._origin_of(self.booking_base_url),
+            self._origin_of(self.admin_base_url),
+        )
         return frozenset(origin for origin in (*self.cors_allowed_origins, *own) if origin)
 
     @staticmethod
@@ -235,5 +242,7 @@ class AppSettings(BaseSettings):
             problems.append("PUBLIC_BASE_URL must use https in production")
         if self.booking_base_url and not self.booking_base_url.startswith("https://"):
             problems.append("BOOKING_BASE_URL must use https in production")
+        if self.admin_base_url and not self.admin_base_url.startswith("https://"):
+            problems.append("ADMIN_BASE_URL must use https in production")
         if problems:
             raise InsecureConfigurationError("; ".join(problems))

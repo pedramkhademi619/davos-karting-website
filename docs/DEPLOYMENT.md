@@ -54,21 +54,23 @@ API starts normally with the cache off and every question goes to the language m
 310 MB with the model loaded (`API_WORKERS` x that, within `API_MEMORY_LIMIT`). To run offline, copy the folder from another
 machine. Settings: `SEMANTIC_CACHE_*` in `.env.example`; method and measurements: [ASSISTANT_EVALUATION.md](ASSISTANT_EVALUATION.md).
 
-## Hosts: main site and booking subdomain
+## Hosts: main site, booking subdomain and staff panel
 
-One deployment serves two hostnames through the same nginx and web app:
+One deployment serves up to three hostnames through the same nginx and web app:
 
 | Host | Pages | Example |
 | --- | --- | --- |
-| main (`PUBLIC_BASE_URL`) | home, FAQ, contact, assistant, `/admin` | `https://davoskarting.ir` |
+| main (`PUBLIC_BASE_URL`) | home, FAQ, contact, assistant | `https://davoskarting.ir` |
 | booking (`BOOKING_BASE_URL`) | booking page (at `/`), sign-in, the customer's tickets, payment result | `https://booking.davoskarting.ir` |
+| staff panel (`ADMIN_BASE_URL`) | the panel only, at `/` (`/admin` on the other hosts redirects here) | `https://admin.davoskarting.ir` |
 
 `src/proxy.ts` in the web app sends each path to its host (`/booking`, `/account`, `/login`, `/payment/*` on the main host
-redirect to the subdomain; FAQ, contact and admin on the subdomain redirect back). The bank's callback and the redirect after
-paying go to the booking host, because the customer's sign-in cookie is scoped to it. Both addresses are always trusted
-origins for the API's CSRF origin check. Leave `BOOKING_BASE_URL` empty to keep everything on one host.
+redirect to the subdomain; FAQ and contact on the subdomain redirect back; on the panel's host every path except `/` redirects to the main site). The staff session cookie is host-only, so it never exists on the customer-facing hosts. The bank's callback and the redirect after
+paying go to the booking host, because the customer's sign-in cookie is scoped to it. The three addresses are always trusted
+origins for the API's CSRF origin check. Leave `BOOKING_BASE_URL` or `ADMIN_BASE_URL` empty to keep that part on the main host
+(booking at `/booking`, the panel at `/admin`).
 
-Before launch: DNS `A` records for both names, one TLS certificate that covers both (terminated in front of nginx), both URLs
+Before launch: DNS `A` records for every name, one TLS certificate that covers them all (terminated in front of nginx), the URLs
 with `https://` in `.env`, then rebuild the web app (`docker compose build frontend`: the addresses are baked in at build time).
 Tell the bank the server's public IP (Behpardakht only accepts calls from registered IPs) and, if they ask, the callback
 domain `booking.<domain>`.

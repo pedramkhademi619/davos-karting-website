@@ -18,6 +18,7 @@ import { SpeedLines } from "@/components/speed-lines";
 import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import { api, errorMessage } from "@/lib/api";
+import { SITE_HOME } from "@/lib/urls";
 import type { AdminMe } from "@/lib/types";
 
 type TabKey = "dashboard" | "reservations" | "customers" | "payments" | "sms" | "assistant" | "settings" | "users";
@@ -77,7 +78,7 @@ export function AdminApp() {
       <div className="flex min-h-svh flex-col lg:flex-row">
         <aside className="carbon relative shrink-0 overflow-hidden lg:sticky lg:top-0 lg:h-svh lg:w-72">
           <div className="flex items-center justify-between gap-4 p-5 lg:block">
-            <Link href="/" className="rounded-xl">
+            <Link href={SITE_HOME} className="rounded-xl">
               <Logo tone="light" />
             </Link>
             <p className="text-xs text-on-carbon-muted lg:mt-6">
