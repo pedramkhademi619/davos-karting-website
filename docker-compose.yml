@@ -197,6 +197,25 @@ services:
     restart: unless-stopped
     mem_limit: ${REDIS_MEMORY_LIMIT:?set REDIS_MEMORY_LIMIT in .env}
 
+  # The karting game on its own host (game.<domain>), routed there by nginx. Self-contained: its own sqlite leaderboard
+  # on a volume, a single worker (its anti-cheat state is in memory), no route in from the internet except via nginx.
+  game:
+    build:
+      context: ./game
+      args:
+        PIP_INDEX_URL: ${GAME_PIP_INDEX_URL:-https://pypi.org/simple}
+    image: davos-game:${DAVOS_VERSION:?set DAVOS_VERSION in .env}
+    environment:
+      LANDING_DATABASE_URL: sqlite:////data/landing.db
+    volumes:
+      - gamedata:/data
+    networks: [edge, backend]
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: ${GAME_MEMORY_LIMIT:?set GAME_MEMORY_LIMIT in .env}
+
 networks:
   edge: {}
   backend:
@@ -205,3 +224,4 @@ networks:
 volumes:
   pgdata:
   redisdata:
+  gamedata:

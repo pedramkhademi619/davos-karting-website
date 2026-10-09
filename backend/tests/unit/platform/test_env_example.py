@@ -30,6 +30,8 @@ NOT_BACKEND_SETTINGS = {
     "SCHEDULER_MEMORY_LIMIT",
     "POSTGRES_MEMORY_LIMIT",
     "REDIS_MEMORY_LIMIT",
+    "GAME_MEMORY_LIMIT",
+    "GAME_BASE_URL",
 }
 _SET = re.compile(r"^([A-Z][A-Z0-9_]+)=")
 _COMMENTED = re.compile(r"^#\s*([A-Z][A-Z0-9_]+)=")

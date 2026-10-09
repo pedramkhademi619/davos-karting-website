@@ -1,0 +1,3656 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>خط استارت داووس</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;900&family=Chakra+Petch:wght@500;600;700&display=swap">
+
+<style>
+  :root {
+    --ink:        #0B0B0D;
+    --surface:    #141418;
+    --surface-2:  #1A1A20;
+    --line:       #26262E;
+    --line-soft:  #1E1E25;
+    --text:       #F2F2F5;
+    --text-mute:  #9A9AA5;
+    --text-dim:   #6A6A76;
+    --orange:     #FF6A00;
+    --amber:      #FFB300;
+    --race-red:   #E10600;
+    --go:         #00D68F;
+    --shield:     #3E9BFF;
+    --magnet:     #A855F7;
+
+    --fa: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --tech: 'Chakra Petch', 'Vazirmatn', ui-monospace, monospace;
+
+    --r-sm: 8px;
+    --r-md: 14px;
+    --r-lg: 20px;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  body {
+    background: var(--ink);
+    color: var(--text);
+    font-family: var(--fa);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .page {
+    position: relative;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 22px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(900px 520px at 50% -8%, rgba(255,106,0,0.16), transparent 62%),
+      radial-gradient(700px 420px at 92% 12%, rgba(255,179,0,0.07), transparent 60%),
+      linear-gradient(180deg, #0B0B0D 0%, #0D0D11 48%, #08080A 100%);
+  }
+  .bg::after {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background-image: repeating-linear-gradient(
+      100deg, transparent 0px, transparent 46px,
+      rgba(255,106,0,0.045) 46px, rgba(255,106,0,0.045) 48px);
+    animation: drift 14s linear infinite;
+  }
+  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-96px); } }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center;
+    background: linear-gradient(140deg, var(--amber), var(--orange));
+    box-shadow: 0 6px 20px rgba(255,106,0,0.32); flex: none;
+  }
+  .brand-mark svg { width: 23px; height: 23px; display: block; }
+  .brand-name { font-weight: 900; font-size: 1.06rem; letter-spacing: -0.2px; line-height: 1.25; }
+  .brand-sub {
+    font-family: var(--tech); font-size: 0.66rem; letter-spacing: 2.4px;
+    color: var(--text-dim); text-transform: uppercase; line-height: 1; margin-top: 3px;
+  }
+  .status-chip {
+    display: inline-flex; align-items: center; gap: 9px; padding: 8px 14px;
+    border: 1px solid var(--line); border-radius: 999px; background: rgba(20,20,24,0.72);
+    font-size: 0.8rem; font-weight: 600; color: var(--text-mute); white-space: nowrap;
+  }
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+    animation: pulse 2s ease-out infinite; flex: none;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,179,0,0.5); }
+    70% { box-shadow: 0 0 0 9px rgba(255,179,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,179,0,0); }
+  }
+
+  /* ---------- hero ---------- */
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 22px; }
+  .eyebrow {
+    font-family: var(--tech); font-size: 0.7rem; letter-spacing: 3.6px;
+    text-transform: uppercase; color: var(--orange);
+  }
+  .gantry {
+    display: flex; gap: 10px; padding: 13px 15px;
+    background: linear-gradient(180deg, #17171C, #0E0E12);
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.045), 0 16px 40px rgba(0,0,0,0.5);
+  }
+  .lamp {
+    width: 30px; height: 30px; border-radius: 50%; background: #1F1F26;
+    border: 1px solid #2C2C36; position: relative; opacity: 0.45; transition: opacity .18s ease;
+  }
+  .lamp.on {
+    opacity: 1;
+    background: radial-gradient(circle at 36% 32%, #FF6B66, var(--race-red) 58%, #7A0400);
+    border-color: rgba(225,6,0,0.75);
+    box-shadow: 0 0 18px rgba(225,6,0,0.62), inset 0 1px 2px rgba(255,255,255,0.28);
+  }
+  .lamp.on::after {
+    content: ""; position: absolute; inset: 0; border-radius: 50%;
+    animation: lampBreathe 2.6s ease-in-out infinite; box-shadow: 0 0 22px rgba(225,6,0,0.5);
+  }
+  @keyframes lampBreathe { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
+
+  h1 {
+    font-size: clamp(2rem, 6.4vw, 3.5rem); font-weight: 900; line-height: 1.18;
+    letter-spacing: -0.8px; margin: 0; text-wrap: balance; max-width: 17ch;
+  }
+  h1 .flare {
+    background: linear-gradient(100deg, var(--amber), var(--orange));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .lede {
+    font-size: clamp(0.98rem, 2.3vw, 1.1rem); line-height: 1.95; color: var(--text-mute);
+    max-width: 52ch; margin: 0; font-weight: 300;
+  }
+  .facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .fact {
+    display: inline-flex; align-items: baseline; gap: 8px; padding: 9px 15px; border-radius: 999px;
+    border: 1px solid var(--line-soft); background: rgba(18,18,22,0.6);
+    font-size: 0.82rem; color: var(--text-mute);
+  }
+  .fact b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ---------- pit monitor ---------- */
+  .monitor {
+    width: 100%; max-width: 640px; margin-inline: auto;
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    background: linear-gradient(180deg, var(--surface), #0F0F13);
+    overflow: hidden; box-shadow: 0 28px 70px rgba(0,0,0,0.55);
+  }
+  .monitor-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 13px 16px; border-bottom: 1px solid var(--line-soft);
+    background: rgba(255,255,255,0.016); flex-wrap: wrap;
+  }
+  .monitor-title {
+    display: flex; align-items: center; gap: 10px; font-family: var(--tech);
+    font-size: 0.72rem; letter-spacing: 2.6px; text-transform: uppercase; color: var(--text-dim);
+  }
+  .monitor-title .bars { display: flex; gap: 3px; align-items: flex-end; height: 13px; }
+  .monitor-title .bars i {
+    display: block; width: 3px; background: var(--orange); border-radius: 1px;
+    animation: eq 1.1s ease-in-out infinite;
+  }
+  .monitor-title .bars i:nth-child(1) { height: 6px; animation-delay: 0s; }
+  .monitor-title .bars i:nth-child(2) { height: 13px; animation-delay: .18s; }
+  .monitor-title .bars i:nth-child(3) { height: 9px; animation-delay: .36s; }
+  @keyframes eq { 0%,100% { transform: scaleY(.45); } 50% { transform: scaleY(1); } }
+
+  .readouts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .readout {
+    min-width: 88px; padding: 7px 13px; border: 1px solid var(--line-soft);
+    border-radius: var(--r-sm); background: #0C0C10; text-align: center;
+  }
+  .readout .k {
+    font-size: 0.6rem; letter-spacing: 1.4px; color: var(--text-dim);
+    font-weight: 600; display: block; margin-bottom: 2px;
+  }
+  .readout .v {
+    font-size: 1.12rem; font-weight: 700; font-variant-numeric: tabular-nums;
+    line-height: 1.2; display: block;
+  }
+  .readout.score .v { color: var(--amber); }
+  .readout.speed .v { color: var(--text); }
+  .readout.best  .v { color: var(--go); }
+
+  .mute-btn {
+    width: 38px; height: 38px; flex: none; display: grid; place-items: center;
+    border-radius: var(--r-sm); border: 1px solid var(--line-soft); background: #0C0C10;
+    color: var(--text-mute); cursor: pointer; padding: 0; align-self: center;
+  }
+  .mute-btn:hover { color: var(--text); border-color: var(--text-dim); }
+  .mute-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .mute-btn svg { width: 18px; height: 18px; }
+  .mute-btn .ic-off { display: none; }
+  .mute-btn[aria-pressed="true"] .ic-on { display: none; }
+  .mute-btn[aria-pressed="true"] .ic-off { display: block; color: var(--text-dim); }
+
+  .stage { position: relative; background: #08080B; line-height: 0; }
+  /* سافاریِ آیفون با دابل‌تپ زوم می‌کند و لای‌ه‌ی آبیِ انتخابِ متن می‌آورد؛ داخلِ منطقهٔ بازی هر دو خاموش. */
+  body { touch-action: manipulation; }
+  .stage, .stage * {
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  .stage input { -webkit-user-select: text; user-select: text; }
+  /* بازی یک ستونِ عمودی است: عرض محدود، ارتفاع بلند (svh = بدونِ نوارِ مرورگرِ موبایل). */
+  #track { display: block; width: 100%; height: min(78vh, 820px); height: min(78svh, 820px); touch-action: none; cursor: grab; }
+  #track:active { cursor: grabbing; }
+  @media (max-width: 560px) { #track { height: min(72vh, 660px); height: min(72svh, 660px); } }
+
+  /* live effect chips over the canvas */
+  .effects {
+    position: absolute; top: 10px; inset-inline-start: 10px;
+    display: flex; flex-direction: column; gap: 6px; pointer-events: none; line-height: 1.4;
+  }
+  .effect {
+    display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 8px;
+    border-radius: 999px; font-size: 0.72rem; font-weight: 700;
+    background: rgba(10,10,13,0.78); border: 1px solid var(--line);
+    backdrop-filter: blur(4px);
+  }
+  .effect .bar { width: 34px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.14); overflow: hidden; }
+  .effect .bar i { display: block; height: 100%; width: 100%; transform-origin: left center; }
+  .effect.nitro  { color: var(--amber);  border-color: rgba(255,179,0,.4); }
+  .effect.nitro  .bar i { background: var(--amber); }
+  .effect.shield { color: var(--shield); border-color: rgba(62,155,255,.4); }
+  .effect.shield .bar i { background: var(--shield); }
+  .effect.magnet { color: var(--magnet); border-color: rgba(168,85,247,.4); }
+  .effect.magnet .bar i { background: var(--magnet); }
+  .effect.slow   { color: var(--go);     border-color: rgba(0,214,143,.4); }
+  .effect.slow   .bar i { background: var(--go); }
+  .effect.oil    { color: #C9CAD1; border-color: rgba(200,200,210,.35); }
+  .effect.oil    .bar i { background: #C9CAD1; }
+
+  .combo {
+    position: absolute; top: 10px; inset-inline-end: 10px;
+    font-family: var(--tech); font-weight: 700; font-size: 1.05rem;
+    color: var(--amber); text-shadow: 0 2px 12px rgba(255,179,0,.45);
+    pointer-events: none; opacity: 0; transition: opacity .2s ease, transform .2s ease;
+    transform: scale(.85);
+  }
+  .combo.show { opacity: 1; transform: scale(1); }
+
+  .stage-banner {
+    position: absolute; top: 44%; inset-inline: 0; text-align: center;
+    font-family: var(--tech); font-size: 1.1rem; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--amber); text-shadow: 0 2px 20px rgba(0,0,0,.8);
+    pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  }
+  .stage-banner.show { opacity: 1; }
+
+  /* ---------- mobile steer zones (touch-and-hold, no dragging) ---------- */
+  .steer-zone {
+    display: none; position: absolute; top: 0; bottom: 0; width: 32%; z-index: 1;
+    align-items: flex-end; justify-content: center; padding-bottom: 96px;
+    font-size: 1.7rem; color: rgba(255,255,255,.08);
+    pointer-events: none; transition: color .12s ease, background-color .12s ease;
+  }
+  .steer-zone-left { left: 0; }
+  .steer-zone-right { right: 0; }
+  .steer-zone.active { color: rgba(255,179,0,.6); background-color: rgba(255,179,0,.06); }
+  @media (hover: none) {
+    .steer-zone { display: flex; }
+  }
+
+  /* ---------- tap-to-boost button ---------- */
+  .boost-btn {
+    position: absolute; z-index: 2; bottom: 14px; right: 14px;
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2px solid rgba(255,179,0,.6);
+    background: radial-gradient(circle at 35% 30%, #3a2a06, #14100a 72%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--tech); font-weight: 700; font-size: 1.4rem; color: var(--amber);
+    box-shadow: 0 0 16px rgba(255,179,0,.25);
+    cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: opacity .15s ease, transform .1s ease;
+  }
+  .boost-btn[hidden] { display: none; }
+  .boost-btn:active { transform: scale(.92); }
+  .boost-btn.ready { animation: boostPulse 1.3s ease-in-out infinite; }
+  .boost-btn.cooling { opacity: .5; font-size: 1.1rem; animation: none; }
+  @keyframes boostPulse {
+    0%, 100% { box-shadow: 0 0 16px rgba(255,179,0,.25); }
+    50% { box-shadow: 0 0 30px rgba(255,179,0,.6); }
+  }
+
+  /* ---------- overlay ---------- */
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 13px; text-align: center;
+    padding: 22px; background: linear-gradient(180deg, rgba(8,8,11,.55), rgba(8,8,11,.9));
+    backdrop-filter: blur(3px); line-height: 1.6; overflow-y: auto;
+  }
+  .overlay[hidden] { display: none !important; }
+  .overlay-kicker {
+    font-family: var(--tech); font-size: 0.68rem; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--orange);
+  }
+  .overlay h2 { margin: 0; font-size: clamp(1.25rem, 4.4vw, 1.7rem); font-weight: 900; letter-spacing: -0.4px; }
+  .overlay p { margin: 0; color: var(--text-mute); font-size: 0.9rem; max-width: 40ch; font-weight: 300; }
+
+  /* ---------- loading gate ---------- */
+  .loading-gate { z-index: 5; background: linear-gradient(180deg, rgba(8,8,11,.86), rgba(8,8,11,.96)); }
+  .loading-gate p {
+    font-family: var(--tech); font-size: 0.74rem; letter-spacing: 1.5px; color: var(--text-dim);
+  }
+  .loading-lamps { display: flex; gap: 8px; }
+  .loading-lamps .lamp { width: 12px; height: 12px; animation: loadingChase 1.1s ease-in-out infinite; }
+  .loading-lamps .lamp:nth-child(1) { animation-delay: 0s; }
+  .loading-lamps .lamp:nth-child(2) { animation-delay: .1s; }
+  .loading-lamps .lamp:nth-child(3) { animation-delay: .2s; }
+  .loading-lamps .lamp:nth-child(4) { animation-delay: .3s; }
+  .loading-lamps .lamp:nth-child(5) { animation-delay: .4s; }
+  @keyframes loadingChase {
+    0%, 100% { opacity: .35; background: #1F1F26; box-shadow: none; }
+    40% {
+      opacity: 1; background: radial-gradient(circle at 36% 32%, #FF6B66, var(--race-red) 58%, #7A0400);
+      box-shadow: 0 0 14px rgba(225,6,0,.6);
+    }
+  }
+
+  /* ---------- race-start countdown ---------- */
+  .countdown-gate { z-index: 4; gap: 20px; }
+  .countdown-lamps { display: flex; gap: 10px; }
+  .countdown-lamps .lamp { width: 26px; height: 26px; }
+  .countdown-go {
+    font-family: var(--tech); font-weight: 700; font-size: 2.2rem; letter-spacing: 4px;
+    color: var(--go); text-shadow: 0 0 26px rgba(0,214,143,.65);
+    opacity: 0; transform: scale(.7); transition: opacity .12s ease, transform .12s ease;
+  }
+  .countdown-go.show { opacity: 1; transform: scale(1); }
+
+  /* ---------- best-score progress ---------- */
+  .best-progress {
+    position: absolute; top: 0; inset-inline: 0; height: 4px; z-index: 3;
+    background: rgba(255,255,255,0.06);
+  }
+  .best-progress[hidden] { display: none !important; }
+  .best-progress-fill {
+    height: 100%; width: 0%; background: linear-gradient(90deg, var(--amber), var(--orange));
+    transition: width .1s linear, background .2s ease;
+  }
+  .best-progress-fill.beaten { background: linear-gradient(90deg, var(--go), #00A876); }
+  .best-progress-label {
+    position: absolute; top: 6px; inset-inline-end: 10px;
+    font-family: var(--tech); font-size: 0.62rem; letter-spacing: 1px; color: var(--text-dim);
+    background: rgba(10,10,13,.7); padding: 2px 8px; border-radius: 999px;
+    opacity: 0; transition: opacity .2s ease;
+  }
+  .best-progress-label.show { opacity: 1; }
+
+  @keyframes recordFlash {
+    0% { box-shadow: inset 0 0 0 0 rgba(255,179,0,0); }
+    30% { box-shadow: inset 0 0 80px 10px rgba(255,179,0,.5); }
+    100% { box-shadow: inset 0 0 0 0 rgba(255,179,0,0); }
+  }
+  .stage.record-flash { animation: recordFlash 1s ease-out; }
+
+  .result { display: flex; gap: 22px; justify-content: center; margin: 2px 0; flex-wrap: wrap; }
+  .result[hidden] { display: none; }
+  .result div { text-align: center; }
+  .result .k { display: block; font-size: .64rem; letter-spacing: 1.2px; color: var(--text-dim); margin-bottom: 3px; font-weight: 600; }
+  .result .v { display: block; font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .result .v.gold { color: var(--amber); }
+  .result .v.green { color: var(--go); }
+  .result .v.rank { color: var(--text); }
+
+  .btn {
+    font-family: var(--fa); font-size: .95rem; font-weight: 700; color: #180B00;
+    background: linear-gradient(140deg, var(--amber), var(--orange));
+    border: none; border-radius: 11px; padding: 13px 30px; cursor: pointer;
+    box-shadow: 0 10px 26px rgba(255,106,0,.34);
+    transition: transform .14s ease, box-shadow .14s ease;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(255,106,0,.45); }
+  .btn:active { transform: translateY(0); }
+  .btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+  .btn[disabled] { opacity: .55; cursor: default; transform: none; box-shadow: none; }
+  .btn-ghost {
+    background: transparent; color: var(--text-mute); border: 1px solid var(--line);
+    box-shadow: none; font-weight: 600; padding: 10px 18px; font-size: .84rem;
+  }
+  .btn-ghost:hover { transform: none; box-shadow: none; color: var(--text); border-color: var(--text-dim); }
+
+  .hint { font-size: .76rem; color: var(--text-dim); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  kbd {
+    font-family: var(--tech); font-size: .72rem; padding: 3px 8px; border: 1px solid var(--line);
+    border-bottom-width: 2px; border-radius: 5px; background: #16161B; color: var(--text-mute);
+  }
+
+  /* driver sign-in form */
+  .signin { display: flex; flex-direction: column; gap: 9px; width: min(300px, 100%); }
+  .signin label { font-size: .72rem; color: var(--text-dim); text-align: start; font-weight: 600; }
+  .signin input {
+    font-family: var(--fa); font-size: .95rem; width: 100%; padding: 11px 14px;
+    border-radius: 10px; border: 1px solid var(--line); background: #0C0C10;
+    color: var(--text); text-align: center;
+  }
+  .signin input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,106,0,.15); }
+  .signin input[dir="ltr"] { font-family: var(--tech); letter-spacing: 1.5px; }
+  .form-error { color: #FF7A72; font-size: .78rem; min-height: 1.2em; }
+
+  .who {
+    display: inline-flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text-dim);
+  }
+  .who b { color: var(--text-mute); font-weight: 600; }
+
+  .monitor-foot {
+    padding: 11px 16px; border-top: 1px solid var(--line-soft); font-size: .76rem;
+    color: var(--text-dim); display: flex; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap; background: rgba(255,255,255,.012);
+  }
+
+  /* ---------- leaderboard ---------- */
+  .board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .board-head h2 { font-size: 1.25rem; font-weight: 800; margin: 0; letter-spacing: -.3px; }
+  .board-head .meta { font-size: .8rem; color: var(--text-dim); }
+
+  /* ---------- live-in-venue board ---------- */
+  .live-board-wrap { margin-bottom: 26px; }
+  .live-board-wrap[hidden] { display: none; }
+  .live-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .live-title { font-weight: 800; font-size: .95rem; }
+  .live-count {
+    font-family: var(--tech); font-size: .72rem; color: var(--go);
+    background: rgba(0,214,143,.12); border: 1px solid rgba(0,214,143,.35);
+    padding: 3px 10px; border-radius: 999px; margin-inline-start: auto;
+  }
+  .pulse-dot.live { background: var(--go); animation: pulseGo 1.6s ease-out infinite; }
+  @keyframes pulseGo {
+    0% { box-shadow: 0 0 0 0 rgba(0,214,143,.55); }
+    70% { box-shadow: 0 0 0 9px rgba(0,214,143,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,214,143,0); }
+  }
+
+  .board {
+    border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden;
+    background: linear-gradient(180deg, var(--surface), #0F0F13);
+  }
+  .board-row {
+    display: grid;
+    grid-template-columns: 46px 1fr auto auto;
+    align-items: center; gap: 12px; padding: 13px 16px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .board-row:last-child { border-bottom: none; }
+  .board-row.head {
+    font-family: var(--tech); font-size: .62rem; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); background: rgba(255,255,255,.02); padding-block: 9px;
+  }
+  .board-row.you { background: rgba(255,106,0,.08); box-shadow: inset 3px 0 0 var(--orange); }
+
+  .pos {
+    font-family: var(--tech); font-weight: 700; font-size: 1rem; text-align: center;
+    font-variant-numeric: tabular-nums; color: var(--text-mute);
+  }
+  .pos.p1 { color: #FFD54A; }
+  .pos.p2 { color: #CFD4DC; }
+  .pos.p3 { color: #E08A4B; }
+
+  .who-cell { min-width: 0; }
+  .who-cell .nm { font-weight: 700; font-size: .93rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who-cell .ph {
+    display: block; font-family: var(--tech); font-size: .7rem; color: var(--text-dim);
+    letter-spacing: .5px; margin-top: 4px; direction: ltr; unicode-bidi: isolate; text-align: start;
+  }
+  .you-chip {
+    display: inline-block; margin-inline-start: 7px; padding: 1px 7px; border-radius: 999px;
+    font-size: .6rem; font-weight: 700; background: var(--orange); color: #180B00; vertical-align: 1px;
+  }
+
+  .score-cell { font-weight: 900; font-size: 1.05rem; font-variant-numeric: tabular-nums; text-align: end; }
+  .board-row.leader .score-cell { color: #C77DFF; }   /* purple = session best, timing-screen convention */
+  .gap-cell {
+    font-family: var(--tech); font-size: .76rem; color: var(--text-dim);
+    font-variant-numeric: tabular-nums; text-align: end; min-width: 62px;
+  }
+
+  .board-empty { padding: 26px 16px; text-align: center; color: var(--text-dim); font-size: .88rem; }
+  .board-note { margin-top: 10px; font-size: .76rem; color: var(--text-dim); text-align: center; }
+
+  /* ---------- what's coming ---------- */
+  .coming h2 { font-size: 1.25rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -.3px; }
+  .coming > p { margin: 0 0 22px; color: var(--text-mute); font-size: .92rem; font-weight: 300; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .feature {
+    padding: 18px; border: 1px solid var(--line-soft); border-radius: var(--r-md);
+    background: linear-gradient(180deg, rgba(255,255,255,.022), rgba(255,255,255,0));
+    display: flex; flex-direction: column; gap: 7px;
+  }
+  .feature .ico {
+    width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+    background: rgba(255,106,0,.12); border: 1px solid rgba(255,106,0,.22); margin-bottom: 4px;
+  }
+  .feature .ico svg { width: 17px; height: 17px; display: block; }
+  .feature h3 { margin: 0; font-size: .97rem; font-weight: 700; }
+  .feature p { margin: 0; font-size: .85rem; line-height: 1.85; color: var(--text-mute); font-weight: 300; }
+
+  .foot {
+    border-top: 1px solid var(--line-soft); padding-top: 22px; display: flex;
+    justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+    font-size: .8rem; color: var(--text-dim);
+  }
+  .foot .tech { font-family: var(--tech); letter-spacing: 2.2px; text-transform: uppercase; font-size: .66rem; }
+
+
+
+  .gold { color: #FFD54A !important; }
+  .readout.coin-hud .v { color: #FFD54A; }
+  .revive-box { background: rgba(0,0,0,0.8); padding: 20px; border-radius: 12px; border: 1px solid #FFD54A; text-align: center; margin-bottom: 20px;}
+  .revive-timer { font-size: 48px; font-weight: 900; color: #FFD54A; margin: 10px 0; font-variant-numeric: tabular-nums; }
+  .revive-btn { background: #FFD54A; color: #000; font-weight: 800; border: none; margin-bottom: 10px; width: 100%; }
+
+
+  .shop-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(14, 14, 18, 0.96);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+  }
+  .shop-modal[hidden] { display: none !important; }
+  .shop-content[hidden] { display: none !important; }
+
+  .shop-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 12px;
+  }
+  .shop-title-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .shop-title-wrap h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #FFF;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .shop-close-x {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #FFD54A;
+    font-size: 24px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: 0.2s;
+    line-height: 1;
+  }
+  .shop-close-x:hover {
+    background: rgba(255, 213, 74, 0.18);
+    transform: scale(1.08);
+  }
+  .shop-coins-badge {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 213, 74, 0.12);
+    border: 1px solid rgba(255, 213, 74, 0.35);
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    color: #F2F2F5;
+  }
+  .shop-coins-badge strong {
+    color: #FFD54A;
+    font-family: var(--tech);
+    font-size: 1.15rem;
+    letter-spacing: 0.5px;
+  }
+
+  .shop-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 4px;
+    border-radius: 10px;
+  }
+  .board-scope-tabs { max-width: 380px; }
+  .shop-tab {
+    flex: 1;
+    padding: 9px 10px;
+    background: transparent;
+    border: none;
+    color: #9A9AA5;
+    border-radius: 7px;
+    font-family: var(--fa);
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .shop-tab:hover {
+    color: #FFF;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .shop-tab.active {
+    background: #FFD54A;
+    color: #0B0B0D;
+    box-shadow: 0 2px 10px rgba(255, 213, 74, 0.3);
+  }
+
+  .shop-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* Upgrade cards */
+  .upgrade-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    transition: 0.2s border-color, 0.2s background;
+  }
+  .upgrade-card:hover {
+    border-color: rgba(255, 213, 74, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .upgrade-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: right;
+    flex: 1;
+  }
+  .upgrade-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .upgrade-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  .upgrade-title {
+    font-weight: 800;
+    font-size: 0.96rem;
+    color: #FFF;
+  }
+  .upgrade-pips {
+    display: flex;
+    gap: 4px;
+    margin-top: 3px;
+  }
+  .pip {
+    width: 14px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+  .pip.filled {
+    background: #FFD54A;
+    box-shadow: 0 0 6px rgba(255, 213, 74, 0.4);
+  }
+  .upgrade-desc {
+    font-size: 0.8rem;
+    color: var(--text-mute);
+    margin: 0;
+  }
+  .upgrade-stat {
+    font-size: 0.76rem;
+    color: #FFB300;
+    font-family: var(--tech);
+  }
+  .upgrade-btn {
+    padding: 9px 15px;
+    border-radius: 8px;
+    font-family: var(--fa);
+    font-weight: 800;
+    font-size: 0.84rem;
+    border: none;
+    cursor: pointer;
+    background: #FFD54A;
+    color: #0B0B0D;
+    transition: 0.2s transform, 0.2s background;
+    white-space: nowrap;
+    min-width: 110px;
+    text-align: center;
+  }
+  .upgrade-btn:hover:not(:disabled) {
+    background: #FFE082;
+    transform: translateY(-1px);
+  }
+  .upgrade-btn:disabled {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: default;
+    transform: none;
+  }
+  @media (max-width: 480px) {
+    .upgrade-card { flex-direction: column; align-items: stretch; }
+    .upgrade-head { flex-wrap: wrap; row-gap: 4px; }
+    .upgrade-btn { width: 100%; min-width: 0; }
+  }
+
+  /* Garage (Karts) Grid */
+  .garage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .kart-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    transition: 0.2s all ease;
+    position: relative;
+  }
+  .kart-card.selected {
+    border-color: #FFD54A;
+    background: rgba(255, 213, 74, 0.06);
+    box-shadow: 0 0 16px rgba(255, 213, 74, 0.15);
+  }
+  .kart-preview {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    margin-bottom: 2px;
+  }
+  .kart-card.selected .kart-preview {
+    border-color: #FFD54A;
+    box-shadow: 0 0 12px rgba(255, 213, 74, 0.5);
+  }
+  .kart-name {
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: #FFF;
+  }
+  .kart-desc {
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    margin: 0;
+  }
+  .kart-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    font-family: var(--fa);
+    font-weight: 700;
+    font-size: 0.82rem;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .kart-btn.btn-active {
+    background: rgba(0, 214, 143, 0.15);
+    border: 1px solid #00D68F;
+    color: #00D68F;
+    cursor: default;
+  }
+  .kart-btn.btn-select {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #FFF;
+  }
+  .kart-btn.btn-select:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: #FFF;
+  }
+  .kart-btn.btn-buy {
+    background: #FFD54A;
+    color: #0B0B0D;
+    font-weight: 800;
+  }
+  .kart-btn.btn-buy:hover {
+    background: #FFE082;
+  }
+
+  /* Boosters Grid */
+  .boosters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .booster-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 106, 0, 0.2);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: right;
+    transition: 0.2s border-color;
+  }
+  .booster-card.active-boost {
+    border-color: #00D68F;
+    background: rgba(0, 214, 143, 0.06);
+  }
+  .booster-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .booster-icon {
+    font-size: 1.4rem;
+  }
+  .booster-title {
+    font-weight: 800;
+    font-size: 0.94rem;
+    color: #FFF;
+  }
+  .booster-desc {
+    font-size: 0.78rem;
+    color: var(--text-mute);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .booster-btn {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 7px;
+    font-family: var(--fa);
+    font-weight: 800;
+    font-size: 0.82rem;
+    border: none;
+    cursor: pointer;
+    background: #FF6A00;
+    color: #FFF;
+    transition: 0.2s;
+    text-align: center;
+  }
+  .booster-btn:hover:not(:disabled) {
+    background: #FF8A33;
+  }
+  .booster-btn:disabled {
+    background: rgba(0, 214, 143, 0.15);
+    border: 1px solid #00D68F;
+    color: #00D68F;
+    cursor: default;
+  }
+
+  .shop-footer {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .shop-footer .btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #FFF;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--fa);
+    font-weight: 700;
+    transition: 0.2s;
+  }
+  .shop-footer .btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #FFD54A;
+    color: #FFD54A;
+  }
+
+  .fs-btn {
+    background: none; border: none; color: var(--text-dim); padding: 4px; cursor: pointer;
+    border-radius: var(--r-sm); transition: 0.2s; display: grid; place-items: center; width: 32px; height: 32px;
+    font-size: 16px;
+  }
+  .fs-btn:hover { background: rgba(255,255,255,.08); color: #FFF; }
+  .fs-btn svg { width: 18px; height: 18px; }
+
+  /* legacy color picker compatibility */
+  .color-picker { margin: 12px 0; text-align: center; border: none; }
+  .color-picker h4 { font-size: 11px; color: #8F8F9D; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+  .color-picker .colors { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .color-picker .col-opt { width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; position: relative; }
+  .color-picker .col-opt.locked { opacity: 0.3; cursor: not-allowed; }
+  .color-picker .col-opt.locked::after { content: "🔒"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 14px; }
+  .color-picker .col-opt.active { border-color: #FFF; transform: scale(1.15); box-shadow: 0 0 10px rgba(255,255,255,0.2); }
+  
+  .target-hud { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; color: #ccc; border: 1px solid rgba(255,255,255,0.1); text-align: right;}
+  .target-hud strong { color: #fff; font-size: 0.9rem; margin-right: 5px; }
+  
+  .floating-text { position: absolute; pointer-events: none; font-weight: 800; font-family: var(--tech); font-size: 1.2rem; z-index: 10; text-shadow: 0 2px 4px rgba(0,0,0,0.8); animation: floatUp 0.8s ease-out forwards; white-space: nowrap; }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.2); } }
+
+  /* ---------- monthly prize banner ---------- */
+  html { scroll-behavior: smooth; }
+  #game { scroll-margin-top: 16px; }
+  .prize {
+    position: relative; overflow: hidden; isolation: isolate;
+    display: grid; grid-template-columns: 1.15fr .85fr; align-items: center; gap: 28px;
+    padding: 38px 28px 28px;
+    border-radius: var(--r-lg);
+    border: 1px solid rgba(255,179,0,.3);
+    background:
+      radial-gradient(520px 260px at 100% 0%, rgba(255,179,0,.17), transparent 70%),
+      radial-gradient(420px 260px at 0% 100%, rgba(255,106,0,.14), transparent 70%),
+      linear-gradient(180deg, var(--surface-2), var(--surface));
+    box-shadow: 0 24px 70px -28px rgba(255,106,0,.5);
+  }
+  .prize::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 8px; z-index: 1;
+    background: repeating-conic-gradient(#F2F2F5 0 25%, #0B0B0D 0 50%) 0 0 / 16px 16px;
+    opacity: .9;
+  }
+  .prize-kicker {
+    font-family: var(--tech); font-size: .68rem; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--orange);
+  }
+  .prize h2 {
+    margin: 8px 0 12px; font-size: clamp(1.4rem, 4.8vw, 2.05rem);
+    font-weight: 900; line-height: 1.5; letter-spacing: -.3px;
+  }
+  .prize h2 em {
+    font-style: normal; color: var(--amber);
+    background: linear-gradient(120deg, #FFE082, var(--amber) 45%, var(--orange));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .prize p { margin: 0 0 20px; color: var(--text-mute); font-size: .92rem; line-height: 1.95; max-width: 46ch; }
+  .prize-cta { display: inline-block; text-decoration: none; }
+  .prize-note { margin-top: 14px; font-size: .74rem; color: var(--text-dim); }
+
+  .podium { direction: ltr; display: flex; align-items: flex-end; justify-content: center; gap: 8px; padding-top: 40px; }
+  .step {
+    position: relative; flex: 1; max-width: 120px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 12px 6px 10px; border-radius: 12px 12px 4px 4px;
+    border: 1px solid var(--c); border-bottom: none;
+    background: linear-gradient(180deg, var(--c-a), var(--c-b));
+    box-shadow: 0 -10px 34px -12px var(--c);
+  }
+  .step-1 { --c: #FFD54A; --c-a: rgba(255,213,74,.30); --c-b: rgba(255,213,74,.04); height: 160px; }
+  .step-2 { --c: #CFD4DC; --c-a: rgba(207,212,220,.24); --c-b: rgba(207,212,220,.03); height: 126px; }
+  .step-3 { --c: #E08A4B; --c-a: rgba(224,138,75,.26); --c-b: rgba(224,138,75,.03); height: 100px; }
+  .step .medal {
+    font-family: var(--tech); font-weight: 700; font-size: 2.1rem; line-height: 1;
+    color: var(--c); text-shadow: 0 0 20px var(--c);
+  }
+  .step .tag { font-size: .68rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+  .step-1::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.24) 50%, transparent 65%);
+    background-size: 250% 100%; animation: prizeShine 3.4s ease-in-out infinite;
+  }
+  .trophy { position: absolute; top: -42px; width: 40px; height: 40px; animation: trophyBob 2.6s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(255,213,74,.55)); }
+  @keyframes prizeShine { 0% { background-position: 150% 0; } 60%, 100% { background-position: -50% 0; } }
+  @keyframes trophyBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @media (max-width: 720px) {
+    .prize { grid-template-columns: 1fr; padding: 34px 18px 22px; gap: 22px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bg::after, .lamp.on::after, .pulse-dot, .monitor-title .bars i, .step-1::after, .trophy { animation: none; }
+    .btn, .combo, .stage-banner { transition: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true"></div>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#180B00" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 17h14M6.5 17l1.2-5.2a2 2 0 0 1 1.95-1.55h4.7a2 2 0 0 1 1.95 1.55L17.5 17"></path>
+          <circle cx="7" cy="18.6" r="1.9"></circle><circle cx="17" cy="18.6" r="1.9"></circle>
+          <path d="M10 10.2V7.6h4v2.6"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">کارتینگ داووس</div>
+        <div class="brand-sub">Davoos Karting</div>
+      </div>
+    </div>
+    <div class="status-chip"><span class="pulse-dot" aria-hidden="true"></span>سایت در حال آماده‌سازی است</div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">Launch Sequence</div>
+    <div class="gantry" id="gantry" role="img" aria-label="چراغ‌های استارت: هر پنج چراغ روشن‌اند و هنوز خاموش نشده‌اند">
+      <span class="lamp"></span><span class="lamp"></span><span class="lamp"></span>
+      <span class="lamp"></span><span class="lamp"></span>
+    </div>
+    <h1>چراغ‌ها روشن‌اند،<br><span class="flare">هنوز خاموش نشده‌اند</span></h1>
+    <p class="lede">
+      سایت رزرو آنلاین کارتینگ داووس در حال ساخته‌شدن است. تا وقتی چراغ‌ها خاموش شوند و
+      مسابقه شروع شود، یک دور تمرین آزاد بزنید و اسمتان را در جدول رکوردها ثبت کنید.
+    </p>
+    <div class="facts">
+      <span class="fact">شیفت هر روز <b>۱۵:۰۰ تا ۰۱:۰۰</b></span>
+      <span class="fact">کارت <b>تک‌نفره و دونفره</b></span>
+      <span class="fact">رزرو <b>سانس‌به‌سانس</b></span>
+    </div>
+  </section>
+
+  <section class="monitor" id="game">
+    <div class="monitor-bar">
+      <div class="monitor-title">
+        <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
+        Free Practice · تمرین آزاد
+      </div>
+      <div class="readouts">
+                <div class="readout coin-hud"><span class="k">سکه</span><span class="v gold" id="uiCoins">۰</span></div>
+        <div class="readout score"><span class="k">امتیاز</span><span class="v" id="uiScore">۰</span></div>
+        <div class="readout speed"><span class="k">سرعت</span><span class="v" id="uiSpeed">۰</span></div>
+        <div class="readout best"><span class="k">رکورد شما</span><span class="v" id="uiBest">۰</span></div>
+        <button type="button" class="fs-btn" id="hudShopBtn" title="فروشگاه و ارتقا">🛒</button>
+                <button type="button" class="fs-btn" id="fsBtn" title="تمام صفحه">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+        </button>
+        <button type="button" class="mute-btn" id="muteBtn" aria-pressed="false" title="صدا">
+          <svg class="ic-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 6a9 9 0 0 1 0 12"></path>
+          </svg>
+          <svg class="ic-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path d="M16 9l5 6M21 9l-5 6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="stage">
+      <canvas id="track" aria-label="بازی کارتینگ: با لمس‌ونگه‌داشتنِ نیمهٔ چپ/راست یا کلیدهای جهت، کارت را از میان موانع عبور دهید"></canvas>
+
+      <div class="steer-zone steer-zone-left" id="steerZoneLeft" aria-hidden="true">◀</div>
+      <div class="steer-zone steer-zone-right" id="steerZoneRight" aria-hidden="true">▶</div>
+
+      <div class="target-hud" id="targetHud" hidden>هدف بعدی: <strong id="targetName">...</strong></div>
+      <div id="floatContainer" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10; overflow:hidden;"></div>
+
+      <div class="effects" id="effects" aria-hidden="true"></div>
+      <div class="combo" id="combo" aria-hidden="true"></div>
+      <div class="stage-banner" id="stageBanner" aria-hidden="true"></div>
+
+      <button type="button" class="boost-btn ready" id="boostBtn" aria-label="نیترو فوری" hidden>⚡</button>
+
+      <div class="overlay" id="overlay">
+        <div class="overlay-kicker" id="ovKicker">Practice Session</div>
+        <h2 id="ovTitle">یک دور تمرینی بزنید</h2>
+
+        
+        <div class="revive-box" id="ovRevive" hidden>
+           <h3>تصادف کردی!</h3>
+           <p>با پرداخت ۱۰۰ سکه از همینجا ادامه بده</p>
+           <div class="revive-timer" id="reviveTimer">۵</div>
+           <button class="btn revive-btn" id="reviveBtn">ادامه (۱۰۰ سکه)</button>
+           <button class="btn btn-ghost" id="skipReviveBtn" style="width: 100%;">پایان دور</button>
+        </div>
+
+        <div class="result" id="ovResult" hidden>
+          <div><span class="k">امتیاز این دور</span><span class="v gold" id="ovScore">۰</span></div>
+          <div><span class="k">بهترین</span><span class="v green" id="ovBest">۰</span></div>
+          <div><span class="k">جایگاه</span><span class="v rank" id="ovRank">—</span></div>
+        </div>
+
+        <p id="ovText">سکه جمع کنید، از مانع‌ها جاخالی بدهید و آیتم‌ها را بردارید. هرچه جلوتر بروید سریع‌تر می‌شود.</p>
+
+        <form class="signin" id="signinForm" hidden>
+          <label for="pName">نام شما</label>
+          <input type="text" id="pName" maxlength="40" placeholder="مثلاً رضا" autocomplete="name">
+          <label for="pPhone">شماره موبایل</label>
+          <input type="tel" id="pPhone" dir="ltr" maxlength="11" inputmode="numeric"
+                 placeholder="09123456789" autocomplete="tel">
+          <div class="form-error" id="formError"></div>
+        </form>
+
+
+        <button class="btn" id="startBtn" type="button">شروع تمرین</button>
+
+        <button class="btn btn-ghost" id="openShopBtn" type="button" style="margin-top:10px; width: 100%; border: 1px solid #FFD54A; color: #FFD54A;">🛒 ورود به فروشگاه و ارتقا</button>
+
+        <div class="who" id="whoAmI" hidden></div>
+        <div class="hint" id="ovHint"></div>
+      </div>
+
+      <!-- SHOP MODAL -->
+      <div class="shop-modal" id="shopModal" hidden>
+        <div class="shop-header">
+          <div class="shop-title-wrap">
+            <h2>🏎️ فروشگاه و ارتقا داووس</h2>
+            <button id="closeShopBtnX" class="shop-close-x" type="button" aria-label="بستن فروشگاه">&times;</button>
+          </div>
+          <div class="shop-coins-badge">
+            <span>موجودی سکه شما:</span>
+            <strong id="shopCoinsVal">۰</strong>
+            <span class="coin-icon">🪙</span>
+          </div>
+        </div>
+
+        <div class="shop-tabs">
+          <button class="shop-tab active" id="tabUpgrades" type="button">⚡ ارتقاها</button>
+          <button class="shop-tab" id="tabColors" type="button">🎨 گاراژ و رنگ کارت</button>
+          <button class="shop-tab" id="tabBoosts" type="button">🚀 بوسترها</button>
+        </div>
+
+        <!-- UPGRADES TAB -->
+        <div class="shop-content" id="shopContentUpgrades">
+          <!-- Populated dynamically by renderUpgrades() -->
+        </div>
+
+        <!-- COLORS TAB -->
+        <div class="shop-content" id="shopContentColors" hidden>
+          <div class="garage-grid" id="garageGrid">
+            <!-- Populated dynamically by renderColorPicker() -->
+          </div>
+        </div>
+
+        <!-- BOOSTS TAB -->
+        <div class="shop-content" id="shopContentBoosts" hidden>
+          <div class="boosters-grid" id="boostersGrid">
+            <!-- Populated dynamically by renderBoosters() -->
+          </div>
+        </div>
+
+        <div class="shop-footer">
+          <button class="btn btn-ghost" id="closeShopBtn" type="button">بستن و بازگشت به بازی</button>
+        </div>
+      </div>
+
+      <div class="overlay loading-gate" id="loadingGate">
+        <div class="loading-lamps" aria-hidden="true">
+          <span class="lamp"></span><span class="lamp"></span><span class="lamp"></span>
+          <span class="lamp"></span><span class="lamp"></span>
+        </div>
+        <p>در حال آماده‌سازی موتور و صدا…</p>
+      </div>
+
+      <div class="overlay countdown-gate" id="countdownGate" hidden>
+        <div class="countdown-lamps" aria-hidden="true">
+          <span class="lamp"></span><span class="lamp"></span><span class="lamp"></span>
+          <span class="lamp"></span><span class="lamp"></span>
+        </div>
+        <div class="countdown-go" id="countdownGo">GO</div>
+      </div>
+
+      <div class="best-progress" id="bestProgress" hidden>
+        <div class="best-progress-fill" id="bestProgressFill"></div>
+        <span class="best-progress-label" id="bestProgressLabel"></span>
+      </div>
+    </div>
+
+    <div class="monitor-foot">
+      <span id="footLeft">سکه ×۱۰ · نیترو ۲ برابر · سپر یک برخورد را می‌گیرد</span>
+      <span id="footRight">پایان دور با برخورد</span>
+    </div>
+  </section>
+
+  <section class="prize" aria-labelledby="prizeTitle">
+    <div class="prize-copy">
+      <span class="prize-kicker">Monthly Podium</span>
+      <h2 id="prizeTitle">آخرِ هر ماه، سه راننده‌ی برتر <em>سانسِ رایگان</em> می‌برن</h2>
+      <p>امتیازت رو بالا ببر و اسمت رو بچسبون به جدولِ رکوردها. پایانِ هر ماهِ شمسی، سه نفرِ اولِ جدولِ «این ماه» برنده‌ی یه سانسِ کاملِ کارتینگ روی پیست می‌شن — کاملاً رایگان. اولِ ماهِ بعد جدول از صفر شروع می‌شه و همه شانسِ برابر دارن.</p>
+      <a class="btn prize-cta" href="#game">بزن بریم رو سکو</a>
+      <div class="prize-note">جایزه با همون شماره‌ای که تو جدول ثبت شده تحویل داده می‌شه.</div>
+    </div>
+    <div class="podium" aria-hidden="true">
+      <div class="step step-2"><span class="medal">۲</span><span class="tag">سانس رایگان</span></div>
+      <div class="step step-1">
+        <svg class="trophy" viewBox="0 0 24 24" fill="none" stroke="#FFD54A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" fill="rgba(255,213,74,.2)"></path>
+          <path d="M8 6H5a1 1 0 0 0-1 1c0 2.2 1.6 3.6 4 3.9M16 6h3a1 1 0 0 1 1 1c0 2.2-1.6 3.6-4 3.9"></path>
+          <path d="M12 13v3M10 16h4v4h-4zM9 20h6"></path>
+        </svg>
+        <span class="medal">۱</span><span class="tag">سانس رایگان</span>
+      </div>
+      <div class="step step-3"><span class="medal">۳</span><span class="tag">سانس رایگان</span></div>
+    </div>
+  </section>
+
+  <section class="leaderboard-section">
+    <div class="live-board-wrap" id="liveBoardWrap" hidden>
+      <div class="live-head">
+        <span class="pulse-dot live" aria-hidden="true"></span>
+        <span class="live-title">همین الان تو سالن</span>
+        <span class="live-count" id="liveCount">۰ نفر</span>
+      </div>
+      <div class="board live-board" id="liveBoard"></div>
+    </div>
+
+    <div class="board-head">
+      <h2>جدول رکوردها</h2>
+      <span class="meta" id="boardMeta">در حال بارگذاری…</span>
+    </div>
+    <div class="shop-tabs board-scope-tabs">
+      <button class="shop-tab active" id="scopeMonthlyBtn" type="button">این ماه</button>
+      <button class="shop-tab" id="scopeWeeklyBtn" type="button">این هفته</button>
+      <button class="shop-tab" id="scopeAllTimeBtn" type="button">همیشگی</button>
+    </div>
+    <div class="board" id="board">
+      <div class="board-row head">
+        <span class="pos">#</span><span>راننده</span>
+        <span class="score-cell">امتیاز</span><span class="gap-cell">فاصله</span>
+      </div>
+      <div class="board-empty" id="boardEmpty">هنوز کسی رکوردی ثبت نکرده — اولین نفر باشید.</div>
+    </div>
+    <p class="board-note" id="boardNote"></p>
+  </section>
+
+  <section class="coming">
+    <h2>وقتی چراغ سبز شد، این‌ها را خواهید داشت</h2>
+    <p>همان چیزهایی که الان پشت پیشخوان استفاده می‌شود، به‌زودی مستقیم در دست شما.</p>
+    <div class="grid">
+      <article class="feature">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF8A33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M3 11h18"></path>
+          </svg>
+        </span>
+        <h3>رزرو آنلاین سانس</h3>
+        <p>سانس خالی را ببینید و همان لحظه رزرو کنید — بدون تماس تلفنی و بدون معطلی پشت گیشه.</p>
+      </article>
+      <article class="feature">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF8A33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9"></path><path d="M21 12a9 9 0 0 1-9 9"></path><circle cx="12" cy="12" r="3.2"></circle>
+          </svg>
+        </span>
+        <h3>ظرفیت زنده</h3>
+        <p>تعداد کارت‌های آزاد هر سانس لحظه‌ای به‌روز می‌شود؛ چیزی که می‌بینید واقعاً قابل رزرو است.</p>
+      </article>
+      <article class="feature">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF8A33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"></path><path d="M9.5 8.5h5M9.5 12.5h5"></path>
+          </svg>
+        </span>
+        <h3>بلیت دیجیتال</h3>
+        <p>هر رزرو شمارهٔ فیش مخصوص خودش را دارد؛ همان را نشان بدهید و سوار شوید.</p>
+      </article>
+      <article class="feature">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF8A33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19V9M10 19V5M16 19v-7M22 19H2"></path>
+          </svg>
+        </span>
+        <h3>سابقهٔ دورهای شما</h3>
+        <p>رزروهای گذشته و دفعاتی که سوار شده‌اید، همه یک‌جا و قابل پیگیری.</p>
+      </article>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>© کارتینگ داووس — به‌زودی روی خط استارت</span>
+    <span class="tech">Status: Warming Up</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =========================================================
+     helpers
+     ========================================================= */
+  var FA = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  function fa(n) { return String(n).replace(/\d/g, function (d) { return FA[+d]; }); }
+  function faGroup(n) { return fa(Math.round(n).toLocaleString('en-US')); }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* =========================================================
+     audio — fully synthesized (oscillators + noise), no asset
+     files to host. The engine drone is two detuned saws through
+     a lowpass whose cutoff/gain track speed; one-shots use short
+     envelopes so nothing needs a sample.
+     ========================================================= */
+  var Sound = (function () {
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    var ctx = null, master = null;
+    var engine = null, bgMusic = null;
+    var muted = false;
+    try { muted = localStorage.getItem('davoos_muted') === '1'; } catch (e) {}
+
+    /* real recorded samples, self-hosted (no external site involved at
+       runtime) — "rev" is a loopable engine-throttle take, "start" is a
+       one-shot ignition, "bgMusic" an instrumental techno bed, all from
+       Pixabay's royalty-free library. */
+    var SAMPLE_URLS = {
+      rev: '/static/sounds/engine-rev.mp3',
+      start: '/static/sounds/engine-start.mp3',
+      bgMusic: '/static/sounds/bg-techno.mp3'
+    };
+    var buffers = {};
+    var loadPromise = null;
+    var BG_MUSIC_LEVEL = 0.16;
+
+    function ensure() {
+      if (ctx || !Ctx) return ctx;
+      ctx = new Ctx();
+      master = ctx.createGain();
+      master.gain.value = muted ? 0 : 0.85;
+      master.connect(ctx.destination);
+      // fetching + decoding need no user gesture, so this starts the
+      // instant the page loads — by the time the player actually clicks
+      // "start" (after the sign-in form), the buffers are essentially
+      // always already decoded, which is what lets every sound begin on
+      // the same instant instead of trickling in as each one finishes.
+      loadPromise = Promise.all(Object.keys(SAMPLE_URLS).map(function (name) {
+        return fetch(SAMPLE_URLS[name])
+          .then(function (r) { return r.arrayBuffer(); })
+          .then(function (data) { return ctx.decodeAudioData(data); })
+          .then(function (decoded) { buffers[name] = decoded; })
+          .catch(function () { /* sample missing — that effect just stays silent */ });
+      }));
+      return ctx;
+    }
+    ensure();
+
+    function noiseBuffer(seconds) {
+      var n = Math.max(1, Math.floor(ctx.sampleRate * seconds));
+      var buf = ctx.createBuffer(1, n, ctx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) data[i] = Math.random() * 2 - 1;
+      return buf;
+    }
+
+    /** One short tone: frequency glide from `from` to `to` (or flat if `to` omitted), quick attack, exponential decay. */
+    function tone(opts) {
+      if (!ctx || muted) return;
+      var t = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = opts.type || 'sine';
+      osc.frequency.setValueAtTime(opts.from, t);
+      if (opts.to) osc.frequency.exponentialRampToValueAtTime(Math.max(1, opts.to), t + (opts.glide || 0.1));
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(opts.vol || 0.22, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (opts.dur || 0.18));
+      osc.connect(g); g.connect(master);
+      osc.start(t); osc.stop(t + (opts.dur || 0.18) + 0.02);
+    }
+
+    /** A short burst of filtered noise — crashes, gravel, oil splats. */
+    function noiseHit(opts) {
+      if (!ctx || muted) return;
+      var t = ctx.currentTime;
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(opts.dur || 0.25);
+      var filt = ctx.createBiquadFilter();
+      filt.type = opts.filterType || 'lowpass';
+      filt.frequency.value = opts.freq || 900;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(opts.vol || 0.5, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (opts.dur || 0.25));
+      src.connect(filt); filt.connect(g); g.connect(master);
+      src.start(t);
+    }
+
+    function arpeggio(freqs, gap, type, vol) {
+      freqs.forEach(function (f, i) {
+        setTimeout(function () { tone({ from: f, type: type || 'triangle', dur: 0.22, vol: vol || 0.24 }); }, i * gap);
+      });
+    }
+
+    /* --- engine loop: a real recorded throttle take, looped, with its
+       playbackRate tracking game speed (faster car → higher rate → both
+       quicker and higher-pitched, like RPM climbing) and darkened/slowed
+       further while the time-slow item is active (bassier, as asked). ---
+       Mute is handled purely through `master` below — these nodes' own
+       gain always tracks its "real" target, so unmuting instantly reflects
+       whatever the engine/music should actually be doing, with nothing to
+       forget to restore. */
+    function updateEngine(speedRatio, running, slowFactor) {
+      if (!ctx || !engine) return;
+      slowFactor = slowFactor || 1;
+      var t = ctx.currentTime;
+      var target = running ? clamp(0.22 + speedRatio * 0.5, 0, 0.72) : 0;
+      engine.gain.gain.linearRampToValueAtTime(target, t + 0.08);
+      // rate carries both the "faster car → faster/higher engine" feel and
+      // the slow-motion item's "bassier" pitch-down, in one control.
+      var rate = (0.72 + speedRatio * 1.5) * slowFactor;
+      engine.src.playbackRate.linearRampToValueAtTime(clamp(rate, 0.25, 2.4), t + 0.1);
+      var cutoff = (1000 + speedRatio * 9000) * clamp(slowFactor, 0.4, 1);
+      engine.filt.frequency.linearRampToValueAtTime(clamp(cutoff, 300, 12000), t + 0.1);
+    }
+    function stopEngineSound() { if (engine) updateEngine(0, false); }
+
+    /* First round of the session: ignition + engine loop + background music
+       all scheduled to start() at the exact same AudioContext timestamp, so
+       they land together instead of trickling in as each buffer happens to
+       finish decoding. Later rounds just fire the ignition one-shot, since
+       the two loops are already playing continuously underneath. */
+    async function beginRoundAudio() {
+      ensure();
+      if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (e) {} }
+      if (loadPromise) { try { await loadPromise; } catch (e) {} }
+
+      var firstRound = !engine && !bgMusic;
+      var when = ctx.currentTime + 0.05;
+
+      if (firstRound && buffers.rev) {
+        var src = ctx.createBufferSource();
+        src.buffer = buffers.rev; src.loop = true;
+        var filt = ctx.createBiquadFilter();
+        filt.type = 'lowpass'; filt.frequency.value = 9000;
+        var g = ctx.createGain();
+        g.gain.value = 0;
+        src.connect(filt); filt.connect(g); g.connect(master);
+        src.start(when);
+        engine = { src: src, filt: filt, gain: g };
+      }
+      if (firstRound && buffers.bgMusic) {
+        var src2 = ctx.createBufferSource();
+        src2.buffer = buffers.bgMusic; src2.loop = true;
+        var g2 = ctx.createGain();
+        g2.gain.setValueAtTime(BG_MUSIC_LEVEL, when);
+        src2.connect(g2); g2.connect(master);
+        src2.start(when);
+        bgMusic = { src: src2, gain: g2 };
+      }
+      if (buffers.start) {
+        var src3 = ctx.createBufferSource();
+        src3.buffer = buffers.start;
+        var g3 = ctx.createGain(); g3.gain.value = 0.6;
+        src3.connect(g3); g3.connect(master);
+        src3.start(when);
+      }
+    }
+
+    return {
+      unlock: function () { ensure(); if (ctx && ctx.state === 'suspended') ctx.resume(); },
+      setMuted: function (v) {
+        muted = v;
+        try { localStorage.setItem('davoos_muted', v ? '1' : '0'); } catch (e) {}
+        if (master) master.gain.setTargetAtTime(v ? 0 : 0.85, ctx.currentTime, 0.05);
+      },
+      isMuted: function () { return muted; },
+      engineStart: beginRoundAudio,
+      assetsReady: function () { ensure(); return loadPromise || Promise.resolve(); },
+      engineUpdate: updateEngine,
+      coin: function (combo) { tone({ from: 880 + Math.min(combo, 8) * 40, type: 'square', dur: 0.09, vol: 0.16 }); },
+      pickup: function (kind) {
+        var map = {
+          nitro: [520, 1040], shield: [300, 460], magnet: [400, 700], slow: [260, 200]
+        };
+        var f = map[kind] || [440, 660];
+        tone({ from: f[0], to: f[1], type: 'triangle', dur: 0.22, vol: 0.22, glide: 0.14 });
+      },
+      nearMiss: function () { tone({ from: 700, to: 1100, type: 'sine', dur: 0.1, vol: 0.1, glide: 0.08 }); },
+      oilHit: function () { noiseHit({ dur: 0.35, freq: 500, vol: 0.35, filterType: 'lowpass' }); },
+      shieldBlock: function () {
+        noiseHit({ dur: 0.12, freq: 2200, vol: 0.3, filterType: 'highpass' });
+        tone({ from: 900, to: 500, type: 'sine', dur: 0.15, vol: 0.18 });
+      },
+      crash: function () {
+        stopEngineSound();
+        noiseHit({ dur: 0.4, freq: 1200, vol: 0.55, filterType: 'lowpass' });
+        tone({ from: 140, to: 40, type: 'sawtooth', dur: 0.45, vol: 0.22, glide: 0.4 });
+      },
+      stageUp: function () { arpeggio([523, 659], 70, 'triangle', 0.2); },
+      record: function () { arpeggio([523, 659, 784, 1047], 90, 'triangle', 0.26); },
+      click: function () { tone({ from: 700, type: 'sine', dur: 0.05, vol: 0.1 }); }
+    };
+  })();
+
+  /* =========================================================
+     start-light gantry
+     ========================================================= */
+  var lamps = [].slice.call(document.querySelectorAll('#gantry .lamp'));
+  if (reduced) { lamps.forEach(function (l) { l.classList.add('on'); }); }
+  else { lamps.forEach(function (l, i) { setTimeout(function () { l.classList.add('on'); }, 180 + i * 230); }); }
+
+  /* =========================================================
+     player identity (phone is the id, name is just a label)
+     ========================================================= */
+  var PLAYER_KEY = 'davoos_player';
+  var BEST_KEY = 'davoos_practice_best';
+  var player = null;
+  var best = 0;
+
+  try {
+    var rawPlayer = localStorage.getItem(PLAYER_KEY);
+    if (rawPlayer) player = JSON.parse(rawPlayer);
+  } catch (e) { /* storage unavailable — the round still plays, nothing persists */ }
+
+  // پیشرفتِ بازی (رکورد، سکه، ارتقاها، رنگِ کارت) برای هر شماره جداست —
+  // وگرنه با عوض‌کردنِ راننده، پیشرفتِ نفرِ قبلی به نفرِ بعدی می‌رسید.
+  function pkey(base) {
+    return (player && player.phone) ? (base + '_' + player.phone) : base;
+  }
+
+  function savePlayer(p) {
+    player = p;
+    try { localStorage.setItem(PLAYER_KEY, JSON.stringify(p)); } catch (e) {}
+    loadPlayerProgress();
+  }
+  function saveBest(v) {
+    best = v;
+    try { localStorage.setItem(pkey(BEST_KEY), String(v)); } catch (e) {}
+  }
+
+  /* =========================================================
+     leaderboard API (same origin). Falls back to local-only
+     when the page is opened somewhere without the service.
+     ========================================================= */
+
+  var KART_COLORS = [
+    { id: 'default', name: 'طلایی داووس', c1: '#FFD23A', c2: '#FF6A00', price: 0, desc: 'رنگ کلاسیک تیم مسابقه داووس' },
+    { id: 'blue', name: 'توربو سایان', c1: '#4DD0E1', c2: '#0277BD', price: 200, desc: 'آبی متالیک مسابقات شبانه' },
+    { id: 'purple', name: 'بنفش نئونی', c1: '#E040FB', c2: '#7B1FA2', price: 600, desc: 'طرح هایپر فانتزی پیست' },
+    { id: 'green', name: 'سبز افعی', c1: '#B2FF59', c2: '#33691E', price: 1200, desc: 'شتاب و ظاهر مهاجم' },
+    { id: 'neon', name: 'صورتی سایبرپانک', c1: '#FF4081', c2: '#C51162', price: 2500, desc: 'استایل آینده‌نگرانه و پرانرژی' },
+    { id: 'carbon', name: 'کربن فانتوم', c1: '#4B5563', c2: '#111827', price: 5000, desc: 'فیبر کربن مات مسابقات قهرمانی' }
+  ];
+  var unlockedColors = ['default'];
+
+  var UPGRADE_DEFS = [
+    {
+      id: 'nitro',
+      name: 'توربو نیترو',
+      icon: '⚡',
+      desc: 'افزایش مدت زمان شتاب و سرعت نیترو',
+      basePrice: 300,
+      priceScale: 1.6,
+      maxLvl: 5,
+      getEffect: function(lvl) { return '+' + (lvl * 0.8).toFixed(1) + ' ثانیه'; }
+    },
+    {
+      id: 'magnet',
+      name: 'مگنت سکه‌ها',
+      icon: '🧲',
+      desc: 'جذب خودکار و از راه دور تمام سکه‌ها',
+      basePrice: 350,
+      priceScale: 1.6,
+      maxLvl: 5,
+      getEffect: function(lvl) { return '+' + (lvl * 1.0).toFixed(0) + ' ثانیه'; }
+    },
+    {
+      id: 'x2',
+      name: 'ضریب دوبل سکه',
+      icon: '💰',
+      desc: 'افزایش مدت زمان دریافت سکه‌های ۲ برابری',
+      basePrice: 400,
+      priceScale: 1.7,
+      maxLvl: 5,
+      getEffect: function(lvl) { return '+' + (lvl * 1.2).toFixed(1) + ' ثانیه'; }
+    },
+    {
+      id: 'ghost',
+      name: 'حالت شبح',
+      icon: '👻',
+      desc: 'نامرئی شدن و رد شدن از لابلای موانع و لکه‌های روغن',
+      basePrice: 500,
+      priceScale: 1.8,
+      maxLvl: 5,
+      getEffect: function(lvl) { return '+' + (lvl * 0.8).toFixed(1) + ' ثانیه'; }
+    },
+    {
+      id: 'shield',
+      name: 'سپر تقویتی',
+      icon: '🛡️',
+      desc: 'افزایش مقاومت بدنه و جذب برخوردهای بیشتر در پیست',
+      basePrice: 600,
+      priceScale: 1.9,
+      maxLvl: 5,
+      getEffect: function(lvl) { return lvl >= 3 ? 'مقاومت ۲ برخورد' : 'مقاومت ۱ برخورد'; }
+    }
+  ];
+
+  var UPGRADES_DEFAULT = { nitro: 1, magnet: 1, x2: 1, ghost: 1, shield: 1 };
+  var upgrades = Object.assign({}, UPGRADES_DEFAULT);
+
+  function saveUpgrades() {
+    try { localStorage.setItem(pkey('davoos_upgrades'), JSON.stringify(upgrades)); } catch(e){}
+    updateEffectMax();
+  }
+
+  var BOOSTER_DEFS = [
+    {
+      id: 'headstart',
+      name: 'شروع طوفانی (Rocket Start)',
+      icon: '🚀',
+      desc: 'شروع مسابقه با حداکثر سرعت و ۵ ثانیه نیتروی روشن',
+      price: 300
+    },
+    {
+      id: 'shield',
+      name: 'سپر ایمنی شروع (Guardian)',
+      icon: '🛡️',
+      desc: 'یک لایه محافظتی رایگان از بدو شروع مسابقه',
+      price: 250
+    },
+    {
+      id: 'magnet',
+      name: 'مگنت فوری (Magnet Rush)',
+      icon: '🧲',
+      desc: 'فعال بودن آهن‌ربای قوی در ۸ ثانیه ابتدایی بازی',
+      price: 200
+    },
+    {
+      id: 'doubleCoin',
+      name: 'سرمایه‌گذاری طلایی (2x Coins)',
+      icon: '🪙',
+      desc: 'تمام سکه‌هایی که در این دور بگیرید ۲ برابر شمرده می‌شوند',
+      price: 350
+    }
+  ];
+
+  var activeBoosters = {
+    headstart: false,
+    shield: false,
+    magnet: false,
+    doubleCoin: false
+  };
+
+  var totalCoins = 0;
+  var runCoins = 0;
+
+  function saveCoins(v) {
+     totalCoins = Math.max(0, Math.round(v));
+     try { localStorage.setItem(pkey('davoos_coins'), String(totalCoins)); } catch(e){}
+     var uiCoins = document.getElementById('uiCoins');
+     if (uiCoins) uiCoins.textContent = faGroup(totalCoins + runCoins);
+     var shopCoinsVal = document.getElementById('shopCoinsVal');
+     if (shopCoinsVal) shopCoinsVal.textContent = faGroup(totalCoins);
+  }
+
+  var hasRevived = false;
+  var reviveInterval = 0;
+
+  var selectedColor = 'default';
+
+  // بارگذاریِ پیشرفتِ راننده‌ی فعلی — همان لحظه‌ی بوت، و هر بار که راننده عوض می‌شود.
+  function loadPlayerProgress() {
+    try { best = parseInt(localStorage.getItem(pkey(BEST_KEY)), 10) || 0; } catch (e) { best = 0; }
+
+    unlockedColors = ['default'];
+    try {
+      var storedColors = localStorage.getItem(pkey('davoos_unlocked_colors'));
+      if (storedColors) unlockedColors = JSON.parse(storedColors);
+    } catch (e) {}
+
+    upgrades = Object.assign({}, UPGRADES_DEFAULT);
+    try {
+      var upgStr = localStorage.getItem(pkey('davoos_upgrades'));
+      if (upgStr) upgrades = Object.assign(upgrades, JSON.parse(upgStr));
+    } catch (e) {}
+    updateEffectMax();
+
+    totalCoins = 0;
+    try { totalCoins = parseInt(localStorage.getItem(pkey('davoos_coins')) || '0', 10); } catch (e) {}
+
+    selectedColor = 'default';
+    try { selectedColor = localStorage.getItem(pkey('davoos_kart_color')) || 'default'; } catch (e) {}
+    if (unlockedColors.indexOf(selectedColor) === -1) selectedColor = 'default';
+
+    // HUDِ روی صفحه و فروشگاه هم باید همین الان مقادیرِ راننده‌ی جدید را نشان بدهند.
+    var uiCoinsEl = document.getElementById('uiCoins');
+    if (uiCoinsEl) uiCoinsEl.textContent = faGroup(totalCoins + runCoins);
+    var uiBestEl = document.getElementById('uiBest');
+    if (uiBestEl) uiBestEl.textContent = faGroup(best);
+    if (typeof renderShop === 'function') renderShop();
+  }
+  loadPlayerProgress();
+  
+  var leaderboardData = [];
+  var currentTargetIndex = -1;
+  var slipstreamTimer = 0;
+  
+  var targetHud = document.getElementById('targetHud');
+  var targetNameEl = document.getElementById('targetName');
+  var floatContainer = document.getElementById('floatContainer');
+  
+  function spawnFloatingText(x, y, text, color) {
+    var el = document.createElement('div');
+    el.className = 'floating-text';
+    el.textContent = text;
+    el.style.color = color || '#FFF';
+    var rect = canvas.getBoundingClientRect();
+    el.style.left = (rect.left + Math.max(0, x - 30)) + 'px';
+    el.style.top = (rect.top + y) + 'px';
+    floatContainer.appendChild(el);
+    setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 800);
+  }
+  
+  function updateTargetHUD() {
+    var pool = rivalPool();
+    if (state !== 'running' || !pool || pool.length === 0) {
+      targetHud.hidden = true; return;
+    }
+    var nextTarget = null;
+    for (var i = pool.length - 1; i >= 0; i--) {
+      if (pool[i].score > score) {
+         nextTarget = pool[i];
+         break;
+      }
+    }
+    if (nextTarget) {
+      targetHud.hidden = false;
+      targetNameEl.textContent = nextTarget.name + ' (' + faGroup(nextTarget.score) + ')';
+    } else {
+      targetHud.hidden = true;
+    }
+  }
+
+  function updateBestProgress() {
+    if (!bestProgressEl || state !== 'running' || best <= 0) return;
+    var pct = clamp((score / best) * 100, 0, 100);
+    bestProgressFillEl.style.width = pct + '%';
+    if (score >= best) {
+      bestProgressFillEl.classList.add('beaten');
+      bestProgressLabelEl.textContent = 'رکورد شکسته شد!';
+      bestProgressLabelEl.classList.add('show');
+      if (!recordBroken) {
+        recordBroken = true;
+        vibrate([30, 40, 60]);
+        Sound.record();
+        if (stageBox) {
+          stageBox.classList.remove('record-flash');
+          void stageBox.offsetWidth;
+          stageBox.classList.add('record-flash');
+        }
+      }
+    } else {
+      bestProgressLabelEl.textContent = fa(Math.round(pct)) + '٪ تا رکورد';
+      bestProgressLabelEl.classList.add('show');
+    }
+  }
+
+  function updateEffectMax() {
+    if (typeof EFFECT_MAX !== 'undefined') {
+      EFFECT_MAX.nitro = 3.2 + ((upgrades.nitro || 1) - 1) * 0.8;
+      EFFECT_MAX.magnet = 6.5 + ((upgrades.magnet || 1) - 1) * 1.5;
+      EFFECT_MAX.x2 = 7.0 + ((upgrades.x2 || 1) - 1) * 2.0;
+      EFFECT_MAX.ghost = 4.0 + ((upgrades.ghost || 1) - 1) * 1.0;
+      EFFECT_MAX.shield = 12;
+    }
+  }
+
+  function renderUpgrades() {
+     var cont = document.getElementById('shopContentUpgrades');
+     if (!cont) return;
+     cont.innerHTML = '';
+     UPGRADE_DEFS.forEach(function(item) {
+        var lvl = upgrades[item.id] || 1;
+        var maxLvl = item.maxLvl || 5;
+        var cost = Math.round(item.basePrice * Math.pow(item.priceScale, lvl - 1));
+        var isMax = lvl >= maxLvl;
+
+        var card = document.createElement('div');
+        card.className = 'upgrade-card';
+
+        var pipsHtml = '';
+        for (var p = 1; p <= maxLvl; p++) {
+          pipsHtml += '<span class="pip' + (p <= lvl ? ' filled' : '') + '"></span>';
+        }
+
+        var effectText = item.getEffect ? item.getEffect(lvl) : '';
+
+        card.innerHTML = 
+          '<div class="upgrade-info">' +
+            '<div class="upgrade-head">' +
+              '<span class="upgrade-icon">' + item.icon + '</span>' +
+              '<span class="upgrade-title">' + item.name + '</span>' +
+              '<span class="upgrade-stat">' + effectText + '</span>' +
+            '</div>' +
+            '<p class="upgrade-desc">' + item.desc + '</p>' +
+            '<div class="upgrade-pips">' + pipsHtml + '</div>' +
+          '</div>';
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'upgrade-btn';
+
+        if (isMax) {
+          btn.textContent = 'MAX (تکمیل)';
+          btn.disabled = true;
+        } else {
+          var canAfford = totalCoins >= cost;
+          btn.textContent = 'سطح ' + fa(lvl + 1) + ' · ' + faGroup(cost) + ' 🪙';
+          if (!canAfford) {
+            btn.title = 'سکه کافی نیست';
+            btn.style.opacity = '0.6';
+          }
+          btn.onclick = function() {
+            if (totalCoins >= cost) {
+              saveCoins(totalCoins - cost);
+              upgrades[item.id] = lvl + 1;
+              saveUpgrades();
+              renderShop();
+              Sound.coin(1);
+              spawnFloatingText(canvas.width / 2, canvas.height / 2, 'ارتقا به سطح ' + fa(lvl + 1) + '!', '#00D68F');
+            } else {
+              alert('سکه کافی نیست! شما ' + faGroup(totalCoins) + ' سکه دارید اما ' + faGroup(cost) + ' سکه نیاز است.');
+            }
+          };
+        }
+
+        card.appendChild(btn);
+        cont.appendChild(card);
+     });
+  }
+
+  function renderColorPicker() {
+    var cont = document.getElementById('garageGrid');
+    if (!cont) return;
+    cont.innerHTML = '';
+
+    KART_COLORS.forEach(function(c) {
+      var isUnlocked = unlockedColors.indexOf(c.id) !== -1;
+      var isSelected = c.id === selectedColor;
+
+      var card = document.createElement('div');
+      card.className = 'kart-card' + (isSelected ? ' selected' : '');
+
+      var preview = document.createElement('div');
+      preview.className = 'kart-preview';
+      preview.style.background = 'linear-gradient(135deg, ' + c.c1 + ' 0%, ' + c.c2 + ' 100%)';
+      preview.innerHTML = isUnlocked ? '🏎️' : '🔒';
+
+      var nameEl = document.createElement('div');
+      nameEl.className = 'kart-name';
+      nameEl.textContent = c.name;
+
+      var descEl = document.createElement('p');
+      descEl.className = 'kart-desc';
+      descEl.textContent = c.desc;
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'kart-btn';
+
+      if (isSelected) {
+        btn.classList.add('btn-active');
+        btn.textContent = '✓ انتخاب شده';
+        btn.disabled = true;
+      } else if (isUnlocked) {
+        btn.classList.add('btn-select');
+        btn.textContent = 'انتخاب این رنگ';
+        btn.onclick = function() {
+          selectedColor = c.id;
+          try { localStorage.setItem(pkey('davoos_kart_color'), c.id); } catch(e){}
+          renderShop();
+          draw();
+          Sound.click();
+        };
+      } else {
+        btn.classList.add('btn-buy');
+        var canAfford = totalCoins >= c.price;
+        btn.textContent = 'خرید (' + (c.price === 0 ? 'رایگان' : faGroup(c.price) + ' 🪙') + ')';
+        if (!canAfford) btn.style.opacity = '0.7';
+
+        btn.onclick = function() {
+          if (totalCoins >= c.price) {
+            saveCoins(totalCoins - c.price);
+            unlockedColors.push(c.id);
+            try { localStorage.setItem(pkey('davoos_unlocked_colors'), JSON.stringify(unlockedColors)); } catch(e){}
+            selectedColor = c.id;
+            try { localStorage.setItem(pkey('davoos_kart_color'), c.id); } catch(e){}
+            renderShop();
+            draw();
+            Sound.coin(1);
+            spawnFloatingText(canvas.width / 2, canvas.height / 2, 'رنگ جدید باز شد!', '#FFD54A');
+          } else {
+            alert('سکه کافی نیست! برای خرید این رنگ به ' + faGroup(c.price) + ' سکه نیاز دارید.');
+          }
+        };
+      }
+
+      card.appendChild(preview);
+      card.appendChild(nameEl);
+      card.appendChild(descEl);
+      card.appendChild(btn);
+      cont.appendChild(card);
+    });
+  }
+
+  function renderBoosters() {
+    var cont = document.getElementById('boostersGrid');
+    if (!cont) return;
+    cont.innerHTML = '';
+
+    BOOSTER_DEFS.forEach(function(b) {
+      var isActive = !!activeBoosters[b.id];
+
+      var card = document.createElement('div');
+      card.className = 'booster-card' + (isActive ? ' active-boost' : '');
+
+      card.innerHTML = 
+        '<div class="booster-head">' +
+          '<span class="booster-icon">' + b.icon + '</span>' +
+          '<span class="booster-title">' + b.name + '</span>' +
+        '</div>' +
+        '<p class="booster-desc">' + b.desc + '</p>';
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'booster-btn';
+
+      if (isActive) {
+        btn.textContent = '✓ فعال برای مسابقه بعدی';
+        btn.disabled = true;
+      } else {
+        var canAfford = totalCoins >= b.price;
+        btn.textContent = 'خرید (' + faGroup(b.price) + ' سکه 🪙)';
+        if (!canAfford) btn.style.opacity = '0.7';
+
+        btn.onclick = function() {
+          if (totalCoins >= b.price) {
+            saveCoins(totalCoins - b.price);
+            activeBoosters[b.id] = true;
+            renderShop();
+            Sound.coin(1);
+            spawnFloatingText(canvas.width / 2, canvas.height / 2, b.name + ' فعال شد!', '#00D68F');
+          } else {
+            alert('سکه کافی نیست! برای خرید این بوستر به ' + faGroup(b.price) + ' سکه نیاز دارید.');
+          }
+        };
+      }
+
+      card.appendChild(btn);
+      cont.appendChild(card);
+    });
+  }
+
+  function renderShop() {
+    var shopCoinsVal = document.getElementById('shopCoinsVal');
+    if (shopCoinsVal) shopCoinsVal.textContent = faGroup(totalCoins);
+    renderUpgrades();
+    renderColorPicker();
+    renderBoosters();
+  }
+
+  function openShop() {
+    Sound.unlock();
+    Sound.click();
+    var modal = document.getElementById('shopModal');
+    if (modal) {
+      renderShop();
+      modal.hidden = false;
+    }
+  }
+
+  function closeShop() {
+    Sound.click();
+    var modal = document.getElementById('shopModal');
+    if (modal) {
+      modal.hidden = true;
+    }
+  }
+
+  function switchShopTab(tabId) {
+    var upgEl = document.getElementById('shopContentUpgrades');
+    var colEl = document.getElementById('shopContentColors');
+    var bstEl = document.getElementById('shopContentBoosts');
+    var tabUpg = document.getElementById('tabUpgrades');
+    var tabCol = document.getElementById('tabColors');
+    var tabBst = document.getElementById('tabBoosts');
+
+    if (upgEl) upgEl.hidden = (tabId !== 'upgrades');
+    if (colEl) colEl.hidden = (tabId !== 'colors');
+    if (bstEl) bstEl.hidden = (tabId !== 'boosts');
+
+    if (tabUpg) tabUpg.classList.toggle('active', tabId === 'upgrades');
+    if (tabCol) tabCol.classList.toggle('active', tabId === 'colors');
+    if (tabBst) tabBst.classList.toggle('active', tabId === 'boosts');
+
+    if (tabId === 'upgrades') renderUpgrades();
+    else if (tabId === 'colors') renderColorPicker();
+    else if (tabId === 'boosts') renderBoosters();
+  }
+
+  var apiUp = true;
+
+  function api(path, options) {
+    return fetch(path, options).then(function (r) {
+      if (!r.ok) return r.json().then(function (b) { throw new Error(b.detail || 'request failed'); },
+                                      function () { throw new Error('request failed'); });
+      return r.json();
+    });
+  }
+
+  var boardScope = 'monthly';   // جایزهٔ آخرِ ماه از همین جدول داده می‌شود
+  function fetchBoard() {
+    return api('/api/leaderboard?limit=10&scope=' + boardScope).then(function (rows) {
+      apiUp = true;
+      leaderboardData = rows || [];
+      return rows;
+    }).catch(function () { apiUp = false; return null; });
+  }
+
+  function switchBoardScope(scope) {
+    if (scope === boardScope) return;
+    boardScope = scope;
+    [['scopeMonthlyBtn', 'monthly'], ['scopeWeeklyBtn', 'weekly'], ['scopeAllTimeBtn', 'all_time']].forEach(function (p) {
+      var btn = document.getElementById(p[0]);
+      if (btn) btn.classList.toggle('active', scope === p[1]);
+    });
+    boardMeta.textContent = 'در حال بارگذاری…';
+    fetchBoard().then(renderBoard);
+  }
+
+  var liveBoardData = [];
+  function rivalPool() {
+    return (liveBoardData && liveBoardData.length) ? liveBoardData : leaderboardData;
+  }
+
+  function fetchLiveBoard() {
+    return api('/api/leaderboard/live?limit=8').then(function (res) {
+      liveBoardData = (res && res.rows) || [];
+      renderLiveBoard(res);
+      return res;
+    }).catch(function () { liveBoardData = []; renderLiveBoard(null); return null; });
+  }
+
+  // سرور امتیاز را فقط با شناسهٔ دوری می‌پذیرد که خودش در شروعِ همین دور داده؛
+  // پس هر دور از سرور یک شناسهٔ یک‌بارمصرف می‌گیرد.
+  var runPromise = Promise.resolve(null);
+  var currentRunId = null;
+  var tickTimer = 0;
+  function beginRun() {
+    currentRunId = null;
+    if (!player) { runPromise = Promise.resolve(null); return; }
+    runPromise = api('/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: player.phone })
+    }).then(function (r) { currentRunId = r.run_id; return r.run_id; })
+      .catch(function () { return null; });
+  }
+
+  // ضربانِ حینِ بازی: سرور با ساعتِ خودش می‌سنجد که امتیاز همگام با زمانِ واقعی بالا می‌رود.
+  // بدونِ ضربانِ تازه، امتیازِ نهایی پذیرفته نمی‌شود.
+  function sendTick() {
+    if (state !== 'running' || !currentRunId || !player) return;
+    fetch('/api/run/tick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: player.phone, run_id: currentRunId, score: Math.floor(score) }),
+      keepalive: true
+    }).catch(function () {});
+  }
+  function startTicks() { clearInterval(tickTimer); tickTimer = setInterval(sendTick, 3000); }
+
+  // اگه ثبت رد بشه، پیامِ واقعیِ سرور رو نگه می‌داریم تا نمایشِ نتیجه بتونه دقیق‌تر از
+  // یه «آفلاین»ِ کلی به بازیکن بگه — امتیازش گم نشده، فقط تو جدولِ مشترک ثبت نشده.
+  var lastSubmitError = '';
+  function submitScore(score) {
+    lastSubmitError = '';
+    if (!player) return Promise.resolve(null);
+    var who = { name: player.name, phone: player.phone };
+    return runPromise.then(function (runId) {
+      if (!runId) { apiUp = false; return null; }
+      return api('/api/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: who.name, phone: who.phone, score: score, run_id: runId })
+      }).then(function (res) { apiUp = true; return res; })
+        .catch(function (err) {
+          apiUp = false;
+          lastSubmitError = (err && err.message) || '';
+          return null;
+        });
+    });
+  }
+
+  /* =========================================================
+     leaderboard rendering
+     ========================================================= */
+  var boardEl = document.getElementById('board');
+  var boardMeta = document.getElementById('boardMeta');
+  var boardNote = document.getElementById('boardNote');
+  var liveBoardWrap = document.getElementById('liveBoardWrap');
+  var liveBoardEl = document.getElementById('liveBoard');
+  var liveCountEl = document.getElementById('liveCount');
+
+  var scopeMonthlyBtn = document.getElementById('scopeMonthlyBtn');
+  var scopeWeeklyBtn = document.getElementById('scopeWeeklyBtn');
+  var scopeAllTimeBtn = document.getElementById('scopeAllTimeBtn');
+  if (scopeMonthlyBtn) scopeMonthlyBtn.addEventListener('click', function () { switchBoardScope('monthly'); });
+  if (scopeWeeklyBtn) scopeWeeklyBtn.addEventListener('click', function () { switchBoardScope('weekly'); });
+  if (scopeAllTimeBtn) scopeAllTimeBtn.addEventListener('click', function () { switchBoardScope('all_time'); });
+
+  function maskedOfPlayer() {
+    if (!player || !player.phone || player.phone.length !== 11) return null;
+    return player.phone.slice(0, 4) + '***' + player.phone.slice(-4);
+  }
+
+  function renderBoard(rows) {
+    var headHtml = '<div class="board-row head"><span class="pos">#</span><span>راننده</span>' +
+                   '<span class="score-cell">امتیاز</span><span class="gap-cell">فاصله</span></div>';
+
+    if (!rows) {
+      boardEl.innerHTML = headHtml +
+        '<div class="board-empty">جدول مشترک در دسترس نیست — رکورد شما فقط روی همین دستگاه ذخیره می‌شود.</div>';
+      boardMeta.textContent = 'آفلاین';
+      boardNote.textContent = '';
+      return;
+    }
+    if (!rows.length) {
+      boardEl.innerHTML = headHtml +
+        '<div class="board-empty">هنوز کسی رکوردی ثبت نکرده — اولین نفر باشید.</div>';
+      boardMeta.textContent = 'خالی';
+      boardNote.textContent = '';
+      return;
+    }
+
+    var mine = maskedOfPlayer();
+    var leader = rows[0].score;
+
+    var body = rows.map(function (r) {
+      var isYou = mine && r.phone_masked === mine;
+      var gap = r.rank === 1 ? 'صدر' : '−' + faGroup(leader - r.score);
+      var posClass = r.rank <= 3 ? ' p' + r.rank : '';
+      return '<div class="board-row' + (isYou ? ' you' : '') + (r.rank === 1 ? ' leader' : '') + '">' +
+               '<span class="pos' + posClass + '">' + fa(r.rank) + '</span>' +
+               '<span class="who-cell">' +
+                 '<span class="nm">' + escapeHtml(r.name) +
+                   (isYou ? '<span class="you-chip">شما</span>' : '') + '</span>' +
+                 '<span class="ph">' + fa(r.phone_masked) + '</span>' +
+               '</span>' +
+               '<span class="score-cell">' + faGroup(r.score) + '</span>' +
+               '<span class="gap-cell">' + gap + '</span>' +
+             '</div>';
+    }).join('');
+
+    boardEl.innerHTML = headHtml + body;
+    boardMeta.textContent = fa(rows.length) + ' راننده در جدول';
+    boardNote.textContent = 'شماره‌ها برای حفظ حریم خصوصی ناقص نمایش داده می‌شوند.';
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function renderLiveBoard(res) {
+    if (!res || !res.rows || !res.rows.length) {
+      liveBoardWrap.hidden = true;
+      return;
+    }
+    liveBoardWrap.hidden = false;
+    liveCountEl.textContent = fa(res.count) + ' نفر';
+
+    var mine = maskedOfPlayer();
+    var leader = res.rows[0].score;
+    var headHtml = '<div class="board-row head"><span class="pos">#</span><span>راننده</span>' +
+                   '<span class="score-cell">امتیاز</span><span class="gap-cell">فاصله</span></div>';
+    var body = res.rows.map(function (r) {
+      var isYou = mine && r.phone_masked === mine;
+      var gap = r.rank === 1 ? 'صدر' : '−' + faGroup(leader - r.score);
+      var posClass = r.rank <= 3 ? ' p' + r.rank : '';
+      return '<div class="board-row' + (isYou ? ' you' : '') + (r.rank === 1 ? ' leader' : '') + '">' +
+               '<span class="pos' + posClass + '">' + fa(r.rank) + '</span>' +
+               '<span class="who-cell">' +
+                 '<span class="nm">' + escapeHtml(r.name) +
+                   (isYou ? '<span class="you-chip">شما</span>' : '') + '</span>' +
+                 '<span class="ph">' + fa(r.phone_masked) + '</span>' +
+               '</span>' +
+               '<span class="score-cell">' + faGroup(r.score) + '</span>' +
+               '<span class="gap-cell">' + gap + '</span>' +
+             '</div>';
+    }).join('');
+    liveBoardEl.innerHTML = headHtml + body;
+  }
+
+  function refreshBoard() { fetchBoard().then(renderBoard); fetchLiveBoard(); }
+
+  /* =========================================================
+     game
+     ========================================================= */
+  var canvas = document.getElementById('track');
+  var ctx = canvas.getContext('2d');
+
+  var overlay = document.getElementById('overlay');
+  var ovKicker = document.getElementById('ovKicker');
+  var ovTitle = document.getElementById('ovTitle');
+  var ovText = document.getElementById('ovText');
+  var ovResult = document.getElementById('ovResult');
+  var ovScore = document.getElementById('ovScore');
+  var ovBest = document.getElementById('ovBest');
+  var ovRank = document.getElementById('ovRank');
+  var ovHint = document.getElementById('ovHint');
+  var startBtn = document.getElementById('startBtn');
+  var signinForm = document.getElementById('signinForm');
+  var pName = document.getElementById('pName');
+  var pPhone = document.getElementById('pPhone');
+  var formError = document.getElementById('formError');
+  var whoAmI = document.getElementById('whoAmI');
+  var uiScore = document.getElementById('uiScore');
+  var uiSpeed = document.getElementById('uiSpeed');
+  var uiBest = document.getElementById('uiBest');
+  var effectsEl = document.getElementById('effects');
+  var comboEl = document.getElementById('combo');
+  var bannerEl = document.getElementById('stageBanner');
+  var muteBtn = document.getElementById('muteBtn');
+  var stageBox = document.querySelector('.stage');
+  // سافاری: پینچ/دابل‌تپ حینِ بازی صفحه را زوم می‌کند. touch-action تنها همه‌ی حالت‌ها را نمی‌گیرد.
+  stageBox.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+  var lastStageTouchEnd = 0;
+  stageBox.addEventListener('touchend', function (e) {
+    var now = Date.now();
+    if (state === 'running' && now - lastStageTouchEnd < 350 && e.cancelable) e.preventDefault();
+    lastStageTouchEnd = now;
+  }, { passive: false });
+  var countdownGate = document.getElementById('countdownGate');
+  var countdownGo = document.getElementById('countdownGo');
+  var bestProgressEl = document.getElementById('bestProgress');
+  var bestProgressFillEl = document.getElementById('bestProgressFill');
+  var bestProgressLabelEl = document.getElementById('bestProgressLabel');
+  var boostBtn = document.getElementById('boostBtn');
+  var TAP_BOOST_COOLDOWN = 7;
+  var tapBoostCooldown = 0;
+
+  function triggerTapBoost() {
+    if (state !== 'running' || tapBoostCooldown > 0) return;
+    Sound.unlock();
+    tapBoostCooldown = TAP_BOOST_COOLDOWN;
+    fx.nitro = Math.max(fx.nitro, EFFECT_MAX.nitro * 0.55);
+    var kr = kartRect();
+    burst(kr.x + kr.w / 2, kr.y, '#FFB300', 16, 160);
+    spawnFloatingText(kr.x + kr.w / 2, kr.y - 10, 'BOOST!', '#FFB300');
+    Sound.pickup('nitro');
+    vibrate(20);
+    renderEffects();
+  }
+
+  if (boostBtn) {
+    boostBtn.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      triggerTapBoost();
+    });
+  }
+
+  muteBtn.setAttribute('aria-pressed', Sound.isMuted() ? 'true' : 'false');
+  muteBtn.addEventListener('click', function () {
+    Sound.unlock();
+    var next = !Sound.isMuted();
+    Sound.setMuted(next);
+    muteBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    if (!next) Sound.click();
+  });
+
+  var isTouch = window.matchMedia && window.matchMedia('(hover: none)').matches;
+  ovHint.innerHTML = isTouch
+    ? 'نیمهٔ چپ یا راستِ مسیر را لمس و نگه دارید تا بپیچید'
+    : 'با <kbd>&larr;</kbd> <kbd>&rarr;</kbd> یا <kbd>A</kbd> <kbd>D</kbd> فرمان بدهید';
+
+  uiBest.textContent = faGroup(best);
+
+  var W = 0, H = 0, scale = 1;
+
+  function resize() {
+    var rect = canvas.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(280, rect.width);
+    H = Math.max(240, rect.height);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    scale = clamp(W / 520, 0.72, 1.2);
+    if (state !== 'running') draw(0);
+  }
+
+  function roadBox() {
+    var rw = Math.min(W * 0.8, 560);
+    return { x: (W - rw) / 2, w: rw };
+  }
+
+  /* --- state --- */
+  var state = 'idle';
+  var speed = 0, distance = 0, score = 0;
+  var kartX = 0.5, kartVel = 0, keyDir = 0, pointerX = null;
+  var hazards = [], items = [], particles = [], skids = [], marks = [], floods = [];
+  var scroll = 0, spawnT = 0, itemT = 0, coinT = 0, runT = 0;
+  var shake = 0, last = 0, rafId = 0;
+  var stage = 1, nextStageAt = 600;
+  var combo = 0, comboT = 0;
+  var grip = 1;
+  var fx = { nitro: 0, shield: 0, magnet: 0, slow: 0, oil: 0, x2: 0, ghost: 0 };
+  var hasShield = false;
+  // کمکِ تازه‌کار: تا وقتی رکوردِ شخصی زیرِ ROOKIE_BEST است، اولین برخوردِ هر دور کشنده نیست.
+  var ROOKIE_BEST = 3000;
+  var rookieHit = false;
+  var recordBroken = false;
+
+  var ITEM_KINDS = ['coin', 'coin', 'coin', 'nitro', 'shield', 'magnet', 'slow', 'x2', 'ghost'];
+
+  function vibrate(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+  }
+
+  function reset() {
+    speed = 300; distance = 0; score = 0;
+    kartX = 0.5; kartVel = 0; keyDir = 0; pointerX = null;
+    hazards.length = 0; items.length = 0; particles.length = 0; skids.length = 0;
+    marks.length = 0; floods.length = 0;
+    for (var i = 0; i < 26; i++) marks.push({ x: Math.random(), y: Math.random() * H, len: 12 + Math.random() * 26 });
+    for (var f = 0; f < 3; f++) floods.push({ y: (f / 3) * H * 2 - H });
+    scroll = 0; spawnT = 2.0; itemT = 1.6; coinT = 0.8; runT = 0;
+    shake = 0; stage = 1; nextStageAt = 600;
+    combo = 0; comboT = 0; grip = 1; hasShield = false; rookieHit = false;
+    runCoins = 0; hasRevived = false;
+    recordBroken = false;
+    saveCoins(totalCoins);
+    fx.nitro = fx.shield = fx.magnet = fx.slow = fx.oil = fx.x2 = fx.ghost = 0;
+    renderEffects(); showCombo(false);
+    if (bestProgressEl) {
+      bestProgressEl.hidden = best <= 0;
+      bestProgressFillEl.style.width = '0%';
+      bestProgressFillEl.classList.remove('beaten');
+      bestProgressLabelEl.classList.remove('show');
+    }
+    tapBoostCooldown = 0;
+    if (boostBtn) {
+      boostBtn.classList.add('ready');
+      boostBtn.classList.remove('cooling');
+      boostBtn.textContent = '⚡';
+    }
+  }
+
+  function start() {
+    reset();
+    beginRun();
+    startTicks();
+    rookieHit = best < ROOKIE_BEST;
+    if (rookieHit) spawnFloatingText(canvas.width / 2, canvas.height * 0.55, 'یه برخورد رایگان داری!', '#FFD54A');
+    updateEffectMax();
+    if (activeBoosters.headstart) {
+      fx.nitro = EFFECT_MAX.nitro + 2.5;
+      speed = 900;
+      spawnFloatingText(canvas.width / 2, canvas.height * 0.7, 'ROCKET START!', '#FF6A00');
+      activeBoosters.headstart = false;
+    }
+    if (activeBoosters.shield) {
+      fx.shield = EFFECT_MAX.shield;
+      hasShield = true;
+      spawnFloatingText(canvas.width / 2, canvas.height * 0.75, 'SHIELD READY!', '#3E9BFF');
+      activeBoosters.shield = false;
+    }
+    if (activeBoosters.magnet) {
+      fx.magnet = EFFECT_MAX.magnet + 2;
+      spawnFloatingText(canvas.width / 2, canvas.height * 0.8, 'MAGNET ACTIVE!', '#A855F7');
+      activeBoosters.magnet = false;
+    }
+    if (activeBoosters.doubleCoin) {
+      fx.x2 = 25;
+      spawnFloatingText(canvas.width / 2, canvas.height * 0.85, '2X COINS ACTIVE!', '#FFD54A');
+      activeBoosters.doubleCoin = false;
+    }
+    state = 'running';
+    overlay.hidden = true;
+    if (boostBtn) boostBtn.hidden = false;
+    Sound.engineStart();
+    last = performance.now();
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function actualGameOver() {
+    state = 'over';
+    clearInterval(tickTimer);
+    saveCoins(totalCoins + runCoins); // bank the coins!
+    runCoins = 0;
+    
+    var run = Math.floor(score);
+    var isRecord = run > best;
+    var prevBest = best;
+    if (isRecord) { saveBest(run); uiBest.textContent = faGroup(best); }
+    if (bestProgressEl) bestProgressEl.hidden = true;
+    if (boostBtn) boostBtn.hidden = true;
+    vibrate(35);
+
+    ovKicker.textContent = isRecord ? 'New Personal Best' : 'Session Ended';
+    ovTitle.textContent = isRecord ? 'رکورد جدید زدید!' : 'دور تمام شد';
+    ovScore.textContent = faGroup(run);
+    ovBest.textContent = faGroup(best);
+    ovRank.textContent = '…';
+    var gap = prevBest - run;
+    if (isRecord) {
+      ovText.textContent = 'بهترین دور خودتان را جابه‌جا کردید. بازهم بزنید و بالاتر بروید.';
+    } else if (prevBest > 0 && gap > 0 && gap <= Math.max(40, prevBest * 0.08)) {
+      ovText.textContent = 'خیلی نزدیک بودی! فقط ' + faGroup(gap) + ' امتیاز با رکوردت فاصله داشتی.';
+    } else {
+      ovText.textContent = 'یک دور دیگر بزنید و رکوردتان را بشکنید.';
+    }
+    ovResult.hidden = false;
+    signinForm.hidden = true;
+    
+    // Hide revive UI if it was visible
+    var ovRevive = document.getElementById('ovRevive');
+    if (ovRevive) ovRevive.hidden = true;
+    
+    startBtn.style.display = '';
+    startBtn.textContent = 'دور دوباره';
+    startBtn.disabled = false;
+    renderWho();
+    overlay.hidden = false;
+    startBtn.focus({ preventScroll: true });
+    
+    // re-render color picker so available coins updates
+    renderColorPicker();
+    if (typeof buyHeadstartBtn !== 'undefined' && buyHeadstartBtn) { buyHeadstartBtn.textContent = 'خرید (۳۰۰ سکه)'; buyHeadstartBtn.disabled = false; }
+
+    submitScore(run).then(function (res) {
+      if (!res) {
+        ovRank.textContent = '—';
+        var why = lastSubmitError ? ' (' + lastSubmitError + ')' : '';
+        // این خط همون‌جا زیرِ امتیاز دیده می‌شه — نه یه نوشته‌ی ریز و دورافتاده، چون
+        // این یعنی امتیازِ واقعیِ بازیکن تو جدولِ مشترک ثبت نشده و باید ببینه.
+        ovText.textContent = 'ثبت در جدولِ مشترک ممکن نشد' + why + '؛ رکوردِ ' + faGroup(run) + ' فقط روی همین دستگاه ذخیره شد.';
+        boardNote.textContent = 'ثبت در جدول مشترک ممکن نشد؛ رکورد شما روی همین دستگاه ذخیره شد.';
+        return;
+      }
+      ovRank.textContent = fa(res.rank) + ' از ' + fa(res.total_players);
+      if (res.best_score > best) { saveBest(res.best_score); uiBest.textContent = faGroup(best); ovBest.textContent = faGroup(best); }
+      renderBoard(res.leaderboard);
+    });
+  }
+  
+  function skipRevive() {
+     clearInterval(reviveInterval);
+     actualGameOver();
+  }
+  
+  function doRevive() {
+     clearInterval(reviveInterval);
+     if ((totalCoins + runCoins) >= 100) {
+        var payingFromRun = Math.min(100, runCoins);
+        var payingFromTotal = 100 - payingFromRun;
+        runCoins -= payingFromRun;
+        saveCoins(totalCoins - payingFromTotal); // this also updates UI
+     }
+     
+     hasRevived = true;
+     document.getElementById('ovRevive').hidden = true;
+     startBtn.style.display = '';
+     overlay.hidden = true;
+     if (boostBtn) boostBtn.hidden = false;
+     
+     // clear hazards near player
+     hazards = hazards.filter(function(hz) { return hz.y < H - 200; });
+     speed = Math.max(300, speed * 0.7); // lose some speed to recover
+     
+     state = 'running';
+     Sound.engineStart(); 
+     last = performance.now();
+     cancelAnimationFrame(rafId);
+     rafId = requestAnimationFrame(loop);
+  }
+
+  function gameOver() {
+    var ovRevive = document.getElementById('ovRevive');
+    if (!hasRevived && (totalCoins + runCoins) >= 100 && ovRevive) {
+         state = 'revive_prompt';
+         if (boostBtn) boostBtn.hidden = true;
+         ovRevive.hidden = false;
+         ovResult.hidden = true;
+         signinForm.hidden = true;
+         whoAmI.hidden = true;
+         startBtn.style.display = 'none'; // hide normal start
+         ovKicker.textContent = '';
+         ovTitle.textContent = 'ماشین آسیب دید!';
+         ovText.textContent = '';
+         overlay.hidden = false;
+         
+         var timeLeft = 5;
+         document.getElementById('reviveTimer').textContent = fa(timeLeft);
+         reviveInterval = setInterval(function() {
+            timeLeft--;
+            document.getElementById('reviveTimer').textContent = fa(timeLeft);
+            if (timeLeft <= 0) {
+               skipRevive();
+            }
+         }, 1000);
+    } else {
+         actualGameOver();
+    }
+  }
+
+  /* --- sign-in gate --- */
+  function renderWho() {
+    if (player) {
+      whoAmI.hidden = false;
+      whoAmI.innerHTML = 'راننده: <b>' + escapeHtml(player.name) + '</b> · ' +
+        '<button type="button" class="btn btn-ghost" id="changeDriver">تغییر</button>';
+      document.getElementById('changeDriver').addEventListener('click', function () {
+        openSignin();
+      });
+    } else {
+      whoAmI.hidden = true;
+      whoAmI.innerHTML = '';
+    }
+  }
+
+  function openSignin() {
+    signinForm.hidden = false;
+    ovResult.hidden = true;
+    whoAmI.hidden = true;
+    ovKicker.textContent = 'Driver Registration';
+    ovTitle.textContent = 'اسمتان را ثبت کنید';
+    ovText.textContent = 'برای اینکه رکوردتان در جدول بماند، نام و شماره‌تان را وارد کنید. شناسایی با شماره است، پس هر بار همان شماره را بزنید.';
+    startBtn.textContent = 'ثبت و شروع';
+    formError.textContent = '';
+    if (player) { pName.value = player.name; pPhone.value = player.phone; }
+    renderColorPicker();
+    if (typeof buyHeadstartBtn !== 'undefined' && buyHeadstartBtn) { buyHeadstartBtn.textContent = 'خرید (۳۰۰ سکه)'; buyHeadstartBtn.disabled = false; }
+    overlay.hidden = false;
+    setTimeout(function () { pName.focus({ preventScroll: true }); }, 60);
+  }
+
+  // اعدادِ فارسی/عربی را هم قبول می‌کنیم تا کاربر مجبور به تغییرِ کیبورد نباشد.
+  function normalizePhoneDigits(raw) {
+    return (raw || '').trim()
+      .replace(/[۰-۹]/g, function (d) { return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)); })
+      .replace(/[٠-٩]/g, function (d) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)); })
+      .replace(/\D/g, '');
+  }
+
+  // شماره شناسه‌ی راننده است، نه اسم — پس اگر این شماره قبلاً با اسمی بازی
+  // کرده، همان اسم را (حتی اگر الان چیزِ دیگری تایپ شده) جایگزین می‌کنیم،
+  // دقیقاً مثلِ auto-fillِ سامانهٔ نوبت‌دهی.
+  var knownNameByPhone = {};
+  if (pPhone) {
+    pPhone.addEventListener('input', function () {
+      var digits = normalizePhoneDigits(pPhone.value);
+      if (!/^09\d{9}$/.test(digits)) return;
+      if (Object.prototype.hasOwnProperty.call(knownNameByPhone, digits)) {
+        if (knownNameByPhone[digits]) pName.value = knownNameByPhone[digits];
+        return;
+      }
+      fetch('/api/player/' + digits)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          knownNameByPhone[digits] = data ? data.name : null;
+          if (data && data.name) pName.value = data.name;
+        })
+        .catch(function () {});
+    });
+  }
+
+  function validateAndSave() {
+    var name = (pName.value || '').trim().replace(/\s+/g, ' ');
+    var phone = normalizePhoneDigits(pPhone.value);
+    if (!/^09\d{9}$/.test(phone)) {
+      formError.textContent = 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.';
+      pPhone.focus();
+      return false;
+    }
+    if (knownNameByPhone[phone]) name = knownNameByPhone[phone];
+    if (!name) { formError.textContent = 'نامتان را بنویسید.'; pName.focus(); return false; }
+    savePlayer({ name: name.slice(0, 40), phone: phone });
+    formError.textContent = '';
+    return true;
+  }
+
+  function showCountdown(cb) {
+    if (!countdownGate) { cb(); return; }
+    var lamps = [].slice.call(countdownGate.querySelectorAll('.lamp'));
+    lamps.forEach(function (l) { l.classList.remove('on'); });
+    countdownGo.classList.remove('show');
+    overlay.hidden = true;
+    countdownGate.hidden = false;
+    var i = 0;
+    var tick = setInterval(function () {
+      if (i < lamps.length) {
+        lamps[i].classList.add('on');
+        Sound.click();
+        i++;
+        return;
+      }
+      clearInterval(tick);
+      lamps.forEach(function (l) { l.classList.remove('on'); });
+      countdownGo.classList.add('show');
+      Sound.stageUp();
+      vibrate(25);
+      setTimeout(function () {
+        countdownGate.hidden = true;
+        countdownGo.classList.remove('show');
+        cb();
+      }, 320);
+    }, 180);
+  }
+
+  startBtn.addEventListener('click', function () {
+    Sound.unlock();
+    Sound.click();
+    if (!signinForm.hidden) {
+      if (!validateAndSave()) return;
+      signinForm.hidden = true;
+      refreshBoard();
+    } else if (!player) {
+      openSignin();
+      return;
+    }
+    showCountdown(start);
+  });
+
+  /* --- input --- */
+  window.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A') { keyDir = -1; if (state === 'running') e.preventDefault(); }
+    if (k === 'ArrowRight' || k === 'd' || k === 'D') { keyDir = 1; if (state === 'running') e.preventDefault(); }
+  });
+  window.addEventListener('keyup', function (e) {
+    var k = e.key;
+    if (((k === 'ArrowLeft' || k === 'a' || k === 'A') && keyDir === -1) ||
+        ((k === 'ArrowRight' || k === 'd' || k === 'D') && keyDir === 1)) keyDir = 0;
+  });
+
+  var steerZoneLeft = document.getElementById('steerZoneLeft');
+  var steerZoneRight = document.getElementById('steerZoneRight');
+  function setSteerZone(dir) {
+    if (steerZoneLeft) steerZoneLeft.classList.toggle('active', dir === -1);
+    if (steerZoneRight) steerZoneRight.classList.toggle('active', dir === 1);
+  }
+
+  function pointerMove(e) {
+    if (state !== 'running') return;
+    if (e.pointerType === 'mouse') {
+      var rect = canvas.getBoundingClientRect();
+      var rb = roadBox();
+      pointerX = clamp((e.clientX - rect.left - rb.x) / rb.w, 0, 1);
+    } else {
+      // روی گوشی کشیدنِ پیوسته سخت است — به‌جایش لمس‌ونگه‌داشتنِ نیمهٔ چپ/راست می‌پیچاند.
+      var rect2 = canvas.getBoundingClientRect();
+      pointerX = null;
+      keyDir = (e.clientX - rect2.left) < rect2.width / 2 ? -1 : 1;
+      setSteerZone(keyDir);
+    }
+    if (e.cancelable) e.preventDefault();
+  }
+  canvas.addEventListener('pointerdown', pointerMove);
+  canvas.addEventListener('pointermove', function (e) {
+    if (e.pressure > 0 || e.buttons > 0 || e.pointerType === 'mouse') pointerMove(e);
+  });
+  canvas.addEventListener('pointerup', function (e) {
+    pointerX = null;
+    if (e.pointerType !== 'mouse') { keyDir = 0; setSteerZone(0); }
+  });
+  canvas.addEventListener('pointerleave', function (e) {
+    pointerX = null;
+    if (e.pointerType !== 'mouse') { keyDir = 0; setSteerZone(0); }
+  });
+
+  /* --- spawning --- */
+  function spawnHazard() {
+    var rName = null;
+    var r = Math.random();
+    var pick;
+    // تایرهای پهن (۷۸px) سخت‌ترین مانع‌اند؛ سهمشان کم شد و مخروطِ کوچک بیشتر می‌آید.
+    if (r < 0.40) pick = { type: 'cone', w: 20, h: 24 };
+    else if (r < 0.55) pick = { type: 'tires', w: 78, h: 22 };
+    else if (r < 0.80) pick = { type: 'oil', w: 54, h: 34 };
+    else pick = { type: 'rival', w: 33, h: 52 };
+
+    if (pick.type === 'rival') {
+      var pool2 = rivalPool();
+      if (pool2 && pool2.length > 0) rName = pool2[Math.floor(Math.random() * pool2.length)].name;
+    }
+    hazards.push({
+      type: pick.type,
+      w: pick.w * scale, h: pick.h * scale,
+      x: 0.08 + Math.random() * 0.84,
+      y: -70,
+      drift: pick.type === 'rival' ? (Math.random() - 0.5) * 0.12 : 0,
+      hue: Math.random(),
+      passed: false,
+      rivalName: rName
+    });
+  }
+
+  function spawnItem(kind) {
+    items.push({ kind: kind, x: 0.1 + Math.random() * 0.8, y: -40, spin: 0, vx: 0, vy: 0 });
+  }
+
+  function burst(x, y, color, n, power) {
+    for (var i = 0; i < n && particles.length < 200; i++) {
+      var a = Math.random() * Math.PI * 2, s = (0.3 + Math.random()) * power;
+      particles.push({
+        x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30,
+        life: 0, max: 0.4 + Math.random() * 0.5, color: color,
+        size: (1.6 + Math.random() * 2.6) * scale
+      });
+    }
+  }
+
+  function addSkid(x, y) {
+    if (skids.length > 70) skids.shift();
+    skids.push({ x: x, y: y, life: 0, max: 1.6 });
+  }
+
+  function showCombo(on) {
+    if (!on) { comboEl.classList.remove('show'); return; }
+    comboEl.textContent = '×' + fa(comboMultiplier());
+    comboEl.classList.add('show');
+  }
+  function comboMultiplier() { return clamp(1 + Math.floor(combo / 4), 1, 5); }
+
+  function banner(text) {
+    bannerEl.textContent = text;
+    bannerEl.classList.add('show');
+    setTimeout(function () { bannerEl.classList.remove('show'); }, 1300);
+  }
+
+  var EFFECT_LABELS = {
+    nitro: 'نیترو', shield: 'سپر', magnet: 'آهن‌ربا', slow: 'کندی زمان', oil: 'لغزندگی', x2: 'سکه ۲×', ghost: 'حالت شبح'
+  };
+  var EFFECT_MAX = { nitro: 3.2, shield: 12, magnet: 6.5, slow: 4.5, oil: 2.2, x2: 7.0, ghost: 4.0 };
+
+  function renderEffects() {
+    var html = '';
+    ['nitro', 'shield', 'magnet', 'slow', 'oil', 'x2', 'ghost'].forEach(function (k) {
+      if (fx[k] <= 0) return;
+      var pct = clamp(fx[k] / EFFECT_MAX[k], 0, 1);
+      html += '<div class="effect ' + k + '"><span>' + EFFECT_LABELS[k] + '</span>' +
+              '<span class="bar"><i style="transform:scaleX(' + pct.toFixed(3) + ')"></i></span></div>';
+    });
+    effectsEl.innerHTML = html;
+  }
+
+  /* --- update --- */
+  // هیت‌باکسِ واقعیِ مانع نسبت به ظاهرش؛ لکهٔ روغن (اسلیپ) دست‌نخورده می‌ماند.
+  var HAZ_HITBOX = { cone: 0.6, tires: 0.92, rival: 0.85 };
+  function update(dt) {
+    var k;
+    for (k in fx) if (fx[k] > 0) fx[k] = Math.max(0, fx[k] - dt);
+    if (fx.shield <= 0) hasShield = false;
+
+    if (boostBtn) {
+      if (tapBoostCooldown > 0) {
+        tapBoostCooldown = Math.max(0, tapBoostCooldown - dt);
+        boostBtn.classList.remove('ready');
+        boostBtn.classList.add('cooling');
+        boostBtn.textContent = String(Math.ceil(tapBoostCooldown));
+      } else if (boostBtn.classList.contains('cooling')) {
+        boostBtn.classList.remove('cooling');
+        boostBtn.classList.add('ready');
+        boostBtn.textContent = '⚡';
+      }
+    }
+
+    var timeScale = fx.slow > 0 ? 0.55 : 1;
+    var boost = fx.nitro > 0 ? 1.38 : 1;
+
+    runT += dt;
+    speed += 6.3 * dt;
+    if (speed > 1020) speed = 1020;
+    var eff = speed * boost * timeScale;
+
+    distance += eff * dt / 11;
+    score += eff * dt / 11;
+    scroll += eff * dt;
+    updateTargetHUD();
+    updateBestProgress();
+
+    if (distance >= nextStageAt) {
+      stage++; nextStageAt += 600;
+      banner('Stage ' + stage);
+      score += 100;
+      Sound.stageUp();
+    }
+
+    // steering — oil slick cuts grip, so the kart answers lazily for a moment
+    grip = fx.oil > 0 ? 0.32 : 1;
+    if (pointerX !== null) {
+      var followRate = Math.min(1, dt * 11 * grip);
+      var before = kartX;
+      kartX += (pointerX - kartX) * followRate;
+      kartVel = (kartX - before) / Math.max(dt, 0.0001) * 0.02;
+    } else {
+      // پاسخِ فرمان ~۹۰ms (قبلاً ~۱۵۵ms) و سرعتِ جانبیِ حداکثر ~۱.۶ عرضِ جاده در ثانیه:
+      // با رها کردنِ انگشت، کارت تقریباً همان‌جا می‌ایستد، پس دقیق‌تر می‌شود جاخالی داد.
+      kartVel += keyDir * 18 * grip * dt;
+      kartVel *= Math.exp(-11 * dt);
+      kartX += kartVel * dt;
+    }
+    if (kartX < 0) { kartX = 0; kartVel = 0; }
+    if (kartX > 1) { kartX = 1; kartVel = 0; }
+
+    // tire smoke while steering hard
+    if (Math.abs(kartVel) > 1.3 && !reduced) {
+      var kr = kartRect();
+      addSkid(kr.x + kr.w / 2, kr.y + kr.h);
+      if (Math.random() < 0.5) {
+        burst(kr.x + kr.w / 2, kr.y + kr.h, 'rgba(190,190,200,0.5)', 1, 40);
+      }
+    }
+
+    // spawning
+    spawnT -= dt;
+    if (spawnT <= 0) {
+      spawnHazard();
+      // شروعِ دور خیلی خلوت است و در ۴۵ ثانیه تدریجی به چگالیِ عادی می‌رسد (که خودش
+      // هم ۱۵٪ خلوت‌تر از قبل است)، تا تازه‌کار وقت داشته باشد و حرفه‌ای‌ها دیرتر هم چالش ببینند.
+      var early = Math.max(0, 1 - runT / 45);
+      var gap = Math.max(0.34, 0.95 - speed / 2000 - stage * 0.012) * (1.3 + 0.85 * early);
+      spawnT = gap * (0.78 + Math.random() * 0.6);
+    }
+    coinT -= dt;
+    if (coinT <= 0) {
+      // سکه‌ها به‌صورت رشته‌ای می‌آیند تا «خطِ مسابقه» گرفتن معنا پیدا کند.
+      var lane = 0.12 + Math.random() * 0.76, count = 3 + Math.floor(Math.random() * 4);
+      for (var c = 0; c < count; c++) {
+        items.push({ kind: 'coin', x: lane, y: -40 - c * 34 * scale, spin: 0, vx: 0, vy: 0 });
+      }
+      coinT = 1.5 + Math.random() * 1.8;
+    }
+    itemT -= dt;
+    if (itemT <= 0) {
+      spawnItem(ITEM_KINDS[Math.floor(Math.random() * ITEM_KINDS.length)]);
+      itemT = 1.5 + Math.random() * 2.5;
+    }
+
+    var i, kr2 = kartRect();
+
+    for (i = hazards.length - 1; i >= 0; i--) {
+      var hz = hazards[i];
+      hz.y += eff * dt;
+      if (hz.drift) {
+        hz.x = clamp(hz.x + hz.drift * dt, 0.06, 0.94);
+      }
+      // slipstream: right behind a rival kart
+      var hr = hazRect(hz);
+      var dx = Math.abs((hr.x + hr.w / 2) - (kr2.x + kr2.w / 2));
+      if (hz.type === 'rival' && !hz.passed && hz.y < kr2.y && (kr2.y - (hz.y + hz.h)) < 150 * scale && dx < kr2.w * 0.8) {
+         slipstreamTimer += dt;
+         if (slipstreamTimer > 0.1) {
+            speed += 400 * dt; // speed boost
+            score += 15 * dt;
+            if (Math.random() < 0.2) burst(kr2.x + kr2.w / 2, kr2.y, 'rgba(200,200,255,0.5)', 2, 50);
+            if (slipstreamTimer > 0.5 && Math.random() < 0.05) spawnFloatingText(kr2.x, kr2.y - 30, 'Slipstream!', '#4DD0E1');
+         }
+      } else {
+         slipstreamTimer = 0;
+      }
+
+      // near miss: squeezed past without touching
+      if (!hz.passed && hz.y > kr2.y + kr2.h) {
+        hz.passed = true;
+        if (hz.type !== 'oil' && dx < (hr.w + kr2.w) / 2 + 30 * scale) {
+          score += 50;
+          combo = Math.min(combo + 2, 12); // add to combo!
+          comboT = 3.0;
+          showCombo(true);
+          burst(hr.x + hr.w / 2, kr2.y, 'rgba(255,255,255,0.75)', 8, 120);
+          Sound.nearMiss();
+          spawnFloatingText(hr.x, kr2.y, 'میلی‌متری!', '#FFD23A');
+        }
+      }
+      if (hz.y > H + 100) hazards.splice(i, 1);
+    }
+
+    for (i = items.length - 1; i >= 0; i--) {
+      var it = items[i];
+      it.y += eff * dt;
+      it.spin += dt * 4;
+      if (fx.magnet > 0 && it.kind === 'coin') {
+        var ir = itemRect(it), kc = kartRect();
+        var ddx = (kc.x + kc.w / 2) - (ir.x + ir.w / 2);
+        var ddy = (kc.y + kc.h / 2) - (ir.y + ir.h / 2);
+        var dist = Math.hypot(ddx, ddy);
+        var magRadius = (230 + ((upgrades.magnet || 1) - 1) * 50) * scale;
+        if (dist < magRadius && dist > 1) {
+          var rb0 = roadBox();
+          var pullSpeed = 2.4 + ((upgrades.magnet || 1) - 1) * 0.6;
+          it.x = clamp(it.x + (ddx / dist) * dt * pullSpeed, 0, 1);
+          it.y += (ddy / dist) * dt * (260 + ((upgrades.magnet || 1) - 1) * 50);
+        }
+      }
+      if (it.y > H + 60) items.splice(i, 1);
+    }
+
+    for (i = marks.length - 1; i >= 0; i--) {
+      marks[i].y += eff * dt;
+      if (marks[i].y > H + 40) { marks[i].y = -40; marks[i].x = Math.random(); marks[i].len = 12 + Math.random() * 26; }
+    }
+    for (i = floods.length - 1; i >= 0; i--) {
+      floods[i].y += eff * dt * 0.85;
+      if (floods[i].y > H + H * 0.6) floods[i].y -= H * 2;
+    }
+    for (i = skids.length - 1; i >= 0; i--) {
+      skids[i].y += eff * dt;
+      skids[i].life += dt;
+      if (skids[i].life >= skids[i].max || skids[i].y > H + 20) skids.splice(i, 1);
+    }
+    for (i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.life += dt;
+      p.x += p.vx * dt; p.y += p.vy * dt + eff * dt * 0.55; p.vy += 220 * dt;
+      if (p.life >= p.max) particles.splice(i, 1);
+    }
+
+    if (shake > 0) shake = Math.max(0, shake - dt * 42);
+    if (combo > 0) {
+      comboT -= dt;
+      if (comboT <= 0) { combo = 0; showCombo(false); }
+    }
+
+    // collisions — hazards
+    var kb = kartRect();
+    // برخورد با مانع کمی بخشنده‌تر از ظاهرِ کارت است (لبه‌های بدنه حساب نمی‌شوند)؛
+    // سکه و آیتم‌ها با کلِ بدنه برداشته می‌شوند.
+    var kbHaz = { x: kb.x + kb.w * 0.14, y: kb.y + kb.h * 0.1, w: kb.w * 0.72, h: kb.h * 0.8 };
+    for (i = hazards.length - 1; i >= 0; i--) {
+      var h2 = hazards[i], r = hazRect(h2), hf = HAZ_HITBOX[h2.type] || 1;
+      if (!hit(kbHaz, { x: r.x + r.w * (1 - hf) / 2, y: r.y + r.h * (1 - hf) / 2, w: r.w * hf, h: r.h * hf })) continue;
+
+      if (fx.ghost > 0) {
+        if (Math.random() < 0.2) burst(r.x + r.w / 2, r.y + r.h / 2, '#E040FB', 4, 60);
+        continue;
+      }
+
+      if (h2.type === 'oil') {
+        hazards.splice(i, 1);
+        fx.oil = EFFECT_MAX.oil;
+        renderEffects();
+        burst(r.x + r.w / 2, r.y + r.h / 2, 'rgba(120,120,135,0.8)', 14, 120);
+        Sound.oilHit();
+        continue;
+      }
+      if (hasShield) {
+        hazards.splice(i, 1);
+        hasShield = false; fx.shield = 0; renderEffects();
+        shake = 16;
+        burst(kb.x + kb.w / 2, kb.y, '#3E9BFF', 24, 200);
+        Sound.shieldBlock();
+        continue;
+      }
+      if (rookieHit) {
+        hazards.splice(i, 1);
+        rookieHit = false;
+        shake = 16;
+        burst(kb.x + kb.w / 2, kb.y, '#FFD54A', 24, 200);
+        Sound.shieldBlock();
+        spawnFloatingText(canvas.width / 2, canvas.height * 0.6, 'سپرِ تازه‌کار شکست!', '#FFD54A');
+        continue;
+      }
+      shake = 26;
+      burst(kb.x + kb.w / 2, kb.y, '#FF6A00', 26, 220);
+      burst(kb.x + kb.w / 2, kb.y, '#EDEDED', 12, 160);
+      Sound.crash();
+      gameOver();
+      return;
+    }
+
+    // collisions — items
+    for (i = items.length - 1; i >= 0; i--) {
+      var it2 = items[i], ir2 = itemRect(it2);
+      if (!hit(kb, ir2)) continue;
+      items.splice(i, 1);
+      var cx = ir2.x + ir2.w / 2, cy = ir2.y + ir2.h / 2;
+
+      if (it2.kind === 'coin') {
+        combo++; comboT = 2.2;
+        var coinMultiplier = (fx.x2 > 0 ? 2 : 1);
+        runCoins += coinMultiplier;
+        score += 10 * comboMultiplier() * coinMultiplier;
+        showCombo(comboMultiplier() > 1);
+        burst(cx, cy, '#FFD54A', 8, 120);
+        spawnFloatingText(cx, cy, (coinMultiplier > 1 ? '+۲ 🪙' : '+۱ 🪙'), '#FFD54A');
+        Sound.coin(combo);
+        var uiCoins = document.getElementById('uiCoins');
+        if (uiCoins) uiCoins.textContent = faGroup(totalCoins + runCoins);
+      } else if (it2.kind === 'nitro') {
+        fx.nitro = EFFECT_MAX.nitro;
+        score += 40;
+        burst(cx, cy, '#FFB300', 18, 180);
+        spawnFloatingText(cx, cy, 'NITRO!', '#FFB300');
+        Sound.pickup('nitro');
+      } else if (it2.kind === 'shield') {
+        fx.shield = EFFECT_MAX.shield; hasShield = true;
+        burst(cx, cy, '#3E9BFF', 18, 180);
+        spawnFloatingText(cx, cy, 'SHIELD!', '#3E9BFF');
+        Sound.pickup('shield');
+      } else if (it2.kind === 'magnet') {
+        fx.magnet = EFFECT_MAX.magnet;
+        burst(cx, cy, '#A855F7', 18, 180);
+        spawnFloatingText(cx, cy, 'MAGNET!', '#A855F7');
+        Sound.pickup('magnet');
+      } else if (it2.kind === 'slow') {
+        fx.slow = EFFECT_MAX.slow;
+        burst(cx, cy, '#00D68F', 18, 180);
+        spawnFloatingText(cx, cy, 'SLOW-MO!', '#00D68F');
+        Sound.pickup('slow');
+      } else if (it2.kind === 'x2') {
+        fx.x2 = EFFECT_MAX.x2;
+        score += 30;
+        burst(cx, cy, '#FFD54A', 18, 180);
+        spawnFloatingText(cx, cy, '2X COINS!', '#FFD54A');
+        Sound.pickup('nitro');
+      } else if (it2.kind === 'ghost') {
+        fx.ghost = EFFECT_MAX.ghost;
+        score += 30;
+        burst(cx, cy, '#E040FB', 18, 180);
+        spawnFloatingText(cx, cy, 'GHOST!', '#E040FB');
+        Sound.pickup('magnet');
+      }
+      renderEffects();
+    }
+  }
+
+  function kartRect() {
+    var rb = roadBox(), w = 32 * scale, h = 50 * scale, pad = 14 * scale;
+    return { x: rb.x + pad + kartX * (rb.w - pad * 2 - w), y: H - h - 46 * scale, w: w, h: h };
+  }
+  function hazRect(o) {
+    var rb = roadBox(), pad = 10 * scale;
+    return { x: rb.x + pad + o.x * (rb.w - pad * 2 - o.w), y: o.y, w: o.w, h: o.h };
+  }
+  function itemRect(p) {
+    var rb = roadBox(), s = 26 * scale, pad = 12 * scale;
+    return { x: rb.x + pad + p.x * (rb.w - pad * 2 - s), y: p.y, w: s, h: s };
+  }
+  function hit(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  /* --- draw --- */
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function draw() {
+    var rb = roadBox();
+
+    ctx.save();
+    if (shake > 0) ctx.translate((Math.random() - 0.5) * shake * 0.5, (Math.random() - 0.5) * shake * 0.5);
+
+    // dynamic background based on stage
+    var bgColors = ['#08080B', '#0F091A', '#071216', '#170606'];
+    ctx.fillStyle = bgColors[(stage - 1) % bgColors.length];
+    ctx.fillRect(-20, 0, W + 40, H);
+
+    // grandstand silhouettes along both verges
+    ctx.fillStyle = '#0E0E13';
+    var standW = Math.max(10, rb.x - 6);
+    if (standW > 8) {
+      ctx.fillRect(0, 0, standW, H);
+      ctx.fillRect(rb.x + rb.w + 6, 0, standW, H);
+      var lightColors = ['rgba(255,179,0,0.16)', 'rgba(200,80,255,0.2)', 'rgba(80,255,200,0.2)', 'rgba(255,60,60,0.2)'];
+      ctx.fillStyle = lightColors[(stage - 1) % lightColors.length];
+      var lightGap = 46 * scale;
+      var lOff = (scroll * 0.45) % lightGap;
+      for (var ly = -lightGap; ly < H + lightGap; ly += lightGap) {
+        ctx.fillRect(standW * 0.35, ly + lOff, 3 * scale, 3 * scale);
+        ctx.fillRect(rb.x + rb.w + 6 + standW * 0.6, ly + lOff, 3 * scale, 3 * scale);
+      }
+    }
+
+    // asphalt
+    var grad = ctx.createLinearGradient(rb.x, 0, rb.x + rb.w, 0);
+    grad.addColorStop(0, '#16161B');
+    grad.addColorStop(0.5, '#1E1E24');
+    grad.addColorStop(1, '#16161B');
+    ctx.fillStyle = grad;
+    ctx.fillRect(rb.x, 0, rb.w, H);
+
+    // floodlight pools sweeping down the straight
+    for (var fi = 0; fi < floods.length; fi++) {
+      var fy = floods[fi].y;
+      var fg = ctx.createRadialGradient(rb.x + rb.w / 2, fy, 10, rb.x + rb.w / 2, fy, rb.w * 0.7);
+      fg.addColorStop(0, 'rgba(255,214,150,0.09)');
+      fg.addColorStop(1, 'rgba(255,214,150,0)');
+      ctx.fillStyle = fg;
+      ctx.fillRect(rb.x, fy - rb.w * 0.7, rb.w, rb.w * 1.4);
+    }
+
+    // asphalt grain
+    ctx.strokeStyle = 'rgba(255,255,255,0.028)';
+    ctx.lineWidth = 1.4;
+    for (var m = 0; m < marks.length; m++) {
+      var mk = marks[m], mx = rb.x + 8 + mk.x * (rb.w - 16);
+      ctx.beginPath(); ctx.moveTo(mx, mk.y); ctx.lineTo(mx, mk.y + mk.len); ctx.stroke();
+    }
+
+    // persistent skid marks
+    for (var si = 0; si < skids.length; si++) {
+      var sk = skids[si];
+      ctx.globalAlpha = Math.max(0, 0.22 * (1 - sk.life / sk.max));
+      ctx.fillStyle = '#000';
+      ctx.fillRect(sk.x - 9 * scale, sk.y, 4 * scale, 12 * scale);
+      ctx.fillRect(sk.x + 5 * scale, sk.y, 4 * scale, 12 * scale);
+    }
+    ctx.globalAlpha = 1;
+
+    // rumble strips
+    var rs = 13 * scale, period = rs * 2, off = scroll % period;
+    for (var y = -period; y < H + period; y += period) {
+      var yy = y + off;
+      ctx.fillStyle = '#D42323';
+      ctx.fillRect(rb.x - rs, yy, rs, rs);
+      ctx.fillRect(rb.x + rb.w, yy, rs, rs);
+      ctx.fillStyle = '#E8E8EA';
+      ctx.fillRect(rb.x - rs, yy + rs, rs, rs);
+      ctx.fillRect(rb.x + rb.w, yy + rs, rs, rs);
+    }
+
+    // lane dashes
+    var dashH = 34 * scale, dashGap = 30 * scale, dOff = scroll % (dashH + dashGap);
+    ctx.fillStyle = 'rgba(255,255,255,0.13)';
+    for (var dy = -dashH; dy < H + dashH; dy += dashH + dashGap) {
+      ctx.fillRect(rb.x + rb.w / 3 - 1.5 * scale, dy + dOff, 3 * scale, dashH);
+      ctx.fillRect(rb.x + rb.w * 2 / 3 - 1.5 * scale, dy + dOff, 3 * scale, dashH);
+    }
+
+    // player headlight cone (night race)
+    var kb = kartRect();
+    if (!reduced) {
+      var hx = kb.x + kb.w / 2, hy = kb.y;
+      var hg = ctx.createLinearGradient(hx, hy, hx, hy - 260 * scale);
+      hg.addColorStop(0, 'rgba(255,240,205,0.16)');
+      hg.addColorStop(1, 'rgba(255,240,205,0)');
+      ctx.fillStyle = hg;
+      ctx.beginPath();
+      ctx.moveTo(hx - kb.w * 0.4, hy);
+      ctx.lineTo(hx - kb.w * 2.4, hy - 260 * scale);
+      ctx.lineTo(hx + kb.w * 2.4, hy - 260 * scale);
+      ctx.lineTo(hx + kb.w * 0.4, hy);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // items
+    for (var q = 0; q < items.length; q++) drawItem(items[q]);
+
+    // hazards
+    for (var o = 0; o < hazards.length; o++) drawHazard(hazards[o]);
+
+    // player kart
+    drawKart(kb);
+
+    // particles
+    for (var pi = 0; pi < particles.length; pi++) {
+      var p = particles[pi];
+      ctx.globalAlpha = Math.max(0, 1 - p.life / p.max);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+    }
+    ctx.globalAlpha = 1;
+
+    // speed streaks
+    if (state === 'running' && speed > 430 && !reduced) {
+      ctx.strokeStyle = 'rgba(255,255,255,' + Math.min(0.2, (speed - 430) / 3400) + ')';
+      ctx.lineWidth = 1.6;
+      for (var sl = 0; sl < 9; sl++) {
+        var sx = rb.x + 10 + ((sl * 137 + scroll * 0.8) % (rb.w - 20));
+        var sy = (sl * 97 + scroll * 1.5) % (H + 80) - 40;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx, sy + 46 * scale); ctx.stroke();
+      }
+    }
+
+    // slow-motion tint
+    if (fx.slow > 0) {
+      ctx.fillStyle = 'rgba(0,214,143,0.06)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // vignette
+    var vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.28, W / 2, H / 2, H * 0.82);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, 'rgba(0,0,0,0.52)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.restore();
+  }
+
+  function drawItem(it) {
+    var r = itemRect(it), cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    if (it.kind === 'coin') {
+      ctx.rotate(it.spin * 0.8);
+      var w = r.w * (0.55 + 0.45 * Math.abs(Math.cos(it.spin)));
+      ctx.fillStyle = '#FFD54A';
+      ctx.beginPath(); ctx.ellipse(0, 0, w / 2, r.h / 2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#B07A00'; ctx.lineWidth = 1.6 * scale;
+      ctx.beginPath(); ctx.ellipse(0, 0, w / 2, r.h / 2, 0, 0, Math.PI * 2); ctx.stroke();
+    } else {
+      var col = it.kind === 'nitro' ? '#FFB300'
+              : it.kind === 'shield' ? '#3E9BFF'
+              : it.kind === 'magnet' ? '#A855F7'
+              : it.kind === 'x2' ? '#FFD54A'
+              : it.kind === 'ghost' ? '#E040FB' : '#00D68F';
+      ctx.rotate(it.spin * 0.5);
+      ctx.fillStyle = col;
+      ctx.globalAlpha = 0.22;
+      ctx.beginPath(); ctx.arc(0, 0, r.w * 0.78, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      // hexagon body
+      ctx.beginPath();
+      for (var s = 0; s < 6; s++) {
+        var ang = Math.PI / 3 * s - Math.PI / 2;
+        var px = Math.cos(ang) * r.w * 0.5, py = Math.sin(ang) * r.h * 0.5;
+        s === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath(); ctx.fill();
+
+      ctx.rotate(-it.spin * 0.5);
+      ctx.fillStyle = '#0B0B0D';
+      ctx.lineWidth = 2.2 * scale;
+      ctx.strokeStyle = '#0B0B0D';
+      if (it.kind === 'nitro') {
+        ctx.beginPath();
+        ctx.moveTo(-r.w * 0.16, -r.h * 0.22); ctx.lineTo(r.w * 0.16, -r.h * 0.22);
+        ctx.lineTo(-r.w * 0.04, r.h * 0.26); ctx.lineTo(r.w * 0.04, -r.h * 0.02);
+        ctx.lineTo(-r.w * 0.18, -r.h * 0.02);
+        ctx.closePath(); ctx.fill();
+      } else if (it.kind === 'shield') {
+        ctx.beginPath();
+        ctx.moveTo(0, -r.h * 0.28);
+        ctx.lineTo(r.w * 0.22, -r.h * 0.12);
+        ctx.lineTo(r.w * 0.22, r.h * 0.1);
+        ctx.lineTo(0, r.h * 0.3);
+        ctx.lineTo(-r.w * 0.22, r.h * 0.1);
+        ctx.lineTo(-r.w * 0.22, -r.h * 0.12);
+        ctx.closePath(); ctx.fill();
+      } else if (it.kind === 'magnet') {
+        ctx.beginPath();
+        ctx.arc(0, r.h * 0.04, r.w * 0.2, Math.PI, 0);
+        ctx.lineTo(r.w * 0.2, r.h * 0.26);
+        ctx.lineTo(r.w * 0.06, r.h * 0.26);
+        ctx.lineTo(r.w * 0.06, r.h * 0.04);
+        ctx.arc(0, r.h * 0.04, r.w * 0.06, 0, Math.PI, true);
+        ctx.lineTo(-r.w * 0.06, r.h * 0.26);
+        ctx.lineTo(-r.w * 0.2, r.h * 0.26);
+        ctx.closePath(); ctx.fill();
+      } else if (it.kind === 'x2') {
+        ctx.font = 'bold ' + Math.round(13 * scale) + 'px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('2X', 0, 0);
+      } else if (it.kind === 'ghost') {
+        ctx.beginPath();
+        ctx.arc(0, -r.h * 0.08, r.w * 0.16, Math.PI, 0);
+        ctx.lineTo(r.w * 0.16, r.h * 0.18);
+        ctx.lineTo(0, r.h * 0.12);
+        ctx.lineTo(-r.w * 0.16, r.h * 0.18);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(0, 0, r.w * 0.26, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, -r.h * 0.16); ctx.lineTo(0, 0); ctx.lineTo(r.w * 0.14, r.h * 0.06);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawHazard(hz) {
+    var r = hazRect(hz);
+    if (hz.type === 'cone') {
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.beginPath(); ctx.ellipse(r.x + r.w / 2, r.y + r.h, r.w * 0.55, r.h * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#FF6A00';
+      ctx.beginPath();
+      ctx.moveTo(r.x + r.w / 2, r.y); ctx.lineTo(r.x + r.w, r.y + r.h); ctx.lineTo(r.x, r.y + r.h);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#F5F5F7';
+      ctx.fillRect(r.x + r.w * 0.2, r.y + r.h * 0.52, r.w * 0.6, r.h * 0.16);
+
+    } else if (hz.type === 'tires') {
+      // tire barrier — what karting tracks actually line their corners with
+      var tireD = r.h * 0.92, n = Math.max(3, Math.round(r.w / tireD));
+      for (var t = 0; t < n; t++) {
+        var tx = r.x + (r.w / n) * t + (r.w / n) / 2;
+        ctx.fillStyle = '#1C1C21';
+        ctx.beginPath(); ctx.arc(tx, r.y + r.h / 2, tireD * 0.48, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#33333C'; ctx.lineWidth = 2 * scale;
+        ctx.beginPath(); ctx.arc(tx, r.y + r.h / 2, tireD * 0.48, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = '#0D0D10';
+        ctx.beginPath(); ctx.arc(tx, r.y + r.h / 2, tireD * 0.2, 0, Math.PI * 2); ctx.fill();
+        if (t % 2 === 0) {
+          ctx.fillStyle = 'rgba(255,255,255,0.5)';
+          ctx.fillRect(tx - tireD * 0.1, r.y + r.h / 2 - tireD * 0.46, tireD * 0.2, tireD * 0.14);
+        }
+      }
+
+    } else if (hz.type === 'oil') {
+      ctx.save();
+      ctx.translate(r.x + r.w / 2, r.y + r.h / 2);
+      var og = ctx.createRadialGradient(0, 0, 2, 0, 0, r.w * 0.55);
+      og.addColorStop(0, 'rgba(28,28,36,0.95)');
+      og.addColorStop(0.7, 'rgba(40,36,58,0.8)');
+      og.addColorStop(1, 'rgba(40,36,58,0)');
+      ctx.fillStyle = og;
+      ctx.beginPath(); ctx.ellipse(0, 0, r.w * 0.55, r.h * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(150,130,200,0.35)'; ctx.lineWidth = 1.5 * scale;
+      ctx.beginPath(); ctx.ellipse(0, 0, r.w * 0.36, r.h * 0.3, 0.4, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+
+    } else {
+      // rival kart
+      var body = hz.hue > 0.66 ? '#3C6FE0' : (hz.hue > 0.33 ? '#8B5CF6' : '#17A67B');
+      ctx.fillStyle = '#0D0D10';
+      var tw = 6.5 * scale, th = 13 * scale;
+      ctx.fillRect(r.x - tw * 0.35, r.y + r.h * 0.08, tw, th);
+      ctx.fillRect(r.x + r.w - tw * 0.65, r.y + r.h * 0.08, tw, th);
+      ctx.fillRect(r.x - tw * 0.35, r.y + r.h * 0.68, tw, th);
+      ctx.fillRect(r.x + r.w - tw * 0.65, r.y + r.h * 0.68, tw, th);
+      roundRect(r.x, r.y, r.w, r.h, 6 * scale);
+      ctx.fillStyle = body; ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.14)';
+      ctx.fillRect(r.x + r.w * 0.12, r.y + r.h * 0.12, r.w * 0.76, r.h * 0.08);
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      roundRect(r.x + r.w * 0.2, r.y + r.h * 0.34, r.w * 0.6, r.h * 0.26, 3 * scale);
+      ctx.fill();
+      // tail lights
+      ctx.fillStyle = 'rgba(255,60,40,0.85)';
+      ctx.fillRect(r.x + r.w * 0.14, r.y + r.h - 3 * scale, r.w * 0.16, 3 * scale);
+      ctx.fillRect(r.x + r.w * 0.7, r.y + r.h - 3 * scale, r.w * 0.16, 3 * scale);
+      
+      if (hz.rivalName) {
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = '700 ' + (13 * scale) + 'px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(hz.rivalName, r.x + r.w/2, r.y - 8 * scale);
+      }
+    }
+  }
+
+  function drawKart(k) {
+    ctx.save();
+    ctx.translate(k.x + k.w / 2, k.y + k.h / 2);
+    ctx.rotate(clamp(kartVel * 0.2, -0.3, 0.3));
+
+    // magnet aura
+    if (fx.magnet > 0) {
+      ctx.strokeStyle = 'rgba(168,85,247,' + (0.25 + 0.2 * Math.sin(performance.now() / 120)) + ')';
+      ctx.lineWidth = 2 * scale;
+      ctx.beginPath(); ctx.arc(0, 0, k.w * 1.9, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    // ground shadow — karts sit very low, almost on the tarmac
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(1.5 * scale, k.h * 0.08, k.w * 0.82, k.h * 0.62, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    var cObj = KART_COLORS.find(function(c) { return c.id === selectedColor; }) || KART_COLORS[0];
+    var noseColor1 = cObj.c1, noseColor2 = cObj.c2;
+    var frameLight = '#6A6A76', frameFill = '#3C3C46';
+
+    // --- rear number-flag pole (a real safety-flag detail on every kart) ---
+    ctx.strokeStyle = frameLight;
+    ctx.lineWidth = 1.6 * scale;
+    ctx.beginPath();
+    ctx.moveTo(-k.w * 0.28, k.h * 0.48);
+    ctx.lineTo(-k.w * 0.24, k.h * 0.48 - 24 * scale);
+    ctx.stroke();
+    ctx.fillStyle = noseColor2;
+    ctx.fillRect(-k.w * 0.24, k.h * 0.48 - 24 * scale, k.w * 0.22, k.h * 0.12);
+    ctx.fillStyle = '#FFF';
+    ctx.font = '800 ' + (6.5 * scale) + 'px Chakra Petch, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('01', -k.w * 0.24 + k.w * 0.11, k.h * 0.48 - 24 * scale + k.h * 0.06);
+
+    // --- rear tube bumper (a real, visible light-grey tube hoop) ---
+    ctx.strokeStyle = frameLight;
+    ctx.lineWidth = 3.4 * scale;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-k.w * 0.62, k.h * 0.42);
+    ctx.lineTo(-k.w * 0.5, k.h * 0.52);
+    ctx.lineTo(k.w * 0.5, k.h * 0.52);
+    ctx.lineTo(k.w * 0.62, k.h * 0.42);
+    ctx.stroke();
+
+    // --- rear (wide) wheels — real karts run a noticeably wider rear track ---
+    drawKartWheel(-k.w * 0.72, k.h * 0.24, 9 * scale, 17 * scale);
+    drawKartWheel(k.w * 0.72, k.h * 0.24, 9 * scale, 17 * scale);
+
+    // --- chassis floor: a lit grey tub, not a black void, so it actually
+    // reads against the dark track — the bright nose/pods sit on top of it ---
+    ctx.fillStyle = frameFill;
+    roundRect(-k.w * 0.44, -k.h * 0.42, k.w * 0.88, k.h * 0.9, 8 * scale);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+    ctx.lineWidth = 1.2 * scale;
+    roundRect(-k.w * 0.44, -k.h * 0.42, k.w * 0.88, k.h * 0.9, 8 * scale);
+    ctx.stroke();
+    // three tube-frame ribs across the exposed deck
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+    ctx.lineWidth = 1.1 * scale;
+    for (var mrow = 0; mrow < 3; mrow++) {
+      var my = -k.h * 0.22 + mrow * k.h * 0.24;
+      ctx.beginPath(); ctx.moveTo(-k.w * 0.42, my); ctx.lineTo(k.w * 0.42, my); ctx.stroke();
+    }
+
+    // --- engine cowl (small dark bump behind the seat, with a lit edge) ---
+    ctx.fillStyle = '#17171C';
+    roundRect(-k.w * 0.17, k.h * 0.16, k.w * 0.34, k.h * 0.22, 5 * scale);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1 * scale;
+    roundRect(-k.w * 0.17, k.h * 0.16, k.w * 0.34, k.h * 0.22, 5 * scale);
+    ctx.stroke();
+
+    // --- side pods: painted fairing panels flush with the chassis edge,
+    // running most of its length, so they read as bodywork, not wings ---
+    var podGrad = ctx.createLinearGradient(0, -k.h * 0.1, 0, k.h * 0.28);
+    podGrad.addColorStop(0, noseColor1); podGrad.addColorStop(1, noseColor2);
+    ctx.fillStyle = podGrad;
+    roundRect(-k.w * 0.52, -k.h * 0.12, k.w * 0.18, k.h * 0.42, 6 * scale); ctx.fill();
+    roundRect(k.w * 0.34, -k.h * 0.12, k.w * 0.18, k.h * 0.42, 6 * scale); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.fillRect(-k.w * 0.5, -k.h * 0.08, k.w * 0.04, k.h * 0.3);
+    ctx.fillRect(k.w * 0.36, -k.h * 0.08, k.w * 0.04, k.h * 0.3);
+
+    // --- seat + headrest hoop ---
+    ctx.fillStyle = '#141419';
+    roundRect(-k.w * 0.24, -k.h * 0.14, k.w * 0.48, k.h * 0.4, 9 * scale);
+    ctx.fill();
+    ctx.fillStyle = '#232330';
+    roundRect(-k.w * 0.19, -k.h * 0.08, k.w * 0.38, k.h * 0.3, 7 * scale);
+    ctx.fill();
+    ctx.strokeStyle = frameLight;
+    ctx.lineWidth = 2.6 * scale;
+    ctx.beginPath();
+    ctx.arc(0, -k.h * 0.12, k.w * 0.27, Math.PI * 1.08, Math.PI * 1.92);
+    ctx.stroke();
+
+    // --- steering wheel hint ---
+    ctx.strokeStyle = '#101014';
+    ctx.lineWidth = 2.2 * scale;
+    ctx.beginPath(); ctx.arc(0, -k.h * 0.3, k.w * 0.15, 0, Math.PI * 2); ctx.stroke();
+
+    // --- front tube bumper ---
+    ctx.strokeStyle = frameLight;
+    ctx.lineWidth = 3.4 * scale;
+    ctx.beginPath();
+    ctx.moveTo(-k.w * 0.55, -k.h * 0.4);
+    ctx.lineTo(-k.w * 0.42, -k.h * 0.52);
+    ctx.lineTo(k.w * 0.42, -k.h * 0.52);
+    ctx.lineTo(k.w * 0.55, -k.h * 0.4);
+    ctx.stroke();
+
+    // --- front (narrow) wheels ---
+    drawKartWheel(-k.w * 0.6, -k.h * 0.22, 7.5 * scale, 14.5 * scale);
+    drawKartWheel(k.w * 0.6, -k.h * 0.22, 7.5 * scale, 14.5 * scale);
+
+    // --- nose cone with number sticker (front bodywork, like a real kart's fairing) ---
+    var noseGrad = ctx.createLinearGradient(0, -k.h * 0.62, 0, -k.h * 0.3);
+    noseGrad.addColorStop(0, noseColor1); noseGrad.addColorStop(1, noseColor2);
+    ctx.fillStyle = noseGrad;
+    ctx.beginPath();
+    ctx.moveTo(-k.w * 0.4, -k.h * 0.32);
+    ctx.quadraticCurveTo(-k.w * 0.5, -k.h * 0.52, 0, -k.h * 0.62);
+    ctx.quadraticCurveTo(k.w * 0.5, -k.h * 0.52, k.w * 0.4, -k.h * 0.32);
+    ctx.quadraticCurveTo(0, -k.h * 0.42, -k.w * 0.4, -k.h * 0.32);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.28)';
+    ctx.beginPath();
+    ctx.ellipse(0, -k.h * 0.5, k.w * 0.14, k.h * 0.05, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // number sticker
+    ctx.fillStyle = '#F5F5F7';
+    ctx.beginPath(); ctx.arc(0, -k.h * 0.44, k.w * 0.19, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = noseColor2; ctx.lineWidth = 1.6 * scale;
+    ctx.beginPath(); ctx.arc(0, -k.h * 0.44, k.w * 0.19, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#101014';
+    ctx.font = '900 ' + (11 * scale) + 'px Chakra Petch, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('01', 0, -k.h * 0.435);
+
+    function drawKartWheel(cx, cy, w2, h2) {
+      ctx.fillStyle = '#1C1C22';
+      roundRect(cx - w2 / 2, cy - h2 / 2, w2, h2, w2 * 0.32);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+      ctx.lineWidth = 0.9 * scale;
+      roundRect(cx - w2 / 2, cy - h2 / 2, w2, h2, w2 * 0.32);
+      ctx.stroke();
+      ctx.fillStyle = '#55555f';
+      ctx.fillRect(cx - w2 * 0.22, cy - h2 * 0.18, w2 * 0.44, h2 * 0.36);
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = 0.8 * scale;
+      ctx.beginPath();
+      ctx.moveTo(cx - w2 / 2, cy); ctx.lineTo(cx + w2 / 2, cy);
+      ctx.stroke();
+    }
+
+    // nitro flames
+    if (fx.nitro > 0) {
+      var flameH = (18 + Math.random() * 16) * scale;
+      var fg2 = ctx.createLinearGradient(0, k.h / 2, 0, k.h / 2 + flameH);
+      fg2.addColorStop(0, 'rgba(255,220,120,0.95)');
+      fg2.addColorStop(0.5, 'rgba(255,140,0,0.7)');
+      fg2.addColorStop(1, 'rgba(255,60,0,0)');
+      ctx.fillStyle = fg2;
+      ctx.beginPath();
+      ctx.moveTo(-k.w * 0.22, k.h / 2);
+      ctx.lineTo(k.w * 0.22, k.h / 2);
+      ctx.lineTo(0, k.h / 2 + flameH);
+      ctx.closePath(); ctx.fill();
+    }
+
+    // shield bubble
+    if (hasShield || rookieHit) {
+      var pulse = 0.5 + 0.2 * Math.sin(performance.now() / 160);
+      ctx.strokeStyle = 'rgba(62,155,255,' + pulse + ')';
+      ctx.lineWidth = 2.4 * scale;
+      ctx.beginPath(); ctx.arc(0, 0, k.w * 1.15, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(62,155,255,0.09)';
+      ctx.beginPath(); ctx.arc(0, 0, k.w * 1.15, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  /* --- loop --- */
+  function loop(now) {
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    if (state === 'running') {
+      update(dt);
+      uiScore.textContent = faGroup(score);
+      uiSpeed.textContent = fa(Math.round(speed * (fx.nitro > 0 ? 1.38 : 1) / 5.2));
+      renderEffects();
+      Sound.engineUpdate(clamp(speed / 1020, 0, 1), true, fx.slow > 0 ? 0.6 : 1);
+    } else {
+      Sound.engineUpdate(0, false);
+    }
+    draw();
+
+    if (state === 'running' || shake > 0 || particles.length) rafId = requestAnimationFrame(loop);
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && state === 'running') last = performance.now();
+  });
+  window.addEventListener('resize', resize);
+
+
+
+  var shopModal = document.getElementById('shopModal');
+  var openShopBtn = document.getElementById('openShopBtn');
+  var hudShopBtn = document.getElementById('hudShopBtn');
+  var closeShopBtn = document.getElementById('closeShopBtn');
+  var closeShopBtnX = document.getElementById('closeShopBtnX');
+  var tabColors = document.getElementById('tabColors');
+  var tabUpgrades = document.getElementById('tabUpgrades');
+  var tabBoosts = document.getElementById('tabBoosts');
+  
+  if (openShopBtn) openShopBtn.addEventListener('click', openShop);
+  if (hudShopBtn) hudShopBtn.addEventListener('click', openShop);
+  if (closeShopBtnX) closeShopBtnX.addEventListener('click', closeShop);
+  if (closeShopBtn) closeShopBtn.addEventListener('click', closeShop);
+  
+  if (tabColors) tabColors.addEventListener('click', function() { switchShopTab('colors'); });
+  if (tabUpgrades) tabUpgrades.addEventListener('click', function() { switchShopTab('upgrades'); });
+  if (tabBoosts) tabBoosts.addEventListener('click', function() { switchShopTab('boosts'); });
+
+  var reviveBtn = document.getElementById('reviveBtn');
+  if (reviveBtn) reviveBtn.addEventListener('click', doRevive);
+  var skipReviveBtn = document.getElementById('skipReviveBtn');
+  if (skipReviveBtn) skipReviveBtn.addEventListener('click', skipRevive);
+
+  var fsBtn = document.getElementById('fsBtn');
+  if (fsBtn) {
+    fsBtn.addEventListener('click', function() {
+      var elem = document.documentElement;
+      if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) { elem.requestFullscreen(); }
+        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+        else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+      } else {
+        if (document.exitFullscreen) { document.exitFullscreen(); }
+        else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+        else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+      }
+    });
+  }
+
+  /* --- boot --- */
+  if (shopModal) shopModal.hidden = true;
+  updateEffectMax();
+  renderShop();
+  reset();
+  resize();
+  draw();
+
+  var lGate = document.getElementById('loadingGate');
+  Sound.assetsReady().then(function () {
+    if (lGate) lGate.hidden = true;
+    if (player) {
+      renderWho();
+      startBtn.textContent = 'شروع تمرین';
+    } else {
+      openSignin();
+    }
+    renderShop();
+    refreshBoard();
+    setInterval(function () {
+      if (!document.hidden) fetchLiveBoard();
+    }, 9000);
+  });
+})();
+</script>
+</body>
+</html>
