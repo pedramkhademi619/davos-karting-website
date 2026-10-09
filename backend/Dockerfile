@@ -2,15 +2,17 @@
 
 # ---- builder: resolve and install pinned dependencies into an isolated venv --------------------
 FROM python:3.12.7-slim-bookworm AS builder
-ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+# Long timeouts and retries: a slow or unreliable route to PyPI should slow the build down, not fail it.
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1 PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10
 RUN python -m venv /opt/venv
 ENV PATH=/opt/venv/bin:$PATH
 WORKDIR /build
 COPY requirements.lock ./
-RUN pip install --no-deps -r requirements.lock
+# The download cache lives in a BuildKit cache mount (not in the image), so a retried build keeps what it already got.
+RUN --mount=type=cache,target=/root/.cache/pip PIP_NO_CACHE_DIR=0 pip install --no-deps -r requirements.lock
 COPY pyproject.toml ./
 COPY src ./src
-RUN pip install --no-deps .
+RUN --mount=type=cache,target=/root/.cache/pip PIP_NO_CACHE_DIR=0 pip install --no-deps .
 
 # ---- runtime: no compilers, no pip cache, non-root ---------------------------------------------
 FROM python:3.12.7-slim-bookworm AS runtime
