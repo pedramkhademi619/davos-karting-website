@@ -18,6 +18,11 @@ export type BookingInfo = {
   min_days_ahead: number;
   max_days_ahead: number;
   max_karts_per_reservation: number;
+  daily_booking_limit_mode: "none" | "people" | "tickets" | "both";
+  daily_people_limit: number | null;
+  daily_ticket_limit: number | null;
+  online_booking_cutoff: string | null;
+  online_booking_cutoff_passed: boolean;
 };
 
 export type BookableDay = {
@@ -45,6 +50,7 @@ export type SessionAvailability = {
   single_capacity: number;
   double_capacity: number;
   bookable: boolean;
+  blocked: boolean;
 };
 
 export type DayAvailability = {
@@ -63,6 +69,7 @@ export type ReservationStatus = "held" | "confirmed" | "attended" | "cancelled" 
 export type Reservation = {
   id: string;
   code: string;
+  ticket_number: number;
   date: string;
   date_jalali: string;
   weekday: string;
@@ -82,6 +89,7 @@ export type Reservation = {
   confirmed_late: boolean;
   note: string;
   cancel_reason: string;
+  payment_method: "none" | "cash" | "card" | "transfer";
 };
 
 export type StartPayment = {
@@ -128,11 +136,58 @@ export type Profile = {
   created_at: string;
 };
 
+/** One of the customer's payment attempts (GET /account/payments). */
+export type AccountPayment = {
+  payment_id: string;
+  status: PaymentStatusValue;
+  amount_toman: number;
+  reference_id: string | null;
+  reservation_id: string | null;
+  gateway: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/** A device signed in to the customer's account (GET /auth/sessions). */
+export type DeviceSession = {
+  session_id: string;
+  user_agent: string;
+  ip_hint: string;
+  created_at: string;
+  last_seen_at: string;
+  is_current: boolean;
+};
+
+export type StatusLevel = "ok" | "degraded" | "down" | "disabled" | "test";
+
+export type ServicePart = { label: string; level: StatusLevel; detail: string };
+
+export type ServiceStatus = {
+  key: string;
+  group: string;
+  label: string;
+  level: StatusLevel;
+  summary: string;
+  latency_ms: number | null;
+  parts: ServicePart[];
+  checked_at: string;
+};
+
+export type SystemStatus = { overall: StatusLevel; checked_at: string; services: ServiceStatus[] };
+
 // ---- admin ----
 
 export type AdminRole = "owner" | "staff";
 
-export type AdminMe = { admin_id: string; username: string; display_name: string; role: AdminRole; csrf_token: string };
+export type AdminMe = {
+  admin_id: string;
+  username: string;
+  display_name: string;
+  role: AdminRole;
+  /** What this person may open; the server enforces the same list on every request. */
+  permissions: string[];
+  csrf_token: string;
+};
 
 export type Dashboard = {
   today_confirmed: number;
@@ -166,12 +221,17 @@ export type ScheduleSettings = {
   closed_weekdays: number[];
   holiday_dates: string[];
   closed_dates: string[];
+  open_dates: string[];
   min_days_ahead: number;
   max_days_ahead: number;
   same_day_lead_minutes: number;
   hold_minutes: number;
   max_karts_per_reservation: number;
   max_active_holds_per_customer: number;
+  daily_booking_limit_mode: "none" | "people" | "tickets" | "both";
+  daily_people_limit: number | null;
+  daily_ticket_limit: number | null;
+  online_booking_cutoff: string | null;
 };
 
 export type Customer = {
@@ -227,6 +287,13 @@ export type AdminUser = {
   is_active: boolean;
   last_login_at: string | null;
   created_at: string;
+  permissions: string[];
+  custom_permissions: boolean;
+};
+
+export type PermissionCatalog = {
+  entries: { key: string; label: string; description: string; implies: string | null; default_for_staff: boolean }[];
+  presets: { key: string; label: string; permissions: string[] }[];
 };
 
 export type AssistantOverview = {

@@ -161,6 +161,8 @@ class AppSettings(BaseSettings):
     payments_sandbox_orders_enabled: bool
 
     # ---- SMS: "recording" sends nothing (development); "kavenegar" uses the Kavenegar API -------------------------
+    status_frontend_url: str  # blank = the admin status page skips this check
+    status_game_url: str
     sms_provider: str
     kavenegar_api_url: str
     kavenegar_api_key: SecretStr

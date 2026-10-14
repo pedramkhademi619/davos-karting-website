@@ -3,11 +3,29 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime, time
 
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Date, DateTime, Index, Integer, String, Text, Time, text
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    Date,
+    DateTime,
+    Index,
+    Integer,
+    Sequence,
+    String,
+    Text,
+    Time,
+    text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from davos.platform.persistence.base import Base
+
+# The customer-facing ticket number (never the primary key, which stays the uuid id): a Postgres sequence hands
+# out a new value atomically under any concurrency, so two reservations can never collide, and a short, readable
+# number -- starting at 100 so it never looks like a "first ever" #1 -- is easy to read out at the counter.
+TICKET_NUMBER_SEQUENCE = Sequence("reservations_ticket_number_seq", start=100, metadata=Base.metadata)
 
 
 class ReservationModel(Base):
@@ -16,6 +34,7 @@ class ReservationModel(Base):
         CheckConstraint("single_count >= 0 AND double_count >= 0", name="counts_not_negative"),
         CheckConstraint("single_count + double_count > 0", name="at_least_one_kart"),
         CheckConstraint("amount_irr >= 0", name="amount_not_negative"),
+        CheckConstraint("payment_method IN ('none', 'cash', 'card', 'transfer')", name="payment_method_valid"),
         CheckConstraint("status IN ('held', 'confirmed', 'attended', 'cancelled', 'expired')", name="status_valid"),
         CheckConstraint("source IN ('online', 'staff')", name="source_valid"),
         CheckConstraint("status <> 'held' OR hold_expires_at IS NOT NULL", name="hold_has_expiry"),
@@ -27,6 +46,8 @@ class ReservationModel(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     code: Mapped[str] = mapped_column(String(16), nullable=False, unique=True)
+    ticket_number: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
+    payment_method: Mapped[str] = mapped_column(String(12), nullable=False, server_default="none")
     customer_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     business_date: Mapped[date] = mapped_column(Date, nullable=False)
     session_time: Mapped[time] = mapped_column(Time, nullable=False)

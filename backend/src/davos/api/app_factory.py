@@ -13,6 +13,7 @@ from davos.api.middleware.request_id_middleware import RequestIdMiddleware
 from davos.api.middleware.security_headers_middleware import SecurityHeadersMiddleware
 from davos.api.v1.routers import (
     account_router,
+    admin_accounting_router,
     admin_assistant_router,
     admin_auth_router,
     admin_customers_router,
@@ -21,6 +22,7 @@ from davos.api.v1.routers import (
     admin_reservations_router,
     admin_settings_router,
     admin_sms_router,
+    admin_system_router,
     admin_users_router,
     assistant_router,
     auth_router,
@@ -48,8 +50,19 @@ async def _run_startup_work(container: ApplicationContainer) -> None:
                 return
             await _seed_assistant_knowledge(container)
             await _bootstrap_owner(container)
+            await _seed_chart_of_accounts(container)
     except Exception:
         logger.exception("start-up work failed; the API starts anyway")
+
+
+async def _seed_chart_of_accounts(container: ApplicationContainer) -> None:
+    try:
+        created = await container.chart_of_accounts().seed_default()
+    except Exception:
+        logger.exception("the default chart of accounts could not be created")
+        return
+    if created:
+        logger.info("chart of accounts: %d accounts created", created)
 
 
 async def _bootstrap_owner(container: ApplicationContainer) -> None:
@@ -148,10 +161,12 @@ def create_app(settings: AppSettings, container: ApplicationContainer | None = N
         admin_dashboard_router,
         admin_reservations_router,
         admin_settings_router,
+        admin_accounting_router,
         admin_assistant_router,
         admin_customers_router,
         admin_payments_router,
         admin_sms_router,
+        admin_system_router,
         admin_users_router,
     ):
         app.include_router(admin_router.router, prefix=API_PREFIX)

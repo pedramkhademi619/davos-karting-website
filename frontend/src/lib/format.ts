@@ -108,3 +108,54 @@ export function karts(singles: number, doubles: number): string {
   if (doubles) parts.push(`${fa(doubles)} دونفره`);
   return parts.join(" و ") || "—";
 }
+
+export const GATEWAY_NAME: Record<string, string> = { mellat: "بانک ملت", zarinpal: "زرین‌پال" };
+
+/** "2026-10-14T12:00:00Z" -> "۳ مهر ۱۴۰۵" (Jalali date only, Tehran). */
+export function dateOnly(iso: string): string {
+  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", { timeZone: TEHRAN, day: "numeric", month: "long", year: "numeric" }).format(
+    new Date(iso),
+  );
+}
+
+/** Time left until `iso` in words: "۲ روز و ۳ ساعت", "۴۵ دقیقه", "کمتر از یک دقیقه"; "" once it has passed. */
+export function timeUntil(iso: string, nowMs: number): string {
+  const diff = new Date(iso).getTime() - nowMs;
+  if (diff <= 0) return "";
+  const minutes = Math.floor(diff / 60_000);
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = minutes % 60;
+  if (days > 0) return hours > 0 ? `${fa(days)} روز و ${fa(hours)} ساعت` : `${fa(days)} روز`;
+  if (hours > 0) return mins > 0 ? `${fa(hours)} ساعت و ${fa(mins)} دقیقه` : `${fa(hours)} ساعت`;
+  if (mins > 0) return `${fa(mins)} دقیقه`;
+  return "کمتر از یک دقیقه";
+}
+
+/** A short, readable device name from a User-Agent string, e.g. "Chrome روی Android". Never throws. */
+export function deviceName(userAgent: string): string {
+  const ua = userAgent || "";
+  const browser = /Edg\//.test(ua)
+    ? "Edge"
+    : /OPR\/|Opera/.test(ua)
+      ? "Opera"
+      : /Firefox\//.test(ua)
+        ? "Firefox"
+        : /Chrome\//.test(ua) || /CriOS/.test(ua)
+          ? "Chrome"
+          : /Safari\//.test(ua)
+            ? "Safari"
+            : "مرورگر";
+  const system = /Android/.test(ua)
+    ? "Android"
+    : /iPhone|iPad|iPod/.test(ua)
+      ? "iOS"
+      : /Windows/.test(ua)
+        ? "Windows"
+        : /Mac OS X|Macintosh/.test(ua)
+          ? "macOS"
+          : /Linux/.test(ua)
+            ? "Linux"
+            : "";
+  return system ? `${browser} روی ${system}` : browser;
+}

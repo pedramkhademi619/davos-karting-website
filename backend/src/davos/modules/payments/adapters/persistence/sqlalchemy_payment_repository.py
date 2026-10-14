@@ -46,6 +46,12 @@ class SqlAlchemyPaymentRepository(PaymentRepository):
         model = result.scalar_one_or_none()
         return PaymentAttemptMapper.to_domain(model) if model else None
 
+    async def list_for_customer(self, customer_id: uuid.UUID, *, limit: int) -> list[PaymentAttempt]:
+        result = await self._uow.session.execute(
+            select(P).where(P.customer_id == customer_id).order_by(P.created_at.desc()).limit(min(max(limit, 1), 200))
+        )
+        return [PaymentAttemptMapper.to_domain(m) for m in result.scalars()]
+
     async def lock_order(self, order_ref: str) -> None:
         await self._uow.session.execute(
             text("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))"), {"key": f"payment-order:{order_ref}"}

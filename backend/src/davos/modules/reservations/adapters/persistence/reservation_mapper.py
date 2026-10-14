@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from davos.modules.reservations.adapters.persistence.reservation_model import ReservationModel
 from davos.modules.reservations.domain.entities.reservation import Reservation
+from davos.modules.reservations.domain.enums.counter_payment_method import CounterPaymentMethod
 from davos.modules.reservations.domain.enums.reservation_source import ReservationSource
 from davos.modules.reservations.domain.enums.reservation_status import ReservationStatus
 from davos.shared_kernel.domain.money import Money
@@ -13,6 +14,7 @@ class ReservationMapper:
         return Reservation(
             reservation_id=model.id,
             code=model.code,
+            ticket_number=model.ticket_number,
             customer_id=model.customer_id,
             business_date=model.business_date,
             session_time=model.session_time,
@@ -32,6 +34,7 @@ class ReservationMapper:
             confirmed_late=model.confirmed_late,
             note=model.note,
             cancel_reason=model.cancel_reason,
+            payment_method=CounterPaymentMethod(model.payment_method),
         )
 
     @staticmethod
@@ -39,6 +42,7 @@ class ReservationMapper:
         return ReservationModel(
             id=reservation.id,
             code=reservation.code,
+            ticket_number=reservation.ticket_number,
             customer_id=reservation.customer_id,
             business_date=reservation.business_date,
             session_time=reservation.session_time,
@@ -51,6 +55,7 @@ class ReservationMapper:
             contact_mobile=reservation.contact_mobile,
             created_at=reservation.created_at,
             note=reservation.note,
+            payment_method=reservation.payment_method.value,
             **ReservationMapper.mutable_values(reservation),
         )
 

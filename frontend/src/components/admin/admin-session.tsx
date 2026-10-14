@@ -7,6 +7,8 @@ import type { AdminMe } from "@/lib/types";
 export type AdminSession = {
   me: AdminMe;
   isOwner: boolean;
+  /** Whether this person may open a section (the owner may open everything). */
+  can: (permission: string) => boolean;
   /** Calls the admin API; changes carry the staff CSRF token, and an expired session signs the panel out. */
   call: <T>(path: string, options?: Omit<RequestOptions, "csrf">) => Promise<T>;
   signOut: () => void;
@@ -24,6 +26,7 @@ export function makeSession(me: AdminMe, signOut: () => void): AdminSession {
   return {
     me,
     isOwner: me.role === "owner",
+    can: (permission: string) => me.role === "owner" || me.permissions.includes(permission),
     signOut,
     call: async <T,>(path: string, options: Omit<RequestOptions, "csrf"> = {}) => {
       const method = options.method ?? "GET";

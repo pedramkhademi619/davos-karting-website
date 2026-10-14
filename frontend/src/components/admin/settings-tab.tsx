@@ -3,12 +3,12 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useAdmin } from "@/components/admin/admin-session";
 import { Card, TabHeader } from "@/components/admin/admin-ui";
+import { DatePickerField } from "@/components/admin/date-picker-field";
 import { buttonClasses } from "@/components/button-link";
 import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
-import { fa, toLatinDigits, toman } from "@/lib/format";
-import { isoToJalali, parseJalali } from "@/lib/jalali";
+import { toLatinDigits, toman } from "@/lib/format";
 import type { ScheduleSettings } from "@/lib/types";
 
 // Python weekday numbers (Monday = 0), in the order of the Iranian week.
@@ -26,8 +26,6 @@ const WEEK = [
 export function SettingsTab() {
   const { call, isOwner } = useAdmin();
   const [settings, setSettings] = useState<ScheduleSettings | null>(null);
-  const [holidayText, setHolidayText] = useState("");
-  const [closedText, setClosedText] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
@@ -37,8 +35,6 @@ export function SettingsTab() {
       .then((result) => {
         if (cancelled) return;
         setSettings(result);
-        setHolidayText(result.holiday_dates.map(isoToJalali).join("\n"));
-        setClosedText(result.closed_dates.map(isoToJalali).join("\n"));
       })
       .catch((err) => !cancelled && setMessage({ tone: "error", text: errorMessage(err) }));
     return () => {
@@ -51,30 +47,25 @@ export function SettingsTab() {
   const set = <K extends keyof ScheduleSettings>(key: K, value: ScheduleSettings[K]) => setSettings({ ...settings, [key]: value });
   const num = (key: keyof ScheduleSettings) => (event: React.ChangeEvent<HTMLInputElement>) =>
     set(key, Number(toLatinDigits(event.target.value).replace(/[^\d]/g, "") || 0) as never);
+  const setLimitMode = (mode: ScheduleSettings["daily_booking_limit_mode"]) =>
+    setSettings({
+      ...settings,
+      daily_booking_limit_mode: mode,
+      daily_people_limit: settings.daily_people_limit ?? 50,
+      daily_ticket_limit: settings.daily_ticket_limit ?? 20,
+    });
   const toggleDay = (key: "holiday_weekdays" | "closed_weekdays", day: number) =>
     set(key, settings[key].includes(day) ? settings[key].filter((d) => d !== day) : [...settings[key], day]);
-
-  function parseDates(text: string): string[] | null {
-    const lines = text.split(/[\n,،]+/).map((l) => l.trim()).filter(Boolean);
-    const parsed = lines.map(parseJalali);
-    return parsed.every((d): d is string => d !== null) ? parsed : null;
-  }
 
   async function save(event: FormEvent) {
     event.preventDefault();
     if (!settings) return;
-    const holidays = parseDates(holidayText);
-    const closed = parseDates(closedText);
-    if (!holidays || !closed) {
-      setMessage({ tone: "error", text: "تاریخ‌ها را هر کدام در یک خط به شکل ۱۴۰۵/۰۷/۰۴ بنویسید." });
-      return;
-    }
     setBusy(true);
     setMessage(null);
     try {
       const saved = await call<ScheduleSettings>("/settings/schedule", {
         method: "PUT",
-        body: { ...settings, holiday_dates: holidays, closed_dates: closed },
+        body: settings,
       });
       setSettings(saved);
       setMessage({ tone: "success", text: "ذخیره شد. سایت، صفحه رزرو و دستیار هوشمند از همین حالا (حداکثر ۳۰ ثانیه) با این تنظیمات کار می‌کنند." });
@@ -123,6 +114,20 @@ export function SettingsTab() {
             <NumberField label="رزرو همان روز: حداقل دقیقه قبل از سانس" value={settings.same_day_lead_minutes} onChange={num("same_day_lead_minutes")} />
             <NumberField label="حداکثر رزرو پرداخت‌نشده هر مشتری" value={settings.max_active_holds_per_customer} onChange={num("max_active_holds_per_customer")} />
           </div>
+          <label className="mt-5 flex items-center gap-3 font-bold">
+            <input
+              type="checkbox"
+              className="h-5 w-5 accent-[#0c0d10]"
+              checked={settings.online_booking_cutoff !== null}
+              onChange={(e) => set("online_booking_cutoff", e.target.checked ? "15:00" : null)}
+            />
+            هر روز بعد از ساعت مشخصی رزرو آنلاین بسته و مشتری به حضوری آمدن راهنمایی شود
+          </label>
+          {settings.online_booking_cutoff !== null && (
+            <div className="mt-4 max-w-xs">
+              <TimeField label="رزرو آنلاین تا این ساعت باز است" value={settings.online_booking_cutoff} onChange={(v) => set("online_booking_cutoff", v)} />
+            </div>
+          )}
         </Card>
 
         <Card title="سانس‌ها و خودروها">
@@ -149,15 +154,76 @@ export function SettingsTab() {
           <DayChecks title="روزهای تعطیل (قیمت تعطیل)" selected={settings.holiday_weekdays} onToggle={(d) => toggleDay("holiday_weekdays", d)} />
           <div className="mt-5">
             <DayChecks title="روزهای بدون رزرو آنلاین" selected={settings.closed_weekdays} onToggle={(d) => toggleDay("closed_weekdays", d)} />
+            <p className="mt-2 text-xs leading-6 text-fg-subtle">
+              برداشتن یک روز از این فهرست، همهٔ آن روزهای هفته را باز می‌کند. برای باز کردن فقط یک تاریخ مشخص از «روزهای باز استثنایی» پایین صفحه استفاده کنید.
+            </p>
           </div>
         </Card>
 
+        <Card title="محدودیت رزرو آنلاین در روز (برای مشتریان حضوری)">
+          <p className="mb-4 text-sm leading-7 text-fg-muted">
+            اگر همه‌چیز آنلاین رزرو شود، جایی برای مشتری حضوری نمی‌ماند. با این محدودیت، از یک تعداد مشخص به بعد در هر روز
+            رزرو آنلاین بسته می‌شود؛ رزرو حضوری در پیست همچنان آزاد است.
+          </p>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="نوع محدودیت">
+            {(
+              [
+                { value: "none", label: "بدون محدودیت" },
+                { value: "people", label: "بر اساس تعداد نفرات" },
+                { value: "tickets", label: "بر اساس تعداد تیکت" },
+                { value: "both", label: "ترکیبی (هرکدام زودتر رسید)" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                aria-pressed={settings.daily_booking_limit_mode === opt.value}
+                onClick={() => setLimitMode(opt.value)}
+                className={`rounded-full border-2 px-4 py-2 text-sm font-bold transition-colors ${settings.daily_booking_limit_mode === opt.value ? "border-ink bg-ink text-accent" : "border-line-strong text-fg-muted hover:border-fg"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {settings.daily_booking_limit_mode !== "none" && (
+            <div className="mt-4 grid max-w-md grid-cols-2 gap-4">
+              {(settings.daily_booking_limit_mode === "people" || settings.daily_booking_limit_mode === "both") && (
+                <NumberField label="حداکثر نفر در روز" value={settings.daily_people_limit ?? 0} onChange={num("daily_people_limit")} />
+              )}
+              {(settings.daily_booking_limit_mode === "tickets" || settings.daily_booking_limit_mode === "both") && (
+                <NumberField label="حداکثر تیکت در روز" value={settings.daily_ticket_limit ?? 0} onChange={num("daily_ticket_limit")} />
+              )}
+            </div>
+          )}
+          {settings.daily_booking_limit_mode === "both" && (
+            <p className="mt-3 text-xs leading-6 text-fg-subtle">
+              هر کدام از این دو سقف زودتر پر شود، رزرو آنلاین همان روز بسته می‌شود. مثلاً با ۵۰ نفر و ۲۰ تیکت، اگر ۲۰ تیکت ثبت شود
+              (حتی با ۳۰ نفر) یا ۵۰ نفر پر شود (حتی با ۱۰ تیکت)، رزرو آنلاین بسته می‌شود.
+            </p>
+          )}
+        </Card>
+
         <Card title="تعطیلات رسمی (قیمت تعطیل)">
-          <DatesField value={holidayText} onChange={setHolidayText} />
+          <DatePickerField value={settings.holiday_dates} onChange={(dates) => set("holiday_dates", dates)} />
         </Card>
 
         <Card title="روزهای بسته (بدون رزرو آنلاین)">
-          <DatesField value={closedText} onChange={setClosedText} />
+          <p className="mb-3 text-sm leading-7 text-fg-muted">فقط همین تاریخ‌ها بسته می‌شوند؛ روزهای دیگر هفته تغییر نمی‌کنند.</p>
+          <DatePickerField
+            value={settings.closed_dates}
+            onChange={(dates) => setSettings({ ...settings, closed_dates: dates, open_dates: settings.open_dates.filter((d) => !dates.includes(d)) })}
+          />
+        </Card>
+
+        <Card title="روزهای باز استثنایی (با وجود بسته بودن آن روز هفته)">
+          <p className="mb-3 text-sm leading-7 text-fg-muted">
+            برای باز کردن فقط یک پنجشنبه یا جمعه مشخص، همان تاریخ را اینجا انتخاب کنید؛ پنجشنبه‌های دیگر بسته می‌مانند. رزرو آنلاین فقط
+            برای روزهای داخل بازهٔ «تا چند روز جلوتر» نمایش داده می‌شود.
+          </p>
+          <DatePickerField
+            value={settings.open_dates}
+            onChange={(dates) => setSettings({ ...settings, open_dates: dates, closed_dates: settings.closed_dates.filter((d) => !dates.includes(d)) })}
+          />
         </Card>
       </fieldset>
     </form>
@@ -211,14 +277,5 @@ function DayChecks({ title, selected, onToggle }: { title: string; selected: num
         })}
       </div>
     </div>
-  );
-}
-
-function DatesField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  const count = value.split(/\n/).filter((l) => l.trim()).length;
-  return (
-    <Labelled label="هر تاریخ در یک خط (شمسی، مثل ۱۴۰۵/۰۷/۰۴)" hint={`${fa(count)} تاریخ`}>
-      <textarea className="field font-mono" dir="ltr" rows={6} value={value} onChange={(e) => onChange(e.target.value)} />
-    </Labelled>
   );
 }

@@ -14,6 +14,7 @@ from davos.shared_kernel.domain.jalali_date import JalaliDate
 class ReservationResponse(BaseModel):
     id: uuid.UUID
     code: str
+    ticket_number: int
     date: Date
     date_jalali: str
     weekday: str
@@ -33,6 +34,7 @@ class ReservationResponse(BaseModel):
     confirmed_late: bool
     note: str = ""
     cancel_reason: str = ""
+    payment_method: str = "none"
 
     @classmethod
     def of(cls, reservation: Reservation, *, staff_view: bool = False) -> ReservationResponse:
@@ -40,6 +42,7 @@ class ReservationResponse(BaseModel):
         return cls(
             id=reservation.id,
             code=reservation.code,
+            ticket_number=reservation.ticket_number,
             date=reservation.business_date,
             date_jalali=day.numeric(persian_digits=False),
             weekday=day.weekday_name,
@@ -59,4 +62,5 @@ class ReservationResponse(BaseModel):
             confirmed_late=reservation.confirmed_late,
             note=reservation.note if staff_view else "",
             cancel_reason=reservation.cancel_reason,
+            payment_method=reservation.payment_method.value,
         )

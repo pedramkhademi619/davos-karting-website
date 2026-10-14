@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date as Date  # noqa: N812 - a field is called date
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -15,3 +16,4 @@ class StaffReservationRequest(BaseModel):
     note: str = Field(default="", max_length=500)
     amount_toman: int = Field(default=0, ge=0, le=1_000_000_000)
     allow_overbooking: bool = False
+    payment_method: Literal["none", "cash", "card", "transfer"] = "none"

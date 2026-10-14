@@ -7,9 +7,11 @@ from fastapi import APIRouter, Depends
 from davos.api.dependencies.authenticated_request import AuthenticatedRequest
 from davos.api.dependencies.container_provider import get_container
 from davos.api.dependencies.customer_authentication import require_customer
+from davos.api.schemas.account_payment_response import AccountPaymentResponse
 from davos.api.schemas.profile_response import ProfileResponse
 from davos.api.schemas.reservation_response import ReservationResponse
 from davos.api.schemas.update_profile_request import UpdateProfileRequest
+from davos.composition.adapters.reservation_order_quote_port import ReservationOrderQuotePort
 from davos.composition.application_container import ApplicationContainer
 from davos.modules.reservations.domain.errors.reservation_not_found_error import ReservationNotFoundError
 
@@ -54,3 +56,14 @@ async def my_reservation(
     except ValueError as exc:
         raise ReservationNotFoundError from exc
     return ReservationResponse.of(await container.customer_reservations().one(auth.user_id, target))
+
+
+@router.get("/payments", summary="The customer's payments, newest first")
+async def my_payments(
+    auth: AuthenticatedRequest = Depends(require_customer), container: ApplicationContainer = Depends(get_container)
+) -> list[AccountPaymentResponse]:
+    items = await container.list_customer_payments().execute(auth.user_id)
+    return [
+        AccountPaymentResponse.of(p, reservation_id=ReservationOrderQuotePort.reservation_id_of(p.order_ref))
+        for p in items
+    ]

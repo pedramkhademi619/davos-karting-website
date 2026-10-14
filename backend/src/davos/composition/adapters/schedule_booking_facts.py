@@ -11,17 +11,14 @@ from davos.modules.reservations.domain.value_objects.schedule_settings import Sc
 
 class ScheduleBookingFacts(BookingFactsPort):
     """Hands the assistant the booking settings the owner edits in the admin panel (kart counts, prices, booking days)
-    and the venue's phone number from the deployment settings.
+    (session grid, online-booking cutoff, hold time).
 
     Kept for ``cache_seconds`` so a burst of questions reads the settings row once; a change in the admin panel reaches
     the assistant within that time. Lives in the composition layer so the two modules never import each other.
     """
 
-    def __init__(
-        self, settings: Callable[[], ScheduleSettingsUseCase], *, contact_phone: str, cache_seconds: float
-    ) -> None:
+    def __init__(self, settings: Callable[[], ScheduleSettingsUseCase], *, cache_seconds: float) -> None:
         self._settings = settings
-        self._contact_phone = contact_phone
         self._cache_seconds = cache_seconds
         self._cached: BookingFacts | None = None
         self._read_at = 0.0
@@ -29,12 +26,12 @@ class ScheduleBookingFacts(BookingFactsPort):
     async def current(self) -> BookingFacts:
         now = time.monotonic()
         if self._cached is None or now - self._read_at > self._cache_seconds:
-            self._cached = self.from_settings(await self._settings().get(), contact_phone=self._contact_phone)
+            self._cached = self.from_settings(await self._settings().get())
             self._read_at = now
         return self._cached
 
     @staticmethod
-    def from_settings(s: ScheduleSettings, *, contact_phone: str) -> BookingFacts:
+    def from_settings(s: ScheduleSettings) -> BookingFacts:
         return BookingFacts(
             singles_per_session=s.single_capacity,
             doubles_per_session=s.double_capacity,
@@ -47,5 +44,7 @@ class ScheduleBookingFacts(BookingFactsPort):
             online_booking_enabled=s.online_booking_enabled,
             min_days_ahead=s.min_days_ahead,
             hold_minutes=s.hold_minutes,
-            contact_phone=contact_phone,
+            first_session=s.shift_start,
+            interval_minutes=s.interval_minutes,
+            online_booking_cutoff=s.online_booking_cutoff,
         )

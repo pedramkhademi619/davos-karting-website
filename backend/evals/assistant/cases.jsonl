@@ -68,14 +68,18 @@
 {"id": "booking-01", "category": "booking", "question": "میشه برای همین امروز عصر رزرو کنم؟", "kind": "no"}
 {"id": "booking-02", "category": "booking", "question": "برای پنجشنبه میشه رزرو کرد؟", "kind": "no"}
 {"id": "booking-03", "category": "booking", "question": "چطوری آنلاین نوبت بگیرم؟", "kind": "info", "must": [["رزرو سانس"]]}
-{"id": "booking-04", "category": "booking", "question": "شماره تلفن برای رزرو چنده؟", "kind": "info", "must": [["{CONTACT_PHONE}"]]}
+{"id": "booking-04", "category": "booking", "question": "برای رزرو باید زنگ بزنم؟", "kind": "info", "must": [["سایت", "davoskarting.ir", "رزرو سانس"]], "never": ["{CONTACT_PHONE}"], "note": "reservations are made on the website; the assistant must not hand out the phone number"}
 {"id": "booking-05", "category": "booking", "question": "بعد از اینکه سانس رو انتخاب کردم چقدر وقت دارم پول بدم؟", "kind": "info", "must": [["20", "بیست"]]}
 {"id": "booking-06", "category": "booking", "question": "میتونم رزروم رو کنسل کنم؟", "kind": "info", "must": [["تماس"]]}
 {"id": "booking-07", "category": "booking", "question": "پرداخت با چه درگاهیه؟", "kind": "info", "must": [["ملت"]]}
-{"id": "booking-08", "category": "booking", "question": "بعد از پرداخت کد رزرو کجا میاد؟", "kind": "info", "must": [["پیامک"]]}
+{"id": "booking-08", "category": "booking", "question": "بعد از پرداخت شماره بلیتم کجا میاد؟", "kind": "info", "must": [["پیامک"], ["حساب من"]]}
 {"id": "booking-09", "category": "booking", "question": "واسه آخر هفته میخوام نوبت بگیرم، چیکار کنم؟", "kind": "info", "must": [["پنجشنبه", "جمعه"]], "note": "the Iranian weekend is Thursday/Friday, when there is no booking"}
 {"id": "booking-10", "category": "booking", "question": "کد رزروم DV-7Q2K هست، رزروم تایید شده؟", "kind": "defer", "must": [["حساب من", "تماس", "{CONTACT_PHONE}"]], "never": ["تایید شده است", "تایید شده‌است"], "note": "never guess a booking's status"}
 {"id": "booking-11", "category": "booking", "question": "برای فردا میشه آنلاین رزرو کرد؟", "kind": "info", "must": [["رزرو سانس", "آنلاین"]], "note": "yes, from the day before, unless tomorrow is Thursday/Friday"}
+{"id": "booking-12", "category": "booking", "question": "ساعت ۴ بعدازظهر میخوام برای فردا رزرو آنلاین کنم، میشه؟", "kind": "info", "must": [["حضوری"]], "never": ["{CONTACT_PHONE}"], "note": "online booking closes daily at the cutoff; after it, in person only"}
+{"id": "booking-13", "category": "booking", "question": "سانس ساعت ۱۶:۵۰ رو میشه رزرو کرد؟", "kind": "no", "must": [["سوخت"]], "note": "sessions starting at minute 50 are the fuel break"}
+{"id": "booking-14", "category": "booking", "question": "رزروهای قبلی و پرداخت‌هام رو کجا ببینم؟", "kind": "info", "must": [["حساب من"]]}
+{"id": "booking-15", "category": "booking", "question": "آدرس سایت چیه؟", "kind": "info", "must": [["davoskarting.ir"]]}
 # --- opening hours ----------------------------------------------------------------------------------------------
 {"id": "hours-01", "category": "hours", "question": "جمعه تا ساعت چند باز هستید؟", "kind": "info", "must": [["1 بامداد", "یک بامداد", "ساعت 1", "1 شب", "یک شب", "01"]]}
 {"id": "hours-02", "category": "hours", "question": "شنبه ها ساعت چند باز میکنید؟", "kind": "info", "must": [["15"]]}

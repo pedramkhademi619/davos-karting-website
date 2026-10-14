@@ -38,6 +38,9 @@ class GetDayAvailabilityUseCase:
         allocator = SeatAllocator(settings)
         sessions = []
         for session_time in calendar.session_times():
+            blocked = calendar.is_blocked(session_time)
+            if blocked and not for_staff:
+                continue  # a fuel-break time is never sellable; customers never see it on the grid
             left = allocator.remaining(loads.get(session_time, SessionLoad()))
             bookable = calendar.is_bookable(day, session_time, now) and (left.singles + left.doubles) > 0
             sessions.append(
@@ -48,7 +51,8 @@ class GetDayAvailabilityUseCase:
                     doubles_left=left.doubles,
                     single_capacity=settings.single_capacity,
                     double_capacity=settings.double_capacity,
-                    bookable=bookable or (for_staff and (left.singles + left.doubles) > 0),
+                    bookable=bookable or (for_staff and not blocked and (left.singles + left.doubles) > 0),
+                    blocked=blocked,
                 )
             )
         return DayAvailability(

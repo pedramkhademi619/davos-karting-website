@@ -33,6 +33,10 @@ class InMemoryPaymentRepository(PaymentRepository):
         payment = self.items.get(payment_id)
         return payment if payment and payment.customer_id == customer_id else None
 
+    async def list_for_customer(self, customer_id: uuid.UUID, *, limit: int) -> list[PaymentAttempt]:
+        mine = [p for p in self.items.values() if p.customer_id == customer_id]
+        return sorted(mine, key=lambda p: p.created_at, reverse=True)[:limit]
+
     async def lock_order(self, order_ref: str) -> None:
         self.locked_orders.append(order_ref)
 

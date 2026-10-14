@@ -13,3 +13,4 @@ class SessionAvailabilityResponse(BaseModel):
     single_capacity: int
     double_capacity: int
     bookable: bool
+    blocked: bool

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel
 
+from davos.modules.reservations.domain.services.session_calendar import SessionCalendar
 from davos.modules.reservations.domain.value_objects.schedule_settings import ScheduleSettings
 
 # Python weekday numbers (Monday = 0) in the order of the Iranian week, which starts on Saturday.
@@ -33,9 +36,14 @@ class BookingInfoResponse(BaseModel):
     min_days_ahead: int
     max_days_ahead: int
     max_karts_per_reservation: int
+    daily_booking_limit_mode: str
+    daily_people_limit: int | None
+    daily_ticket_limit: int | None
+    online_booking_cutoff: str | None
+    online_booking_cutoff_passed: bool
 
     @classmethod
-    def of(cls, s: ScheduleSettings, *, payments_enabled: bool) -> BookingInfoResponse:
+    def of(cls, s: ScheduleSettings, *, payments_enabled: bool, now: datetime) -> BookingInfoResponse:
         return cls(
             online_booking_enabled=s.online_booking_enabled,
             payments_enabled=payments_enabled,
@@ -54,4 +62,9 @@ class BookingInfoResponse(BaseModel):
             min_days_ahead=s.min_days_ahead,
             max_days_ahead=s.max_days_ahead,
             max_karts_per_reservation=s.max_karts_per_reservation,
+            daily_booking_limit_mode=s.daily_booking_limit_mode.value,
+            daily_people_limit=s.daily_people_limit,
+            daily_ticket_limit=s.daily_ticket_limit,
+            online_booking_cutoff=s.online_booking_cutoff.strftime("%H:%M") if s.online_booking_cutoff else None,
+            online_booking_cutoff_passed=SessionCalendar(s).is_online_cutoff_passed(now),
         )

@@ -78,8 +78,21 @@ async def test_everything_under_admin_needs_a_staff_session(admin_api: httpx.Asy
         "/api/v1/admin/assistant/interactions",
         "/api/v1/admin/assistant/cache",
         "/api/v1/admin/assistant/knowledge",
+        "/api/v1/admin/system/status",
     ):
         assert (await admin_api.get(path)).status_code == 401, path
+
+
+async def test_the_status_page_reports_every_service_and_the_database_is_really_checked(
+    admin_api: httpx.AsyncClient,
+) -> None:
+    await login(admin_api)
+    report = (await admin_api.get("/api/v1/admin/system/status")).json()
+    by_key = {s["key"]: s for s in report["services"]}
+    assert {"database", "redis", "background_jobs", "outbox", "sms", "payment_gateway", "ai"} <= set(by_key)
+    assert by_key["database"]["level"] == "ok" and by_key["database"]["latency_ms"] is not None
+    assert report["overall"] in {"ok", "degraded", "down"}
+    assert all(set(s) >= {"label", "summary", "parts", "group"} for s in report["services"])
 
 
 async def test_a_customer_session_is_not_a_staff_session(

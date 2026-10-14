@@ -40,6 +40,7 @@ class DayAvailabilityResponse(BaseModel):
                     single_capacity=s.single_capacity,
                     double_capacity=s.double_capacity,
                     bookable=s.bookable,
+                    blocked=s.blocked,
                 )
                 for s in day.sessions
             ],

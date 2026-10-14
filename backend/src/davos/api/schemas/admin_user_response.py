@@ -16,6 +16,8 @@ class AdminUserResponse(BaseModel):
     is_active: bool
     last_login_at: datetime | None
     created_at: datetime
+    permissions: list[str]  # what the account can open right now
+    custom_permissions: bool  # False: it still has the role's defaults
 
     @classmethod
     def of(cls, a: AdminUser) -> AdminUserResponse:
@@ -27,4 +29,6 @@ class AdminUserResponse(BaseModel):
             is_active=a.is_active,
             last_login_at=a.last_login_at,
             created_at=a.created_at,
+            permissions=sorted(p.value for p in a.effective_permissions()),
+            custom_permissions=a.permissions is not None,
         )

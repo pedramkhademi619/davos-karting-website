@@ -6,6 +6,7 @@ from davos.modules.administration.application.ports.admin_session_repository imp
 from davos.modules.administration.application.ports.admin_user_repository import AdminUserRepository
 from davos.modules.administration.application.ports.password_hasher import PasswordHasher
 from davos.modules.administration.domain.entities.admin_user import AdminUser
+from davos.modules.administration.domain.enums.admin_permission import AdminPermission
 from davos.modules.administration.domain.enums.admin_role import AdminRole
 from davos.modules.administration.domain.errors.admin_login_failed_error import AdminLoginFailedError
 from davos.shared_kernel.application.clock import Clock
@@ -53,7 +54,15 @@ class ManageAdminsUseCase:
         async with self._uow:
             return await self._admins.list_all()
 
-    async def create(self, *, username: str, display_name: str, password: str, role: AdminRole) -> AdminUser:
+    async def create(
+        self,
+        *,
+        username: str,
+        display_name: str,
+        password: str,
+        role: AdminRole,
+        permissions: frozenset[AdminPermission] | None = None,
+    ) -> AdminUser:
         AdminUser.check_password_strength(password)
         admin = AdminUser.create(
             username=username,
@@ -61,11 +70,27 @@ class ManageAdminsUseCase:
             password_hash=self._hasher.hash(password),
             role=role,
             now=self._clock.now(),
+            permissions=permissions,
         )
         async with self._uow:
             if await self._admins.get_by_username_for_update(admin.username) is not None:
                 raise ConflictError("این نام کاربری قبلا ثبت شده است.", code="username_taken")
             await self._admins.add(admin)
+            await self._uow.commit()
+        return admin
+
+    async def set_permissions(
+        self, *, admin_id: uuid.UUID, permissions: frozenset[AdminPermission] | None
+    ) -> AdminUser:
+        """Chooses what a staff member may open (None = the staff defaults). Takes effect on their next request."""
+        async with self._uow:
+            admin = await self._admins.get(admin_id)
+            if admin is None:
+                raise NotFoundError("کاربر یافت نشد.")
+            if admin.is_owner:
+                raise ConflictError("دسترسی مالک محدود نمی‌شود.", code="owner_is_unrestricted")
+            admin.set_permissions(permissions)
+            await self._admins.save(admin)
             await self._uow.commit()
         return admin
 

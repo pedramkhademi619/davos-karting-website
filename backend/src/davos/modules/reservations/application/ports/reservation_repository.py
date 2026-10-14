@@ -7,10 +7,16 @@ from datetime import date, datetime, time
 from davos.modules.reservations.application.ports.reservation_page import ReservationPage
 from davos.modules.reservations.application.ports.reservation_query import ReservationQuery
 from davos.modules.reservations.domain.entities.reservation import Reservation
+from davos.modules.reservations.domain.value_objects.daily_online_load import DailyOnlineLoad
 from davos.modules.reservations.domain.value_objects.session_load import SessionLoad
 
 
 class ReservationRepository(ABC):
+    @abstractmethod
+    async def next_ticket_number(self) -> int:
+        """A fresh, race-free ticket number from the database sequence (starts at 100). Pulled before the entity
+        is constructed, the same pattern as the payments module's gateway order id."""
+
     @abstractmethod
     async def add(self, reservation: Reservation) -> None: ...
 
@@ -32,6 +38,15 @@ class ReservationRepository(ABC):
 
     @abstractmethod
     async def day_loads(self, day: date, now: datetime) -> dict[time, SessionLoad]: ...
+
+    @abstractmethod
+    async def lock_day(self, day: date) -> None:
+        """Serialises every online booking of one business day, for the owner's optional daily cap (people or
+        tickets). Always taken before ``lock_session`` when both are needed, so the two can never deadlock."""
+
+    @abstractmethod
+    async def day_online_load(self, day: date, now: datetime) -> DailyOnlineLoad:
+        """Today's online bookings only (``source="online"``) that occupy a seat right now."""
 
     @abstractmethod
     async def count_active_holds(self, customer_id: uuid.UUID, now: datetime) -> int: ...

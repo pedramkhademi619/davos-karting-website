@@ -13,3 +13,4 @@ class SessionAvailability:
     single_capacity: int
     double_capacity: int
     bookable: bool
+    blocked: bool  # a fuel-break time: shown to staff for context, never sellable to anyone

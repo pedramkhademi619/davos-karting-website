@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
 
-from davos.api.dependencies.admin_authentication import require_admin
+from davos.api.dependencies.admin_authentication import require_permission
 from davos.api.dependencies.authenticated_admin_request import AuthenticatedAdminRequest
 from davos.api.dependencies.container_provider import get_container
 from davos.api.schemas.send_sms_request import SendSmsRequest
@@ -11,16 +11,19 @@ from davos.api.schemas.sms_account_response import SmsAccountResponse
 from davos.api.schemas.sms_log_page_response import SmsLogPageResponse
 from davos.api.schemas.sms_log_response import SmsLogResponse
 from davos.composition.application_container import ApplicationContainer
+from davos.modules.administration.domain.enums.admin_permission import AdminPermission
 from davos.modules.reservations.application.ports.reservation_query import ReservationQuery
 from davos.modules.reservations.domain.enums.reservation_status import ReservationStatus
 from davos.shared_kernel.domain.errors.validation_error import ValidationError
 
 router = APIRouter(prefix="/admin/sms", tags=["admin"])
 
+_ALLOWED = require_permission(AdminPermission.SMS)
+
 
 @router.get("/account", summary="SMS provider and remaining credit")
 async def account(
-    _: AuthenticatedAdminRequest = Depends(require_admin), container: ApplicationContainer = Depends(get_container)
+    _: AuthenticatedAdminRequest = Depends(_ALLOWED), container: ApplicationContainer = Depends(get_container)
 ) -> SmsAccountResponse:
     info = await container.sms_panel().account()
     provider = container.settings.sms_provider
@@ -39,7 +42,7 @@ async def messages(
     q: str = Query(default="", max_length=60),
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
-    _: AuthenticatedAdminRequest = Depends(require_admin),
+    _: AuthenticatedAdminRequest = Depends(_ALLOWED),
     container: ApplicationContainer = Depends(get_container),
 ) -> SmsLogPageResponse:
     page = await container.sms_panel().history(text=q, offset=offset, limit=limit)
@@ -49,7 +52,7 @@ async def messages(
 @router.post("/send", summary="Send one text to typed numbers, news subscribers or the customers of one day")
 async def send(
     body: SendSmsRequest,
-    auth: AuthenticatedAdminRequest = Depends(require_admin),
+    auth: AuthenticatedAdminRequest = Depends(_ALLOWED),
     container: ApplicationContainer = Depends(get_container),
 ) -> SendSmsResponse:
     recipients = await _recipients(body, container)

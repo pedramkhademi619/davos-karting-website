@@ -65,7 +65,7 @@ class ReservationPaymentEvents:
             karts.append(f"{reservation.double_count} خودرو دونفره")
         parameters = {
             "name": reservation.contact_name,
-            "ticket": reservation.code,
+            "ticket": str(reservation.ticket_number).translate(_PERSIAN_DIGITS),
             "weekday": day.weekday_name,
             "date": day.numeric(),
             "time": starts.strftime("%H:%M").translate(_PERSIAN_DIGITS),

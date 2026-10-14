@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import time
 
 from davos.modules.assistant.domain.enums.knowledge_source_type import KnowledgeSourceType
 from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
@@ -18,6 +19,10 @@ _WEEK_ORDER = (5, 6, 0, 1, 2, 3, 4)  # the Iranian week starts on Saturday
 
 def _fa(value: object) -> str:
     return str(value).translate(_PERSIAN_DIGITS)
+
+
+def _clock(value: time) -> str:
+    return _fa(value.strftime("%H:%M"))
 
 
 def _days(days: frozenset[int]) -> str:
@@ -50,20 +55,27 @@ class BookingFactsPassage:
 
     def booking(self, facts: BookingFacts) -> str:
         if not facts.online_booking_enabled:
-            online = "رزرو آنلاین از سایت فعلاً بسته است و رزرو تلفنی انجام می‌شود."
+            online = "رزرو آنلاین از سایت فعلاً بسته است؛ برای رزرو حضوری به پیست مراجعه کنید."
         else:
             online = (
-                f"رزرو آنلاین از صفحه «رزرو سانس» باز است و بعد از انتخاب سانس، خودروها {_fa(facts.hold_minutes)} "
-                "دقیقه برای پرداخت نگه داشته می‌شوند."
+                f"رزرو آنلاین از صفحه «رزرو سانس» سایت باز است؛ سانس‌ها از ساعت {_clock(facts.first_session)} هر "
+                f"{_fa(facts.interval_minutes)} دقیقه یک‌بار شروع می‌شوند و بعد از انتخاب سانس، خودروها "
+                f"{_fa(facts.hold_minutes)} دقیقه برای پرداخت نگه داشته می‌شوند."
             )
+            if facts.online_booking_cutoff is not None:
+                cutoff = _clock(facts.online_booking_cutoff)
+                online += (
+                    f" رزرو آنلاین هر روز فقط تا ساعت {cutoff} باز است؛ این ساعتِ رزرو کردن است، نه ساعت سانس. "
+                    f"هر کس بعد از ساعت {cutoff} بخواهد رزرو کند، برای هر روز و هر سانسی، "
+                    "باید حضوری به پیست مراجعه کند."
+                )
         ahead = (
             "برای همان روز هم می‌شود رزرو کرد."
             if facts.min_days_ahead == 0
             else "رزرو از روز قبل انجام می‌شود و برای همان روز ممکن نیست."
         )
         closed = _days(facts.closed_weekdays)
-        phone = f" رزرو تلفنی هم با شماره {_fa(facts.contact_phone)} ممکن است." if facts.contact_phone else ""
-        return f"{online} {ahead}" + (f" روزهای بدون رزرو: {closed}." if closed else "") + phone
+        return f"{online} {ahead}" + (f" روزهای بدون رزرو: {closed}." if closed else "")
 
     def passage(self, facts: BookingFacts) -> RetrievedPassage:
         text = "\n".join(f"- {line}" for line in (self.capacity(facts), self.prices(facts), self.booking(facts)))

@@ -8,6 +8,7 @@ checks do not depend on wall-clock time; one case covers that an expired hold is
 from __future__ import annotations
 
 import uuid
+from datetime import date, datetime, time
 
 import pytest
 from sqlalchemy import text
@@ -18,10 +19,10 @@ pytestmark = pytest.mark.integration
 
 _INSERT = text(
     "INSERT INTO reservations "
-    "(id, code, customer_id, business_date, session_time, starts_at, single_count, double_count, amount_irr, "
-    " status, source, created_at, updated_at, hold_expires_at) "
-    "VALUES (gen_random_uuid(), :code, :customer, :day, :t, :starts, :s, :d, 100, "
-    " :status, :source, now(), now(), :expires)"
+    "(id, code, ticket_number, customer_id, business_date, session_time, starts_at, single_count, double_count,"
+    " amount_irr, status, source, created_at, updated_at, hold_expires_at) "
+    "VALUES (gen_random_uuid(), :code, nextval('reservations_ticket_number_seq'), :customer, :day, :t, :starts,"
+    " :s, :d, 100, :status, :source, now(), now(), :expires)"
 )
 
 
@@ -29,9 +30,9 @@ async def _insert(engine: AsyncEngine, **kw: object) -> None:
     params = {
         "code": uuid.uuid4().hex[:12],
         "customer": uuid.uuid4() if kw.get("source", "online") == "online" else None,
-        "day": "2030-05-01",
-        "t": "18:00",
-        "starts": "2030-05-01 18:00:00+03:30",
+        "day": date(2030, 5, 1),
+        "t": time(18, 0),
+        "starts": datetime.fromisoformat("2030-05-01T18:00:00+03:30"),
         "s": 0,
         "d": 0,
         "status": "confirmed",
@@ -77,13 +78,15 @@ async def test_staff_may_overbook_a_full_session(engine: AsyncEngine) -> None:
 async def test_an_expired_hold_frees_the_seats(engine: AsyncEngine) -> None:
     await _set_capacity(engine, 6, 1)
     # an online hold whose expiry is well in the past, so the trigger must not count it
-    await _insert(engine, s=6, status="held", expires="2020-01-01 00:00:00+00:00")
+    await _insert(engine, s=6, status="held", expires=datetime.fromisoformat("2020-01-01T00:00:00+00:00"))
     await _insert(engine, s=6)  # the expired hold does not count, so a fresh full booking is allowed
 
 
 async def test_a_live_hold_still_blocks_a_new_booking(engine: AsyncEngine) -> None:
     await _set_capacity(engine, 6, 1)
-    await _insert(engine, s=6, status="held", expires="2099-01-01 00:00:00+00:00")  # far-future hold occupies the seats
+    await _insert(
+        engine, s=6, status="held", expires=datetime.fromisoformat("2099-01-01T00:00:00+00:00")
+    )  # far-future hold occupies the seats
     with pytest.raises(IntegrityError, match="session_oversold"):
         await _insert(engine, s=1)
 

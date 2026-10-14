@@ -89,7 +89,9 @@ async def test_the_calendar_offers_tomorrow_with_prices_and_every_session(site: 
     assert [d["date"] for d in calendar["days"]] == ["2026-01-04"]
     assert calendar["days"][0]["single_price_toman"] == 790_000 and calendar["days"][0]["weekday"] == "یکشنبه"
     day = (await site.get("/api/v1/reservations/availability", params={"date": "2026-01-04"})).json()
-    assert len(day["sessions"]) == 40 and day["sessions"][0]["time"] == "15:00"
+    # 60 ten-minute slots from 15:00 to 00:50, minus the 10 fuel-break (:50) slots customers never see.
+    assert len(day["sessions"]) == 50 and day["sessions"][0]["time"] == "15:00"
+    assert all(not s["blocked"] for s in day["sessions"])
     assert all(s["bookable"] and s["singles_left"] == 6 and s["doubles_left"] == 1 for s in day["sessions"])
     assert day["date_jalali"] == "1404/10/14"
 
@@ -111,6 +113,7 @@ async def test_book_pay_and_get_a_confirmed_ticket_and_an_sms(
     reservation = created.json()
     assert reservation["status"] == "held" and reservation["amount_toman"] == 2 * 790_000 + 1_000_000
     assert reservation["contact_mobile"] == "09123456789" and reservation["code"].startswith("DK-")
+    assert isinstance(reservation["ticket_number"], int) and reservation["ticket_number"] >= 100
 
     paying = await site.post(f"/api/v1/reservations/{reservation['id']}/pay", headers=customer.headers)
     assert paying.status_code == 200 and gateway.requests[0].amount.irr == reservation["amount_toman"] * 10
@@ -127,6 +130,10 @@ async def test_book_pay_and_get_a_confirmed_ticket_and_an_sms(
     site.cookies.set("davos_session", customer.cookie)
     ticket = (await site.get(f"/api/v1/account/reservations/{reservation['id']}")).json()
     assert ticket["status"] == "confirmed" and ticket["confirmed_late"] is False
+    paid = (await site.get("/api/v1/account/payments")).json()
+    assert len(paid) == 1 and paid[0]["status"] == "paid" and paid[0]["reservation_id"] == reservation["id"]
+    assert paid[0]["amount_toman"] == reservation["amount_toman"] and paid[0]["reference_id"]
+    assert "authority" not in paid[0] and "customer_id" not in paid[0]
     left = (await site.get("/api/v1/reservations/availability", params={"date": "2026-01-04"})).json()
     six = next(s for s in left["sessions"] if s["time"] == "18:00")
     assert (six["singles_left"], six["doubles_left"]) == (4, 0)
@@ -139,7 +146,10 @@ async def test_book_pay_and_get_a_confirmed_ticket_and_an_sms(
     confirmed = next(e[1] for e in events if e[0] == "reservations.ReservationConfirmed")
     await ReservationPaymentEvents(reservations).handle("reservations.ReservationConfirmed", confirmed)
     sms = [m for m in sms_gateway.sent if m.template_key == "reservation_confirmed"]
-    assert len(sms) == 1 and sms[0].to_local_mobile == "09123456789" and sms[0].parameters["ticket"] == ticket["code"]
+    fa_digits = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+    expected_ticket = str(ticket["ticket_number"]).translate(fa_digits)
+    assert len(sms) == 1 and sms[0].to_local_mobile == "09123456789"
+    assert sms[0].parameters["ticket"] == expected_ticket
     async with engine.connect() as conn:
         logged = (await conn.execute(text("SELECT kind, recipient, status FROM notifications_sms_messages"))).all()
     assert [tuple(r) for r in logged] == [("transactional", "09123456789", "queued")]
@@ -172,7 +182,7 @@ async def test_a_crowd_racing_for_the_same_sessions_never_oversells_any_of_them(
     reservations: ApplicationContainer,
 ) -> None:
     """50 customers on real PostgreSQL connections at once, 1-3 singles (sometimes + the double), in 3 sessions."""
-    sessions = (time(18, 0), time(18, 15), time(18, 30))
+    sessions = (time(18, 0), time(18, 10), time(18, 20))
 
     async def attempt(index: int) -> tuple[time, int, int] | None:
         at = sessions[index % 3]

@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime, time, timedelta
 
+from davos.modules.reservations.domain.enums.counter_payment_method import CounterPaymentMethod
 from davos.modules.reservations.domain.enums.reservation_source import ReservationSource
 from davos.modules.reservations.domain.enums.reservation_status import ReservationStatus
 from davos.modules.reservations.domain.errors.invalid_reservation_transition_error import (
@@ -30,6 +31,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
         *,
         reservation_id: uuid.UUID,
         code: str,
+        ticket_number: int,
         customer_id: uuid.UUID | None,
         business_date: date,
         session_time: time,
@@ -49,9 +51,11 @@ class Reservation(AggregateRoot[uuid.UUID]):
         confirmed_late: bool = False,
         note: str = "",
         cancel_reason: str = "",
+        payment_method: CounterPaymentMethod = CounterPaymentMethod.NONE,
     ) -> None:
         super().__init__(reservation_id)
         self.code = code
+        self.ticket_number = ticket_number
         self.customer_id = customer_id
         self.business_date = business_date
         self.session_time = session_time
@@ -71,12 +75,14 @@ class Reservation(AggregateRoot[uuid.UUID]):
         self.confirmed_late = confirmed_late
         self.note = note
         self.cancel_reason = cancel_reason
+        self.payment_method = payment_method
 
     @classmethod
     def hold(
         cls,
         *,
         code: str,
+        ticket_number: int,
         customer_id: uuid.UUID,
         business_date: date,
         session_time: time,
@@ -95,6 +101,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
         return cls(
             reservation_id=uuid.uuid4(),
             code=code,
+            ticket_number=ticket_number,
             customer_id=customer_id,
             business_date=business_date,
             session_time=session_time,
@@ -116,6 +123,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
         cls,
         *,
         code: str,
+        ticket_number: int,
         business_date: date,
         session_time: time,
         starts_at: datetime,
@@ -126,12 +134,14 @@ class Reservation(AggregateRoot[uuid.UUID]):
         contact_mobile: str,
         note: str,
         now: datetime,
+        payment_method: CounterPaymentMethod = CounterPaymentMethod.NONE,
     ) -> Reservation:
         """Seats sold or promised at the counter, entered so the website does not sell them again."""
         cls._check_counts(single_count, double_count)
         reservation = cls(
             reservation_id=uuid.uuid4(),
             code=code,
+            ticket_number=ticket_number,
             customer_id=None,
             business_date=business_date,
             session_time=session_time,
@@ -147,6 +157,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
             updated_at=now,
             confirmed_at=now,
             note=note.strip()[:500],
+            payment_method=payment_method,
         )
         reservation._raise_confirmed(now)
         return reservation

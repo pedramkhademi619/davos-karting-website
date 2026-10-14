@@ -43,4 +43,6 @@ class AuthenticateAdminUseCase:
             if session.touch(now):
                 await self._sessions.save(session)
                 await self._uow.commit()
-            return AuthenticatedAdmin(admin.id, session.id, admin.username, admin.display_name, admin.role)
+            return AuthenticatedAdmin(
+                admin.id, session.id, admin.username, admin.display_name, admin.role, admin.effective_permissions()
+            )

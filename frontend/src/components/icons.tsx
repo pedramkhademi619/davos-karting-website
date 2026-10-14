@@ -211,3 +211,32 @@ export const SearchIcon = (props: IconProps) => (
     <path d="M20 20l-4.2-4.2" />
   </Icon>
 );
+
+export const EyeIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" />
+    <circle cx="12" cy="12" r="3" />
+  </Icon>
+);
+
+export const EyeOffIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 3l18 18" />
+    <path d="M10.6 5.6A10.8 10.8 0 0 1 12 5.5C18.4 5.5 22 12 22 12a17 17 0 0 1-3.2 4M6.6 6.7A16.7 16.7 0 0 0 2 12s3.6 6.5 10 6.5c1.5 0 2.8-.3 4-.8" />
+    <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+  </Icon>
+);
+
+export const PulseIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 12h4l2.5-6 4 12 2.5-6H21" />
+  </Icon>
+);
+
+export const BookIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5v-15z" />
+    <path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19" />
+    <path d="M9 8h6M9 12h6" />
+  </Icon>
+);

@@ -3,13 +3,18 @@ from __future__ import annotations
 from datetime import date, time
 from typing import Any
 
+from davos.modules.reservations.domain.enums.daily_booking_limit_mode import DailyBookingLimitMode
 from davos.modules.reservations.domain.value_objects.price_tier import PriceTier
 from davos.modules.reservations.domain.value_objects.schedule_settings import ScheduleSettings
 from davos.shared_kernel.domain.money import Money
 
 
 class ScheduleSettingsCodec:
-    """ScheduleSettings <-> plain JSON. Unknown or missing keys fall back to the defaults, so old rows keep loading."""
+    """ScheduleSettings <-> plain JSON. Unknown or missing keys fall back to the defaults, so old rows keep loading.
+
+    ``blocked_minutes`` (the fuel-break time) is deliberately never read or written here: it is a fixed operations
+    rule, not something the owner edits, so every row always gets the domain's own default for it.
+    """
 
     @staticmethod
     def encode(settings: ScheduleSettings) -> dict[str, Any]:
@@ -29,12 +34,19 @@ class ScheduleSettingsCodec:
             "closed_weekdays": sorted(settings.closed_weekdays),
             "holiday_dates": sorted(d.isoformat() for d in settings.holiday_dates),
             "closed_dates": sorted(d.isoformat() for d in settings.closed_dates),
+            "open_dates": sorted(d.isoformat() for d in settings.open_dates),
             "min_days_ahead": settings.min_days_ahead,
             "max_days_ahead": settings.max_days_ahead,
             "same_day_lead_minutes": settings.same_day_lead_minutes,
             "hold_minutes": settings.hold_minutes,
             "max_karts_per_reservation": settings.max_karts_per_reservation,
             "max_active_holds_per_customer": settings.max_active_holds_per_customer,
+            "daily_booking_limit_mode": settings.daily_booking_limit_mode.value,
+            "daily_people_limit": settings.daily_people_limit,
+            "daily_ticket_limit": settings.daily_ticket_limit,
+            "online_booking_cutoff": (
+                settings.online_booking_cutoff.strftime("%H:%M") if settings.online_booking_cutoff else None
+            ),
         }
 
     @staticmethod
@@ -52,19 +64,27 @@ class ScheduleSettingsCodec:
             "hold_minutes",
             "max_karts_per_reservation",
             "max_active_holds_per_customer",
+            "daily_people_limit",
+            "daily_ticket_limit",
         ):
             if key in data:
                 values[key] = data[key]
         for key in ("shift_start", "shift_end"):
             if key in data:
                 values[key] = time.fromisoformat(data[key])
+        if "online_booking_cutoff" in data:
+            values["online_booking_cutoff"] = (
+                time.fromisoformat(data["online_booking_cutoff"]) if data["online_booking_cutoff"] else None
+            )
+        if "daily_booking_limit_mode" in data:
+            values["daily_booking_limit_mode"] = DailyBookingLimitMode(data["daily_booking_limit_mode"])
         for key in ("normal_prices", "holiday_prices"):
             if key in data:
                 values[key] = PriceTier(Money(int(data[key]["single"])), Money(int(data[key]["double"])))
         for key in ("holiday_weekdays", "closed_weekdays"):
             if key in data:
                 values[key] = frozenset(int(d) for d in data[key])
-        for key in ("holiday_dates", "closed_dates"):
+        for key in ("holiday_dates", "closed_dates", "open_dates"):
             if key in data:
                 values[key] = frozenset(date.fromisoformat(d) for d in data[key])
         return ScheduleSettings(**{**defaults.__dict__, **values})

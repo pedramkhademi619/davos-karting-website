@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import time
 
 
 @dataclass(frozen=True)
 class BookingFacts:
     """The booking facts in force right now, as the assistant needs them.
 
-    Kart counts, prices, closed days and the hold time are the owner's admin-panel settings, and the phone number is
-    the deployment's CONTACT_PHONE; the composition root (ScheduleBookingFacts) reads them live. None of them is
-    written in code or in a knowledge file, where they would go stale.
+    Kart counts, prices, closed days, the session grid, the online-booking cutoff and the hold time are the owner's
+    admin-panel settings; the composition root (ScheduleBookingFacts) reads them live. None of them is written in code
+    or in a knowledge file, where they would go stale.
     """
 
     singles_per_session: int
@@ -23,4 +24,6 @@ class BookingFacts:
     online_booking_enabled: bool
     min_days_ahead: int
     hold_minutes: int
-    contact_phone: str  # blank when not configured: then no phone number is quoted
+    first_session: time
+    interval_minutes: int
+    online_booking_cutoff: time | None  # None: online booking stays open all day

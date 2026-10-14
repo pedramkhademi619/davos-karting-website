@@ -27,6 +27,10 @@ class PaymentRepository(ABC):
     async def get_owned(self, payment_id: uuid.UUID, customer_id: uuid.UUID) -> PaymentAttempt | None: ...
 
     @abstractmethod
+    async def list_for_customer(self, customer_id: uuid.UUID, *, limit: int) -> list[PaymentAttempt]:
+        """The customer's own payment attempts, newest first."""
+
+    @abstractmethod
     async def lock_order(self, order_ref: str) -> None:
         """Serialise the "is this order already paid?" decision for one order until the transaction ends."""
 

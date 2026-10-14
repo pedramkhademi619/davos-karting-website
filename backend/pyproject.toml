@@ -52,6 +52,7 @@ ignore = ["RUF001", "RUF002", "RUF003"]  # Persian text is intentional
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106", "S311", "PT018"]
+"src/davos/tools/**" = ["S311", "S608"]  # developer tools: seeded random data and fixed SQL
 
 [tool.mypy]
 python_version = "3.12"
@@ -86,6 +87,7 @@ source_modules = [
   "davos.modules.reservations.domain",
   "davos.modules.notifications.domain",
   "davos.modules.administration.domain",
+  "davos.modules.accounting.domain",
 ]
 forbidden_modules = ["fastapi", "sqlalchemy", "redis", "httpx", "celery", "pydantic", "davos.platform"]
 
@@ -102,6 +104,7 @@ source_modules = [
   "davos.modules.booking.application",
   "davos.modules.reservations.application",
   "davos.modules.administration.application",
+  "davos.modules.accounting.application",
 ]
 forbidden_modules = ["fastapi", "sqlalchemy", "redis", "httpx", "celery", "davos.platform"]
 
@@ -117,6 +120,7 @@ containers = [
   "davos.modules.booking",
   "davos.modules.reservations",
   "davos.modules.administration",
+  "davos.modules.accounting",
 ]
 layers = ["adapters", "application", "(domain)"]
 
@@ -132,6 +136,7 @@ modules = [
   "davos.modules.booking",
   "davos.modules.reservations",
   "davos.modules.administration",
+  "davos.modules.accounting",
 ]
 
 [[tool.importlinter.contracts]]

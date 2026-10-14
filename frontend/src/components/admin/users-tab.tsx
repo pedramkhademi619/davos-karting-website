@@ -1,5 +1,7 @@
 "use client";
 
+import { PasswordInput } from "@/components/ui/password-input";
+import { PermissionPicker } from "@/components/admin/permission-picker";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAdmin } from "@/components/admin/admin-session";
 import { Card, TabHeader, Table, cell } from "@/components/admin/admin-ui";
@@ -8,7 +10,7 @@ import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { dateTime } from "@/lib/format";
-import type { AdminUser } from "@/lib/types";
+import type { AdminUser, PermissionCatalog } from "@/lib/types";
 
 /** Staff accounts (owner only) and changing one's own password (everyone). */
 export function UsersTab() {
@@ -16,10 +18,15 @@ export function UsersTab() {
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  const [catalog, setCatalog] = useState<PermissionCatalog | null>(null);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
 
   useEffect(() => {
     if (!isOwner) return;
     let cancelled = false;
+    call<PermissionCatalog>("/users/catalog")
+      .then((result) => !cancelled && setCatalog(result))
+      .catch((err) => !cancelled && setError(errorMessage(err)));
     call<AdminUser[]>("/users")
       .then((result) => !cancelled && setUsers(result))
       .catch((err) => !cancelled && setError(errorMessage(err)));
@@ -52,7 +59,7 @@ export function UsersTab() {
               {!users ? (
                 <Spinner className="h-7 w-7" />
               ) : (
-                <Table head={["نام کاربری", "نام", "نقش", "آخرین ورود", "وضعیت", ""]} empty={users.length === 0}>
+                <Table head={["نام کاربری", "نام", "نقش", "دسترسی‌ها", "آخرین ورود", "وضعیت", ""]} empty={users.length === 0}>
                   {users.map((u) => (
                     <tr key={u.admin_id}>
                       <td className={`${cell} font-bold`} dir="ltr">
@@ -60,6 +67,15 @@ export function UsersTab() {
                       </td>
                       <td className={cell}>{u.display_name || "—"}</td>
                       <td className={cell}>{u.role === "owner" ? "مالک" : "کارمند"}</td>
+                      <td className={cell}>
+                        {u.role === "owner" ? (
+                          "همه بخش‌ها"
+                        ) : (
+                          <button type="button" className="font-bold underline underline-offset-4" onClick={() => setEditing(u)}>
+                            {u.custom_permissions ? `${u.permissions.length.toLocaleString("fa-IR")} بخش` : "پیش‌فرض"} · تغییر
+                          </button>
+                        )}
+                      </td>
                       <td className={cell}>{u.last_login_at ? dateTime(u.last_login_at) : "—"}</td>
                       <td className={cell}>{u.is_active ? "فعال" : "غیرفعال"}</td>
                       <td className={cell}>
@@ -77,7 +93,19 @@ export function UsersTab() {
           ) : (
             <Alert tone="info">فقط مالک می‌تواند حساب‌های پنل را ببیند و بسازد.</Alert>
           )}
-          {isOwner && <CreateUser onCreated={() => setVersion((v) => v + 1)} />}
+          {isOwner && editing && catalog && (
+            <EditPermissions
+              key={editing.admin_id}
+              user={editing}
+              catalog={catalog}
+              onClose={() => setEditing(null)}
+              onSaved={() => {
+                setEditing(null);
+                setVersion((v) => v + 1);
+              }}
+            />
+          )}
+          {isOwner && catalog && <CreateUser catalog={catalog} onCreated={() => setVersion((v) => v + 1)} />}
         </div>
         <div className="xl:col-span-4">
           <ChangePassword />
@@ -87,8 +115,51 @@ export function UsersTab() {
   );
 }
 
-function CreateUser({ onCreated }: { onCreated: () => void }) {
+function EditPermissions({ user, catalog, onClose, onSaved }: { user: AdminUser; catalog: PermissionCatalog; onClose: () => void; onSaved: () => void }) {
   const { call } = useAdmin();
+  const [keys, setKeys] = useState<string[]>(user.permissions);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save(permissions: string[] | null) {
+    setBusy(true);
+    setError(null);
+    try {
+      await call(`/users/${user.admin_id}/permissions`, { method: "PUT", body: { permissions } });
+      onSaved();
+    } catch (err) {
+      setError(errorMessage(err));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card title={`دسترسی‌های ${user.display_name || user.username}`}>
+      <PermissionPicker catalog={catalog} value={keys} onChange={setKeys} />
+      {error && (
+        <Alert tone="error" className="mt-4">
+          {error}
+        </Alert>
+      )}
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button type="button" disabled={busy} onClick={() => save(keys)} className={buttonClasses("primary", "md")}>
+          {busy ? <Spinner /> : "ذخیره دسترسی‌ها"}
+        </button>
+        <button type="button" disabled={busy} onClick={() => save(null)} className={buttonClasses("ghost", "md")}>
+          بازگشت به پیش‌فرض
+        </button>
+        <button type="button" disabled={busy} onClick={onClose} className={buttonClasses("ghost", "md")}>
+          انصراف
+        </button>
+      </div>
+      <p className="mt-3 text-xs text-fg-subtle">تغییر از درخواست بعدی همان شخص اعمال می‌شود؛ لازم نیست دوباره وارد شود.</p>
+    </Card>
+  );
+}
+
+function CreateUser({ catalog, onCreated }: { catalog: PermissionCatalog; onCreated: () => void }) {
+  const { call } = useAdmin();
+  const [keys, setKeys] = useState<string[]>(() => catalog.entries.filter((entry) => entry.default_for_staff).map((entry) => entry.key));
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
@@ -101,7 +172,7 @@ function CreateUser({ onCreated }: { onCreated: () => void }) {
     setBusy(true);
     setMessage(null);
     try {
-      await call("/users", { method: "POST", body: { username: username.trim(), display_name: displayName.trim(), password, role } });
+      await call("/users", { method: "POST", body: { username: username.trim(), display_name: displayName.trim(), password, role, permissions: role === "staff" ? keys : null } });
       setMessage({ tone: "success", text: "حساب ساخته شد." });
       setUsername("");
       setDisplayName("");
@@ -127,15 +198,21 @@ function CreateUser({ onCreated }: { onCreated: () => void }) {
         </label>
         <label className="block">
           <span className="label">رمز عبور (حداقل ۱۲ نویسه)</span>
-          <input className="field" type="password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} minLength={12} required autoComplete="new-password" />
+          <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} minLength={12} required autoComplete="new-password" />
         </label>
         <label className="block">
           <span className="label">نقش</span>
           <select className="field" value={role} onChange={(e) => setRole(e.target.value as "staff" | "owner")}>
-            <option value="staff">کارمند (رزروها، مشتریان، پیامک)</option>
-            <option value="owner">مالک (همه‌چیز، شامل قیمت‌ها و حساب‌ها)</option>
+            <option value="staff">کارمند (دسترسی‌ها را پایین انتخاب می‌کنید)</option>
+            <option value="owner">مالک (همه‌چیز، بدون محدودیت)</option>
           </select>
         </label>
+        {role === "staff" && (
+          <div className="md:col-span-2">
+            <p className="label">این کارمند به کدام بخش‌ها دسترسی داشته باشد؟</p>
+            <PermissionPicker catalog={catalog} value={keys} onChange={setKeys} />
+          </div>
+        )}
         {message && <Alert tone={message.tone} className="md:col-span-2">{message.text}</Alert>}
         <div className="md:col-span-2">
           <button type="submit" disabled={busy} className={buttonClasses("dark", "md")}>
@@ -179,9 +256,9 @@ function ChangePassword() {
   return (
     <Card title="تغییر رمز عبور من">
       <form onSubmit={submit} className="space-y-4">
-        <input className="field" type="password" dir="ltr" placeholder="رمز فعلی" value={current} onChange={(e) => setCurrent(e.target.value)} required autoComplete="current-password" aria-label="رمز فعلی" />
-        <input className="field" type="password" dir="ltr" placeholder="رمز جدید (حداقل ۱۲)" value={next} onChange={(e) => setNext(e.target.value)} minLength={12} required autoComplete="new-password" aria-label="رمز جدید" />
-        <input className="field" type="password" dir="ltr" placeholder="تکرار رمز جدید" value={repeat} onChange={(e) => setRepeat(e.target.value)} minLength={12} required autoComplete="new-password" aria-label="تکرار رمز جدید" />
+        <PasswordInput placeholder="رمز فعلی" value={current} onChange={(e) => setCurrent(e.target.value)} required autoComplete="current-password" aria-label="رمز فعلی" />
+        <PasswordInput placeholder="رمز جدید (حداقل ۱۲)" value={next} onChange={(e) => setNext(e.target.value)} minLength={12} required autoComplete="new-password" aria-label="رمز جدید" />
+        <PasswordInput placeholder="تکرار رمز جدید" value={repeat} onChange={(e) => setRepeat(e.target.value)} minLength={12} required autoComplete="new-password" aria-label="تکرار رمز جدید" />
         {message && <Alert tone={message.tone}>{message.text}</Alert>}
         <button type="submit" disabled={busy} className={buttonClasses("dark", "md", "w-full")}>
           {busy ? <Spinner /> : "تغییر رمز"}

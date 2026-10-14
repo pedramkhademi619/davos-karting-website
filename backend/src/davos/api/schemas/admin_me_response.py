@@ -8,4 +8,5 @@ class AdminMeResponse(BaseModel):
     username: str
     display_name: str
     role: str
+    permissions: list[str]
     csrf_token: str

@@ -132,7 +132,7 @@ async def _run() -> int:
     documents = [d for d in TextFileKnowledgeSource(args.knowledge).read_all().documents if d.published]
     persona = FileAssistantPersona(str(args.persona))
     # the admin panel's initial settings: the question set's expected prices and kart counts assume them
-    facts = ScheduleBookingFacts.from_settings(ScheduleSettings(), contact_phone=settings.contact_phone)
+    facts = ScheduleBookingFacts.from_settings(ScheduleSettings())
     knowledge_text = "\n\n".join(f"## {d.title}\n{d.body}" for d in documents)
     judge_knowledge = f"{knowledge_text}\n\n## Live booking settings\n{BookingFactsPassage().passage(facts).text}"
     dirty = "+dirty" if _git("status", "--porcelain", "--untracked-files=no") else ""

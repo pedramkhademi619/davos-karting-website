@@ -12,6 +12,44 @@ from davos.composition.adapters.sandbox_order_quote_port import SandboxOrderQuot
 from davos.composition.adapters.schedule_booking_facts import ScheduleBookingFacts
 from davos.composition.adapters.sms_otp_delivery import SmsOtpDelivery
 from davos.composition.policy_factory import PolicyFactory
+from davos.composition.status.ai_probe import AiProbe
+from davos.composition.status.api_probe import ApiProbe
+from davos.composition.status.background_jobs_probe import BackgroundJobsProbe
+from davos.composition.status.database_probe import DatabaseProbe
+from davos.composition.status.http_service_probe import HttpServiceProbe
+from davos.composition.status.knowledge_search_probe import KnowledgeSearchProbe
+from davos.composition.status.outbox_probe import OutboxProbe
+from davos.composition.status.payment_backlog_probe import PaymentBacklogProbe
+from davos.composition.status.payment_gateway_probe import PaymentGatewayProbe
+from davos.composition.status.redis_probe import RedisProbe
+from davos.composition.status.sms_probe import SmsProbe
+from davos.composition.status.system_status_service import SystemStatusService
+from davos.modules.accounting.adapters.persistence.sqlalchemy_account_repository import SqlAlchemyAccountRepository
+from davos.modules.accounting.adapters.persistence.sqlalchemy_accounting_settings_repository import (
+    SqlAlchemyAccountingSettingsRepository,
+)
+from davos.modules.accounting.adapters.persistence.sqlalchemy_budget_repository import SqlAlchemyBudgetRepository
+from davos.modules.accounting.adapters.persistence.sqlalchemy_cash_closing_repository import (
+    SqlAlchemyCashClosingRepository,
+)
+from davos.modules.accounting.adapters.persistence.sqlalchemy_fixed_asset_repository import (
+    SqlAlchemyFixedAssetRepository,
+)
+from davos.modules.accounting.adapters.persistence.sqlalchemy_journal_repository import SqlAlchemyJournalRepository
+from davos.modules.accounting.adapters.persistence.sqlalchemy_ledger_query import SqlAlchemyLedgerQuery
+from davos.modules.accounting.adapters.persistence.sqlalchemy_vendor_repository import SqlAlchemyVendorRepository
+from davos.modules.accounting.application.services.ledger_posting_service import LedgerPostingService
+from davos.modules.accounting.application.use_cases.accounting_reports_use_case import AccountingReportsUseCase
+from davos.modules.accounting.application.use_cases.accounting_settings_use_case import AccountingSettingsUseCase
+from davos.modules.accounting.application.use_cases.bookkeeping_use_case import BookkeepingUseCase
+from davos.modules.accounting.application.use_cases.budget_use_case import BudgetUseCase
+from davos.modules.accounting.application.use_cases.cash_closing_use_case import CashClosingUseCase
+from davos.modules.accounting.application.use_cases.chart_of_accounts_use_case import ChartOfAccountsUseCase
+from davos.modules.accounting.application.use_cases.fiscal_year_use_case import FiscalYearUseCase
+from davos.modules.accounting.application.use_cases.fixed_asset_use_case import FixedAssetUseCase
+from davos.modules.accounting.application.use_cases.journal_use_case import JournalUseCase
+from davos.modules.accounting.application.use_cases.sales_posting_use_case import SalesPostingUseCase
+from davos.modules.accounting.application.use_cases.vendor_use_case import VendorUseCase
 from davos.modules.administration.adapters.persistence.sqlalchemy_admin_session_repository import (
     SqlAlchemyAdminSessionRepository,
 )
@@ -127,6 +165,7 @@ from davos.modules.payments.application.ports.payment_gateway_port import Paymen
 from davos.modules.payments.application.services.payment_settlement_service import PaymentSettlementService
 from davos.modules.payments.application.use_cases.get_payment_status_use_case import GetPaymentStatusUseCase
 from davos.modules.payments.application.use_cases.handle_payment_callback_use_case import HandlePaymentCallbackUseCase
+from davos.modules.payments.application.use_cases.list_customer_payments_use_case import ListCustomerPaymentsUseCase
 from davos.modules.payments.application.use_cases.list_payments_use_case import ListPaymentsUseCase
 from davos.modules.payments.application.use_cases.reconcile_payments_use_case import ReconcilePaymentsUseCase
 from davos.modules.payments.application.use_cases.start_payment_use_case import StartPaymentUseCase
@@ -219,9 +258,9 @@ class ApplicationContainer:
         )
         self._http_client = http_client
         self._assistant_persona = assistant_persona or FileAssistantPersona(settings.assistant_persona_file)
+        self._system_status: SystemStatusService | None = None
         self._booking_facts = ScheduleBookingFacts(
             self.schedule_settings,
-            contact_phone=settings.contact_phone,
             cache_seconds=settings.assistant_booking_facts_cache_seconds,
         )
         self._normalizer = PersianTextNormalizer()
@@ -602,9 +641,149 @@ class ApplicationContainer:
             batch_size=self.settings.payment_reconcile_batch_size,
         )
 
+    def list_customer_payments(self) -> ListCustomerPaymentsUseCase:
+        uow = self.new_unit_of_work()
+        return ListCustomerPaymentsUseCase(uow=uow, payments=SqlAlchemyPaymentRepository(uow))
+
     def list_payments(self) -> ListPaymentsUseCase:
         uow = self.new_unit_of_work()
         return ListPaymentsUseCase(uow=uow, payments=SqlAlchemyPaymentRepository(uow))
+
+    # ---- accounting -----------------------------------------------------------------------
+    def _ledger_posting(self, uow: SqlAlchemyUnitOfWork) -> LedgerPostingService:
+        return LedgerPostingService(
+            accounts=SqlAlchemyAccountRepository(uow),
+            journal=SqlAlchemyJournalRepository(uow),
+            settings=SqlAlchemyAccountingSettingsRepository(uow),
+            clock=self.clock,
+        )
+
+    def chart_of_accounts(self) -> ChartOfAccountsUseCase:
+        uow = self.new_unit_of_work()
+        return ChartOfAccountsUseCase(uow=uow, accounts=SqlAlchemyAccountRepository(uow), clock=self.clock)
+
+    def accounting_settings(self) -> AccountingSettingsUseCase:
+        uow = self.new_unit_of_work()
+        return AccountingSettingsUseCase(
+            uow=uow, settings=SqlAlchemyAccountingSettingsRepository(uow), clock=self.clock
+        )
+
+    def journal(self) -> JournalUseCase:
+        uow = self.new_unit_of_work()
+        return JournalUseCase(
+            uow=uow, journal=SqlAlchemyJournalRepository(uow), posting=self._ledger_posting(uow), clock=self.clock
+        )
+
+    def bookkeeping(self) -> BookkeepingUseCase:
+        uow = self.new_unit_of_work()
+        return BookkeepingUseCase(
+            uow=uow,
+            accounts=SqlAlchemyAccountRepository(uow),
+            vendors=SqlAlchemyVendorRepository(uow),
+            posting=self._ledger_posting(uow),
+        )
+
+    def sales_posting(self) -> SalesPostingUseCase:
+        uow = self.new_unit_of_work()
+        return SalesPostingUseCase(
+            uow=uow,
+            accounts=SqlAlchemyAccountRepository(uow),
+            journal=SqlAlchemyJournalRepository(uow),
+            settings=SqlAlchemyAccountingSettingsRepository(uow),
+            posting=self._ledger_posting(uow),
+            clock=self.clock,
+        )
+
+    def vendors(self) -> VendorUseCase:
+        uow = self.new_unit_of_work()
+        return VendorUseCase(
+            uow=uow,
+            vendors=SqlAlchemyVendorRepository(uow),
+            accounts=SqlAlchemyAccountRepository(uow),
+            ledger=SqlAlchemyLedgerQuery(uow),
+            clock=self.clock,
+        )
+
+    def fixed_assets(self) -> FixedAssetUseCase:
+        uow = self.new_unit_of_work()
+        return FixedAssetUseCase(
+            uow=uow,
+            assets=SqlAlchemyFixedAssetRepository(uow),
+            accounts=SqlAlchemyAccountRepository(uow),
+            vendors=SqlAlchemyVendorRepository(uow),
+            posting=self._ledger_posting(uow),
+            clock=self.clock,
+        )
+
+    def budgets(self) -> BudgetUseCase:
+        uow = self.new_unit_of_work()
+        return BudgetUseCase(
+            uow=uow,
+            budgets=SqlAlchemyBudgetRepository(uow),
+            accounts=SqlAlchemyAccountRepository(uow),
+            ledger=SqlAlchemyLedgerQuery(uow),
+        )
+
+    def cash_closing(self) -> CashClosingUseCase:
+        uow = self.new_unit_of_work()
+        return CashClosingUseCase(
+            uow=uow,
+            closings=SqlAlchemyCashClosingRepository(uow),
+            accounts=SqlAlchemyAccountRepository(uow),
+            journal=SqlAlchemyJournalRepository(uow),
+            ledger=SqlAlchemyLedgerQuery(uow),
+            posting=self._ledger_posting(uow),
+            clock=self.clock,
+        )
+
+    def fiscal_years(self) -> FiscalYearUseCase:
+        uow = self.new_unit_of_work()
+        return FiscalYearUseCase(
+            uow=uow,
+            accounts=SqlAlchemyAccountRepository(uow),
+            journal=SqlAlchemyJournalRepository(uow),
+            ledger=SqlAlchemyLedgerQuery(uow),
+            settings=SqlAlchemyAccountingSettingsRepository(uow),
+            posting=self._ledger_posting(uow),
+            clock=self.clock,
+        )
+
+    def accounting_reports(self) -> AccountingReportsUseCase:
+        uow = self.new_unit_of_work()
+        return AccountingReportsUseCase(
+            uow=uow,
+            accounts=SqlAlchemyAccountRepository(uow),
+            journal=SqlAlchemyJournalRepository(uow),
+            ledger=SqlAlchemyLedgerQuery(uow),
+            clock=self.clock,
+        )
+
+    # ---- system status --------------------------------------------------------------------
+    def system_status(self) -> SystemStatusService:
+        if self._system_status is None:
+            settings = self.settings
+            self._system_status = SystemStatusService(
+                [
+                    ApiProbe(settings),
+                    DatabaseProbe(self.engine),
+                    RedisProbe(self.redis),
+                    BackgroundJobsProbe(self.redis, self.clock),
+                    OutboxProbe(self.engine, self.clock),
+                    PaymentBacklogProbe(self.engine, self.clock),
+                    KnowledgeSearchProbe(self.engine, settings),
+                    HttpServiceProbe(key="frontend", label="وب‌سایت (Next.js)", url=settings.status_frontend_url),
+                    HttpServiceProbe(key="game", label="بازی (game)", url=settings.status_game_url),
+                    SmsProbe(
+                        provider=settings.sms_provider,
+                        is_test_gateway=isinstance(self.sms_gateway, RecordingSmsGateway),
+                        account=lambda: self.sms_panel().account(),
+                    ),
+                    PaymentGatewayProbe(settings),
+                    AiProbe(settings),
+                ],
+                self.clock,
+            )
+        return self._system_status
 
     # ---- reservations ---------------------------------------------------------------------
     def booking_calendar(self) -> GetBookingCalendarUseCase:

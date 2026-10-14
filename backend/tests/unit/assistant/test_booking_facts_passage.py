@@ -25,6 +25,20 @@ def test_booking_rules_follow_the_settings() -> None:
     assert "فعلاً بسته" in closed and "همان روز هم" in closed and "بدون رزرو" not in closed
 
 
+def test_the_grid_and_the_daily_cutoff_are_stated_and_the_phone_is_not() -> None:
+    text = live.booking(booking_facts())
+    assert "از ساعت ۱۵:۰۰ هر ۱۰ دقیقه یک‌بار" in text
+    assert "هر روز فقط تا ساعت ۱۵:۰۰ باز است" in text and "حضوری به پیست مراجعه کند" in text
+    assert "تلفن" not in text and not any(ch.isdigit() and ch in "0123456789" for ch in text)
+    open_all_day = live.booking(booking_facts(online_booking_cutoff=None))
+    assert "ساعتِ رزرو کردن" not in open_all_day
+
+
+def test_a_closed_booking_sends_customers_to_the_venue_not_to_a_phone_number() -> None:
+    text = live.booking(booking_facts(online_booking_enabled=False))
+    assert "حضوری" in text and "تلفن" not in text
+
+
 def test_the_passage_is_marked_as_computed() -> None:
     passage = live.passage(booking_facts())
     assert passage.computed and passage.text.count("\n- ") == 2

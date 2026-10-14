@@ -10,14 +10,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { errorMessage } from "@/lib/api";
 import { fa, jalali, karts, mobile, toLatinDigits, toman } from "@/lib/format";
-import { addDays, currentBusinessDay, isoToJalali, parseJalali } from "@/lib/jalali";
+import { SingleDatePicker } from "@/components/admin/date-picker-field";
+import { addDays, currentBusinessDay } from "@/lib/jalali";
 import type { DayAvailability, Page, Reservation } from "@/lib/types";
 
 /** One business day at a glance: the seat board, the day's reservations, and counter sales entered by staff. */
 export function ReservationsTab() {
   const { call } = useAdmin();
   const [date, setDate] = useState(() => currentBusinessDay());
-  const [dateInput, setDateInput] = useState(() => isoToJalali(currentBusinessDay()));
   const [board, setBoard] = useState<DayAvailability | null>(null);
   const [list, setList] = useState<Reservation[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,17 +48,9 @@ export function ReservationsTab() {
 
   function goTo(next: string) {
     setDate(next);
-    setDateInput(isoToJalali(next));
     setBoard(null);
     setList(null);
     setSelectedTime("");
-  }
-
-  function onDateInput(event: FormEvent) {
-    event.preventDefault();
-    const parsed = parseJalali(dateInput);
-    if (parsed) goTo(parsed);
-    else setError("تاریخ را به شکل ۱۴۰۵/۰۷/۰۴ وارد کنید.");
   }
 
   async function search(event: FormEvent) {
@@ -127,12 +119,7 @@ export function ReservationsTab() {
         <button type="button" className={buttonClasses("ghost", "sm")} onClick={() => goTo(addDays(date, 1))}>
           روز بعد
         </button>
-        <form onSubmit={onDateInput} className="flex items-center gap-2">
-          <input className="field h-10 w-36 text-center" dir="ltr" value={fa(dateInput)} onChange={(e) => setDateInput(e.target.value)} aria-label="تاریخ (شمسی)" />
-          <button type="submit" className={buttonClasses("dark", "sm")}>
-            برو
-          </button>
-        </form>
+        <SingleDatePicker value={date} onChange={goTo} label="انتخاب تاریخ" />
         {board && (
           <span className="text-sm font-bold text-fg-muted">
             {board.weekday} {jalali(board.date_jalali)}
@@ -293,6 +280,7 @@ function StaffEntry({
   const [note, setNote] = useState("");
   const [amount, setAmount] = useState("");
   const [overbook, setOverbook] = useState(false);
+  const [method, setMethod] = useState<"none" | "cash" | "card" | "transfer">("cash");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
@@ -319,6 +307,7 @@ function StaffEntry({
           note: note.trim(),
           amount_toman: amount.trim() ? Number(toLatinDigits(amount).replace(/\D/g, "")) : suggested,
           allow_overbooking: overbook,
+          payment_method: method,
         },
       });
       setMessage({ tone: "success", text: `ثبت شد: ${created.code}` });
@@ -391,6 +380,17 @@ function StaffEntry({
           onChange={(e) => setAmount(e.target.value)}
         />
         <p className="mt-1 text-xs text-on-carbon-muted">خالی بماند = {toman(suggested)} (قیمت همین روز)</p>
+      </div>
+      <div>
+        <label className="label text-on-carbon-muted" htmlFor="entry-method">
+          روش دریافت (برای حسابداری)
+        </label>
+        <select id="entry-method" className="field field-dark" value={method} onChange={(e) => setMethod(e.target.value as typeof method)}>
+          <option value="cash">نقد (صندوق)</option>
+          <option value="card">کارت‌خوان</option>
+          <option value="transfer">کارت به کارت / انتقال بانکی</option>
+          <option value="none">پولی دریافت نشده (فقط نگه داشتن جا)</option>
+        </select>
       </div>
       <div>
         <label className="label text-on-carbon-muted" htmlFor="entry-note">

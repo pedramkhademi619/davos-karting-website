@@ -8,7 +8,8 @@ import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { SMS_STATUS, dateTime, fa, mobile, toLatinDigits, toman } from "@/lib/format";
-import { currentBusinessDay, isoToJalali, parseJalali } from "@/lib/jalali";
+import { SingleDatePicker } from "@/components/admin/date-picker-field";
+import { currentBusinessDay, isoToJalali } from "@/lib/jalali";
 import type { Page, SmsAccount, SmsLog, SmsSent } from "@/lib/types";
 
 const LIMIT = 50;
@@ -105,7 +106,7 @@ function SendForm({ onSent }: { onSent: () => void }) {
   const { call } = useAdmin();
   const [audience, setAudience] = useState<"numbers" | "subscribers" | "day">("numbers");
   const [numbers, setNumbers] = useState("");
-  const [day, setDay] = useState(() => isoToJalali(currentBusinessDay()));
+  const [day, setDay] = useState(() => currentBusinessDay());
   const [text, setText] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -121,11 +122,7 @@ function SendForm({ onSent }: { onSent: () => void }) {
   async function send(event: FormEvent) {
     event.preventDefault();
     if (!text.trim()) return;
-    const isoDay = audience === "day" ? parseJalali(day) : null;
-    if (audience === "day" && !isoDay) {
-      setMessage({ tone: "error", text: "تاریخ را به شکل ۱۴۰۵/۰۷/۰۴ وارد کنید." });
-      return;
-    }
+    const isoDay = audience === "day" ? day : null;
     if (!confirming) {
       setConfirming(true);
       return;
@@ -149,7 +146,7 @@ function SendForm({ onSent }: { onSent: () => void }) {
     }
   }
 
-  const audienceLabel = { numbers: `${fa(numberList.length)} شماره`, subscribers: "همه مشترکان خبرنامه", day: `مشتریان روز ${fa(day)}` }[audience];
+  const audienceLabel = { numbers: `${fa(numberList.length)} شماره`, subscribers: "همه مشترکان خبرنامه", day: `مشتریان روز ${fa(isoToJalali(day))}` }[audience];
 
   return (
     <form onSubmit={send} className="panel space-y-4 p-6">
@@ -184,10 +181,10 @@ function SendForm({ onSent }: { onSent: () => void }) {
         </label>
       )}
       {audience === "day" && (
-        <label className="block">
-          <span className="label">روز (شمسی)</span>
-          <input className="field" dir="ltr" value={fa(day)} onChange={(e) => setDay(e.target.value)} />
-        </label>
+        <div>
+          <span className="label">روز</span>
+          <SingleDatePicker value={day} onChange={setDay} label="انتخاب روز" />
+        </div>
       )}
       <label className="block">
         <span className="label">متن پیامک</span>

@@ -20,6 +20,16 @@ _MODEL_MODULES = (
     "davos.modules.notifications.adapters.persistence.sms_message_model",
     "davos.modules.administration.adapters.persistence.admin_user_model",
     "davos.modules.administration.adapters.persistence.admin_session_model",
+    "davos.modules.accounting.adapters.persistence.account_model",
+    "davos.modules.accounting.adapters.persistence.journal_entry_model",
+    "davos.modules.accounting.adapters.persistence.journal_line_model",
+    "davos.modules.accounting.adapters.persistence.counter_model",
+    "davos.modules.accounting.adapters.persistence.accounting_settings_model",
+    "davos.modules.accounting.adapters.persistence.vendor_model",
+    "davos.modules.accounting.adapters.persistence.fixed_asset_model",
+    "davos.modules.accounting.adapters.persistence.depreciation_run_model",
+    "davos.modules.accounting.adapters.persistence.budget_model",
+    "davos.modules.accounting.adapters.persistence.cash_closing_model",
 )
 
 

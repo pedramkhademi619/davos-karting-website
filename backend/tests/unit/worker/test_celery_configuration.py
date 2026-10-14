@@ -35,6 +35,7 @@ def test_the_single_scheduler_owns_exactly_the_periodic_jobs() -> None:
         "davos.payments.reconcile",
         "davos.reservations.expire_holds",
         "davos.notifications.refresh_sms_statuses",
+        "davos.accounting.recognize_revenue",
     }
 
 

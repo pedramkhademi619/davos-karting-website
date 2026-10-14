@@ -42,6 +42,7 @@ async def login(
         username=result.admin.username,
         display_name=result.admin.display_name,
         role=result.admin.role.value,
+        permissions=sorted(p.value for p in result.admin.permissions),
         csrf_token=container.csrf.token_for("admin:" + result.token),
     )
 
@@ -54,6 +55,7 @@ async def me(auth: AuthenticatedAdminRequest = Depends(require_admin)) -> AdminM
         username=admin.username,
         display_name=admin.display_name,
         role=admin.role.value,
+        permissions=sorted(p.value for p in admin.permissions),
         csrf_token=auth.csrf_token,
     )
 

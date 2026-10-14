@@ -89,5 +89,7 @@ class AdminLoginUseCase:
         return AdminLoginResult(
             token=token,
             expires_at=session.expires_at,
-            admin=AuthenticatedAdmin(admin.id, session.id, admin.username, admin.display_name, admin.role),
+            admin=AuthenticatedAdmin(
+                admin.id, session.id, admin.username, admin.display_name, admin.role, admin.effective_permissions()
+            ),
         )

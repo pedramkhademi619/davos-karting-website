@@ -44,6 +44,7 @@ class CeleryAppFactory:
                 "reconcile-payments": {"task": "davos.payments.reconcile", "schedule": 120.0},
                 "expire-reservation-holds": {"task": "davos.reservations.expire_holds", "schedule": 60.0},
                 "refresh-sms-statuses": {"task": "davos.notifications.refresh_sms_statuses", "schedule": 300.0},
+                "recognize-ticket-revenue": {"task": "davos.accounting.recognize_revenue", "schedule": 3600.0},
             },
         )
 

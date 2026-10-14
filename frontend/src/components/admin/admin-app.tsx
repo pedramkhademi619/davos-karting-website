@@ -1,18 +1,12 @@
 "use client";
 
+import { PasswordInput } from "@/components/ui/password-input";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, type ComponentType, type FormEvent, type SVGProps } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { AdminSessionContext, makeSession } from "@/components/admin/admin-session";
-import { AssistantTab } from "@/components/admin/assistant-tab";
-import { CustomersTab } from "@/components/admin/customers-tab";
-import { DashboardTab } from "@/components/admin/dashboard-tab";
-import { PaymentsTab } from "@/components/admin/payments-tab";
-import { ReservationsTab } from "@/components/admin/reservations-tab";
-import { SettingsTab } from "@/components/admin/settings-tab";
-import { SmsTab } from "@/components/admin/sms-tab";
-import { UsersTab } from "@/components/admin/users-tab";
+import { SECTIONS, sectionAllowed, type SectionKey } from "@/components/admin/admin-sections";
 import { buttonClasses } from "@/components/button-link";
-import { CalendarIcon, CardIcon, ChatIcon, GaugeIcon, LogoutIcon, SettingsIcon, SmsIcon, UserIcon, UsersIcon } from "@/components/icons";
+import { LogoutIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { SpeedLines } from "@/components/speed-lines";
 import { Alert } from "@/components/ui/alert";
@@ -21,24 +15,11 @@ import { api, errorMessage } from "@/lib/api";
 import { SITE_HOME } from "@/lib/urls";
 import type { AdminMe } from "@/lib/types";
 
-type TabKey = "dashboard" | "reservations" | "customers" | "payments" | "sms" | "assistant" | "settings" | "users";
-
-const TABS: { key: TabKey; label: string; icon: ComponentType<SVGProps<SVGSVGElement>>; ownerOnly?: boolean }[] = [
-  { key: "dashboard", label: "داشبورد", icon: GaugeIcon },
-  { key: "reservations", label: "رزروها و سانس‌ها", icon: CalendarIcon },
-  { key: "customers", label: "مشتریان", icon: UserIcon },
-  { key: "payments", label: "پرداخت‌ها", icon: CardIcon },
-  { key: "sms", label: "پنل پیامک", icon: SmsIcon },
-  { key: "assistant", label: "دستیار هوشمند", icon: ChatIcon },
-  { key: "settings", label: "تنظیمات و قیمت‌ها", icon: SettingsIcon },
-  { key: "users", label: "کاربران پنل", icon: UsersIcon },
-];
-
 /** The staff panel: sign-in, then one screen per area. The API enforces every permission; the UI only mirrors it. */
 export function AdminApp() {
   const [me, setMe] = useState<AdminMe | null>(null);
   const [checking, setChecking] = useState(true);
-  const [tab, setTab] = useState<TabKey>("dashboard");
+  const [tab, setTab] = useState<SectionKey | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,6 +54,10 @@ export function AdminApp() {
   }
   if (!session) return <AdminLogin onSignedIn={setMe} />;
 
+  const allowed = SECTIONS.filter((section) => sectionAllowed(section, session.can, session.isOwner));
+  const shown = tab ?? allowed[0]?.key ?? null;
+  const current = allowed.find((section) => section.key === shown) ?? null;
+
   return (
     <AdminSessionContext.Provider value={session}>
       <div className="flex min-h-svh flex-col lg:flex-row">
@@ -86,14 +71,14 @@ export function AdminApp() {
             </p>
           </div>
           <nav aria-label="بخش‌های پنل" className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:px-3">
-            {TABS.map(({ key, label, icon: IconComponent }) => (
+            {allowed.map(({ key, label, icon: IconComponent }) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setTab(key)}
-                aria-current={tab === key ? "page" : undefined}
+                aria-current={shown === key ? "page" : undefined}
                 className={`flex shrink-0 items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-colors ${
-                  tab === key ? "bg-accent text-ink" : "text-on-carbon-muted hover:bg-white/5 hover:text-on-carbon"
+                  shown === key ? "bg-accent text-ink" : "text-on-carbon-muted hover:bg-white/5 hover:text-on-carbon"
                 }`}
               >
                 <IconComponent className="h-5 w-5" />
@@ -112,17 +97,29 @@ export function AdminApp() {
         </aside>
 
         <main className="min-w-0 flex-1 p-4 md:p-8">
-          {tab === "dashboard" && <DashboardTab onOpen={setTab} />}
-          {tab === "reservations" && <ReservationsTab />}
-          {tab === "customers" && <CustomersTab />}
-          {tab === "payments" && <PaymentsTab />}
-          {tab === "sms" && <SmsTab />}
-          {tab === "assistant" && <AssistantTab />}
-          {tab === "settings" && <SettingsTab />}
-          {tab === "users" && <UsersTab />}
+          {current ? (
+            <current.Component onOpen={setTab} />
+          ) : (
+            <AccessDenied wanted={SECTIONS.find((section) => section.key === tab)?.label} onGoHome={() => setTab(allowed[0]?.key ?? null)} />
+          )}
         </main>
       </div>
     </AdminSessionContext.Provider>
+  );
+}
+
+/** Shown when a section is opened without permission (the menu hides such sections, so this is a direct visit). */
+function AccessDenied({ wanted, onGoHome }: { wanted?: string; onGoHome: () => void }) {
+  return (
+    <div className="panel mx-auto mt-10 max-w-xl p-8 text-center">
+      <h1 className="text-2xl font-black">دسترسی ندارید</h1>
+      <p className="mt-3 leading-8 text-fg-muted">
+        {wanted ? `اجازه ورود به بخش «${wanted}» برای حساب شما فعال نشده است.` : "هیچ بخشی برای حساب شما فعال نشده است."} برای دریافت دسترسی با مالک مجموعه صحبت کنید.
+      </p>
+      <button type="button" onClick={onGoHome} className={buttonClasses("dark", "md", "mt-6")}>
+        بازگشت
+      </button>
+    </div>
   );
 }
 
@@ -171,10 +168,9 @@ function AdminLogin({ onSignedIn }: { onSignedIn: (me: AdminMe) => void }) {
             <label htmlFor="admin-password" className="label text-on-carbon-muted">
               رمز عبور
             </label>
-            <input
+            <PasswordInput
               id="admin-password"
-              type="password"
-              dir="ltr"
+              onDark
               className="field field-dark"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

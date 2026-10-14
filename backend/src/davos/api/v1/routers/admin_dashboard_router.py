@@ -4,19 +4,22 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Depends
 
-from davos.api.dependencies.admin_authentication import require_admin
+from davos.api.dependencies.admin_authentication import require_permission
 from davos.api.dependencies.authenticated_admin_request import AuthenticatedAdminRequest
 from davos.api.dependencies.container_provider import get_container
 from davos.api.schemas.dashboard_response import DashboardResponse
 from davos.composition.application_container import ApplicationContainer
+from davos.modules.administration.domain.enums.admin_permission import AdminPermission
 from davos.modules.reservations.domain.value_objects.tehran_time import business_date
 
 router = APIRouter(prefix="/admin/dashboard", tags=["admin"])
 
+_ALLOWED = require_permission(AdminPermission.DASHBOARD)
+
 
 @router.get("", summary="Today at a glance")
 async def dashboard(
-    _: AuthenticatedAdminRequest = Depends(require_admin), container: ApplicationContainer = Depends(get_container)
+    _: AuthenticatedAdminRequest = Depends(_ALLOWED), container: ApplicationContainer = Depends(get_container)
 ) -> DashboardResponse:
     today = business_date(container.clock.now())
     tomorrow = today + timedelta(days=1)

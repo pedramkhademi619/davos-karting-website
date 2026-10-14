@@ -4,8 +4,10 @@ import re
 import uuid
 from datetime import datetime
 
+from davos.modules.administration.domain.enums.admin_permission import AdminPermission
 from davos.modules.administration.domain.enums.admin_role import AdminRole
 from davos.modules.administration.domain.errors.weak_password_error import WeakPasswordError
+from davos.modules.administration.domain.services.permission_catalog import PermissionCatalog
 from davos.modules.administration.domain.value_objects.admin_security_policy import AdminSecurityPolicy
 from davos.shared_kernel.domain.aggregate_root import AggregateRoot
 from davos.shared_kernel.domain.errors.validation_error import ValidationError
@@ -29,6 +31,7 @@ class AdminUser(AggregateRoot[uuid.UUID]):
         failed_attempts: int = 0,
         locked_until: datetime | None = None,
         last_login_at: datetime | None = None,
+        permissions: frozenset[AdminPermission] | None = None,
     ) -> None:
         super().__init__(admin_id)
         self.username = username
@@ -40,10 +43,18 @@ class AdminUser(AggregateRoot[uuid.UUID]):
         self.failed_attempts = failed_attempts
         self.locked_until = locked_until
         self.last_login_at = last_login_at
+        self.permissions = permissions  # None: the defaults of the role
 
     @classmethod
     def create(
-        cls, *, username: str, display_name: str, password_hash: str, role: AdminRole, now: datetime
+        cls,
+        *,
+        username: str,
+        display_name: str,
+        password_hash: str,
+        role: AdminRole,
+        now: datetime,
+        permissions: frozenset[AdminPermission] | None = None,
     ) -> AdminUser:
         username = cls.normalize_username(username)
         if not _USERNAME.fullmatch(username):
@@ -59,6 +70,7 @@ class AdminUser(AggregateRoot[uuid.UUID]):
             role=role,
             is_active=True,
             created_at=now,
+            permissions=PermissionCatalog.closure(permissions) if permissions is not None else None,
         )
 
     @staticmethod
@@ -97,3 +109,15 @@ class AdminUser(AggregateRoot[uuid.UUID]):
     @property
     def is_owner(self) -> bool:
         return self.role is AdminRole.OWNER
+
+    def effective_permissions(self) -> frozenset[AdminPermission]:
+        """The owner can do everything; staff get what the owner chose, or the staff defaults if nothing was."""
+        if self.is_owner:
+            return PermissionCatalog.everything()
+        if self.permissions is None:
+            return PermissionCatalog.STAFF_DEFAULTS
+        return self.permissions
+
+    def set_permissions(self, permissions: frozenset[AdminPermission] | None) -> None:
+        """None goes back to the role's defaults. The owner is never restricted, so their setting is ignored."""
+        self.permissions = PermissionCatalog.closure(permissions) if permissions is not None else None

@@ -47,7 +47,9 @@ async def calendar(container: ApplicationContainer = Depends(get_container)) -> 
 @router.get("/info", summary="Kart counts, prices, session times and booking days (all set in the admin panel)")
 async def info(container: ApplicationContainer = Depends(get_container)) -> BookingInfoResponse:
     settings = await container.schedule_settings().get()
-    return BookingInfoResponse.of(settings, payments_enabled=container.settings.payments_enabled)
+    return BookingInfoResponse.of(
+        settings, payments_enabled=container.settings.payments_enabled, now=container.clock.now()
+    )
 
 
 @router.get("/availability", summary="Every session of one day with the karts still free")

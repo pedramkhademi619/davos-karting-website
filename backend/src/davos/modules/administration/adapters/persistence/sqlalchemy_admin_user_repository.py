@@ -7,6 +7,7 @@ from sqlalchemy import func, select, update
 from davos.modules.administration.adapters.persistence.admin_user_model import AdminUserModel
 from davos.modules.administration.application.ports.admin_user_repository import AdminUserRepository
 from davos.modules.administration.domain.entities.admin_user import AdminUser
+from davos.modules.administration.domain.enums.admin_permission import AdminPermission
 from davos.modules.administration.domain.enums.admin_role import AdminRole
 from davos.platform.persistence.sqlalchemy_unit_of_work import SqlAlchemyUnitOfWork
 
@@ -39,6 +40,7 @@ class SqlAlchemyAdminUserRepository(AdminUserRepository):
                 locked_until=admin.locked_until,
                 last_login_at=admin.last_login_at,
                 created_at=admin.created_at,
+                permissions=self._encode(admin.permissions),
             )
         )
         await self._uow.session.flush()
@@ -55,6 +57,7 @@ class SqlAlchemyAdminUserRepository(AdminUserRepository):
                 failed_attempts=admin.failed_attempts,
                 locked_until=admin.locked_until,
                 last_login_at=admin.last_login_at,
+                permissions=self._encode(admin.permissions),
             )
         )
 
@@ -78,4 +81,16 @@ class SqlAlchemyAdminUserRepository(AdminUserRepository):
             failed_attempts=model.failed_attempts,
             locked_until=model.locked_until,
             last_login_at=model.last_login_at,
+            permissions=SqlAlchemyAdminUserRepository._decode(model.permissions),
         )
+
+    @staticmethod
+    def _encode(permissions: frozenset[AdminPermission] | None) -> list[str] | None:
+        return None if permissions is None else sorted(p.value for p in permissions)
+
+    @staticmethod
+    def _decode(stored: list[str] | None) -> frozenset[AdminPermission] | None:
+        if stored is None:
+            return None
+        known = {p.value for p in AdminPermission}
+        return frozenset(AdminPermission(value) for value in stored if value in known)  # a removed key just drops out

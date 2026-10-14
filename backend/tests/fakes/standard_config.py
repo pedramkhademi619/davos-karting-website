@@ -55,5 +55,5 @@ def assistant_policy(**changes: object) -> AssistantPolicy:
 
 def booking_facts(**changes: object) -> BookingFacts:
     """The admin panel's initial booking settings as the assistant sees them."""
-    facts = ScheduleBookingFacts.from_settings(ScheduleSettings(), contact_phone=TEST_CONTACT_PHONE)
+    facts = ScheduleBookingFacts.from_settings(ScheduleSettings())
     return replace(facts, **changes)  # type: ignore[arg-type]

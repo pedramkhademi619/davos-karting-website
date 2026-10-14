@@ -121,3 +121,23 @@ export function currentBusinessDay(now: Date = new Date()): string {
   const iso = `${get("year")}-${get("month")}-${get("day")}`;
   return Number(get("hour")) < 6 ? addDays(iso, -1) : iso;
 }
+
+export const JALALI_MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+
+/** "2026-09-26" -> { jy: 1405, jm: 7, jd: 4 } */
+export function isoToJalaliParts(iso: string): { jy: number; jm: number; jd: number } {
+  const [jy, jm, jd] = isoToJalali(iso).split("/").map(Number);
+  return { jy, jm, jd };
+}
+
+/** Days in a Jalali month: 31 for the first six, 30 for the next five, and 29 or 30 for Esfand. */
+export function jalaliMonthLength(jy: number, jm: number): number {
+  if (jm <= 6) return 31;
+  if (jm <= 11) return 30;
+  return parseJalali(`${jy}/12/30`) ? 30 : 29;
+}
+
+/** Position in the Iranian week: Saturday = 0 ... Friday = 6. */
+export function weekdayIndex(iso: string): number {
+  return (new Date(`${iso}T12:00:00Z`).getUTCDay() + 1) % 7;
+}
