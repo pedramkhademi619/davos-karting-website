@@ -13,7 +13,7 @@ import type { KnowledgeCatalog, KnowledgeEntry } from "@/lib/types";
 
 const MAX_BODY = 4000;
 /** Their titles find the quick answers (hours, booking, prices...), so renaming one turns that shortcut off. */
-const QUICK_TITLES = ["ساعت کاری", "نحوه رزرو نوبت", "خودروها و ظرفیت هر سانس", "قیمت‌ها", "باشگاه مشتریان داوس"];
+const QUICK_TITLES = ["ساعت کاری", "نحوه رزرو نوبت", "خودروها و ظرفیت هر سانس", "قیمت‌ها", "باشگاه مشتریان داووس"];
 
 type Draft = { id: string | null; source_type: string; title: string; body: string; url: string };
 

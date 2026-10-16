@@ -17,7 +17,7 @@ export function TrackSection() {
           <SectionHeading
             eyebrow="پیست"
             title="پیچ به پیچ، از نمای بالا"
-            lead="نقشه پیست داوس از روی تصویر هوایی؛ دو کارت کوچک روی نقشه مسیر را دور می‌زنند."
+            lead="نقشه پیست داووس از روی تصویر هوایی؛ دو کارت کوچک روی نقشه مسیر را دور می‌زنند."
           />
           <ul className="mt-10 space-y-6">
             {features.map(({ icon: IconComponent, title, text }) => (

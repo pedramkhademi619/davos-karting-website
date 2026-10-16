@@ -26,5 +26,5 @@ class QuoteReservationUseCase:
             return None
         return ReservationQuote(
             amount=reservation.amount,
-            description=f"رزرو سانس کارتینگ داوس {reservation.code}",
+            description=f"رزرو سانس کارتینگ داووس {reservation.code}",
         )

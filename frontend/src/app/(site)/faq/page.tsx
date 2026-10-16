@@ -9,7 +9,7 @@ import { getBookingInfo } from "@/lib/server-api";
 
 export const metadata: Metadata = {
   title: "سوالات متداول",
-  description: "رزرو آنلاین، قیمت‌ها، ظرفیت سانس‌ها و شرایط سنی و قد برای خودروهای تک‌نفره و دونفره کارتینگ داوس.",
+  description: "رزرو آنلاین، قیمت‌ها، ظرفیت سانس‌ها و شرایط سنی و قد برای خودروهای تک‌نفره و دونفره کارتینگ داووس.",
   alternates: { canonical: "/faq" },
 };
 

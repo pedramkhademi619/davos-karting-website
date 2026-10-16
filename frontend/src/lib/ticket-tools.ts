@@ -34,9 +34,9 @@ export function downloadCalendarEvent(ticket: Reservation): void {
     `DTSTAMP:${ICS_STAMP(new Date())}`,
     `DTSTART:${ICS_STAMP(start)}`,
     `DTEND:${ICS_STAMP(end)}`,
-    `SUMMARY:${icsText(`کارتینگ داوس - بلیت ${ticket.ticket_number}`)}`,
+    `SUMMARY:${icsText(`کارتینگ داووس - بلیت ${ticket.ticket_number}`)}`,
     `DESCRIPTION:${icsText(`${karts(ticket.single_count, ticket.double_count)}\nشماره بلیت: ${ticket.ticket_number}\nتلفن: ${venue.phone.display}`)}`,
-    `LOCATION:${icsText("پیست کارتینگ داوس")}`,
+    `LOCATION:${icsText("پیست کارتینگ داووس")}`,
     `GEO:${venue.geo.latitude};${venue.geo.longitude}`,
     "BEGIN:VALARM",
     "TRIGGER:-PT60M",
@@ -75,7 +75,7 @@ p{margin-top:24px;color:#555;font-size:12px;line-height:1.9}</style></head><body
 
 export function printTicket(ticket: Reservation): void {
   printHtml(
-    "بلیت داوس کارتینگ",
+    "بلیت داووس کارتینگ",
     [
       ["شماره بلیت", fa(ticket.ticket_number)],
       ["کد رزرو", ticket.code],
@@ -95,5 +95,5 @@ export function printReceipt(payment: AccountPayment, ticket: Reservation | unde
     ["زمان پرداخت", dateTime(payment.updated_at)],
   ];
   if (ticket) rows.push(["شماره بلیت", fa(ticket.ticket_number)], ["سانس", `${ticket.weekday} ${jalali(ticket.date_jalali)}، ${fa(ticket.time)}`]);
-  printHtml("رسید پرداخت داوس کارتینگ", rows, "این رسید فقط برای اطلاع مشتری است.");
+  printHtml("رسید پرداخت داووس کارتینگ", rows, "این رسید فقط برای اطلاع مشتری است.");
 }

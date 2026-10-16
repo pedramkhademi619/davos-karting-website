@@ -19,7 +19,7 @@ export function SiteFooter({ onBookingHost = false }: { onBookingHost?: boolean 
         <div className="md:col-span-5">
           <Logo tone="light" />
           <p className="mt-6 max-w-sm text-on-carbon-muted">
-            پیست کارتینگ داوس؛ سرعت، دقت و رقابت. سانس دلخواه را آنلاین رزرو کنید و پشت فرمان بنشینید.
+            پیست کارتینگ داووس؛ سرعت، دقت و رقابت. سانس دلخواه را آنلاین رزرو کنید و پشت فرمان بنشینید.
           </p>
           <ButtonLink href={hrefFor("/booking", onBookingHost)} className="mt-8">
             {site.booking.callToAction}

@@ -10,7 +10,7 @@ import { site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "تماس با ما",
-  description: "راه‌های ارتباط با کارتینگ داوس: موقعیت پیست، ساعات کاری و تلفن رزرو.",
+  description: "راه‌های ارتباط با کارتینگ داووس: موقعیت پیست، ساعات کاری و تلفن رزرو.",
   alternates: { canonical: "/contact" },
 };
 

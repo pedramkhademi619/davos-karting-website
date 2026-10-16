@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <>
-      <PageHero eyebrow="حساب کاربری" title="ورود به داوس" lead="با شماره موبایل و کد پیامکی وارد شوید؛ حساب شما همان‌جا ساخته می‌شود." />
+      <PageHero eyebrow="حساب کاربری" title="ورود به داووس" lead="با شماره موبایل و کد پیامکی وارد شوید؛ حساب شما همان‌جا ساخته می‌شود." />
       <section className="container-page py-12 md:py-16">
         <Suspense fallback={null}>
           <LoginPanel />

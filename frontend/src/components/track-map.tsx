@@ -73,7 +73,7 @@ export function TrackMapSvg() {
       aria-labelledby="track-map-title"
     >
       <style>{"@media (prefers-reduced-motion: reduce) { .kart { display: none; } }"}</style>
-          <title id="track-map-title">نقشه پیست کارتینگ داوس از نمای بالا</title>
+          <title id="track-map-title">نقشه پیست کارتینگ داووس از نمای بالا</title>
           <defs>
             <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stopColor="#EED9C2" />

@@ -1,4 +1,4 @@
-# FAQ assistant ("دستیار داوس")
+# FAQ assistant ("دستیار داووس")
 
 The assistant answers **only from published, approved content** and would rather say "I don't know" than guess. It is live on the
 site as a small chat box (bottom right, `frontend/src/components/assistant`) and calls `POST /api/v1/assistant/ask`.

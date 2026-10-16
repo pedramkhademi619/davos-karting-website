@@ -8,7 +8,7 @@ export function Experience() {
   return (
     <section className="container-page py-24 md:py-32">
       <SectionHeading
-        eyebrow="تجربه داوس"
+        eyebrow="تجربه داووس"
         title={
           <>
             پشت فرمان، <span className="marker">سه چیز</span> مهم است

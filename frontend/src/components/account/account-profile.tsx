@@ -59,7 +59,7 @@ export function AccountProfile({ profile, me, onSaved }: { profile: Profile; me:
       </div>
       <label className="flex cursor-pointer items-start gap-3">
         <input type="checkbox" checked={news} onChange={(e) => setNews(e.target.checked)} className="mt-1.5 h-5 w-5 accent-[#0c0d10]" />
-        <span className="text-sm leading-7 text-fg-muted">پیامک خبرها و پیشنهادهای داوس را دریافت می‌کنم (هر زمان قابل لغو). پیامک‌های تایید رزرو و کد ورود همیشه ارسال می‌شود.</span>
+        <span className="text-sm leading-7 text-fg-muted">پیامک خبرها و پیشنهادهای داووس را دریافت می‌کنم (هر زمان قابل لغو). پیامک‌های تایید رزرو و کد ورود همیشه ارسال می‌شود.</span>
       </label>
       {message && <Alert tone={message.tone}>{message.text}</Alert>}
       <button type="submit" disabled={busy || !changed} className={buttonClasses("dark", "md", "w-full sm:w-auto")}>

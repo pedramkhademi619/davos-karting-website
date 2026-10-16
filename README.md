@@ -1,4 +1,4 @@
-# Davos Karting (کارتینگ داوس)
+# Davos Karting (کارتینگ داووس)
 
 Backend for the Davos Karting website: a **modular monolith with hexagonal architecture** (FastAPI, SQLAlchemy 2,
 PostgreSQL, Redis, Celery). The web app and admin panel are **not built yet** (see [Status](#status)).

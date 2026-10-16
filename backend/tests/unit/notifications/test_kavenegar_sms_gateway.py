@@ -65,7 +65,7 @@ async def test_without_a_template_the_persian_text_goes_from_the_sender_line(cli
         SmsMessage(to_local_mobile="09121234567", template_key="otp", parameters={"code": "482913"})
     )
     sent = form(route.calls.last.request)
-    assert sent["sender"] == "10008663" and "482913" in sent["message"] and "داوس" in sent["message"]
+    assert sent["sender"] == "10008663" and "482913" in sent["message"] and "داووس" in sent["message"]
 
 
 @respx.mock

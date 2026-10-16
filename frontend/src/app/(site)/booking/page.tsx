@@ -5,7 +5,7 @@ import { BOOKING_HOME } from "@/lib/urls";
 
 export const metadata: Metadata = {
   title: "رزرو آنلاین سانس",
-  description: "جای خالی سانس‌های کارتینگ داوس را زنده ببینید، خودروی تک‌نفره یا دونفره انتخاب کنید و از درگاه بانک ملت بپردازید.",
+  description: "جای خالی سانس‌های کارتینگ داووس را زنده ببینید، خودروی تک‌نفره یا دونفره انتخاب کنید و از درگاه بانک ملت بپردازید.",
   alternates: { canonical: BOOKING_HOME },
 };
 

@@ -338,7 +338,7 @@ def login_and_bulk_sms(
         when = at(start, time(0)) + timedelta(seconds=rng.randint(0, span))
         code = "".join(rng.choice(string.digits) for _ in range(6)).translate(_DIGITS)
         recipient = _local_mobile(rng.choice(customers)[1]) if customers else mobile(rng)
-        rows.append(_sms(rng, "transactional", recipient, f"کد ورود داوس کارتینگ: {code}", when))
+        rows.append(_sms(rng, "transactional", recipient, f"کد ورود داووس کارتینگ: {code}", when))
     for index in range(26):
         batch = new_id(rng)
         when = at(start, time(12)) + timedelta(

@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 _TEXTS = {
-    "otp": "کد ورود شما به داوس کارتینگ: {code}\nاین کد را به هیچ‌کس ندهید.",
+    "otp": "کد ورود شما به داووس کارتینگ: {code}\nاین کد را به هیچ‌کس ندهید.",
     "reservation_confirmed": (
-        "{name}رزرو شما در داوس کارتینگ قطعی شد.\n"
+        "{name}رزرو شما در داووس کارتینگ قطعی شد.\n"
         "شماره بلیت: {ticket}\n"
         "{weekday} {date} ساعت {time}\n"
         "{karts}\n"
