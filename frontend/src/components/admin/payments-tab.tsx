@@ -15,10 +15,10 @@ const LIMIT = 50;
 type PaymentPage = { items: AdminPayment[]; total: number; paid_total_toman: number };
 
 const TONE: Partial<Record<PaymentStatusValue, string>> = {
-  paid: "bg-go-soft text-[#064d29]",
-  failed: "bg-signal-soft text-[#7a0600]",
-  refund_pending: "bg-[#fff3c4] text-ink-soft",
-  unknown: "bg-[#fff3c4] text-ink-soft",
+  paid: "bg-go-soft text-go-text",
+  failed: "bg-signal-soft text-signal-text",
+  refund_pending: "bg-wait-soft text-wait-text",
+  unknown: "bg-wait-soft text-wait-text",
 };
 
 /** Every payment attempt with its bank reference. Unclear ones are re-checked with the bank automatically every 2 minutes. */

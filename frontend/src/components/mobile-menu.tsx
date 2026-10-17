@@ -24,19 +24,19 @@ export function MobileMenu({ items, bookingHref }: { items: readonly NavItem[]; 
         aria-controls={panelId}
         aria-label={open ? "بستن منو" : "باز کردن منو"}
         onClick={() => setOpenFor(open ? null : pathname)}
-        className="grid h-11 w-11 place-items-center rounded-full bg-ink text-white transition-transform active:scale-95"
+        className="grid h-11 w-11 place-items-center rounded-full bg-accent text-ink transition-transform active:scale-95"
       >
         {open ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
       </button>
 
       {/* Solid background on purpose: a blurred child inside the blurred header would not blur the page behind it. */}
-      <div id={panelId} hidden={!open} className="carbon absolute inset-x-0 top-full border-b border-carbon-line shadow-2xl">
-        <nav aria-label="منوی موبایل" className="container-page pb-10 pt-4">
+      <div id={panelId} hidden={!open} className="carbon fixed inset-x-0 bottom-0 top-16 overflow-y-auto border-t border-carbon-line md:top-[76px]">
+        <nav aria-label="منوی موبایل" className="container-page pb-10 pt-6">
           <NavLinks
             items={items}
             onNavigate={close}
             className="flex flex-col"
-            linkClassName="flex items-center justify-between border-b border-carbon-line py-5 text-2xl font-black text-on-carbon transition-colors aria-[current=page]:text-accent"
+            linkClassName="flex items-center justify-between border-b border-carbon-line py-5 text-3xl font-black text-on-carbon transition-colors aria-[current=page]:text-accent"
           />
           <ButtonLink href={bookingHref} size="lg" className="mt-8 w-full">
             {site.booking.callToAction}

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
 const tones = {
-  error: "border-signal/30 bg-signal-soft text-[#7a0600]",
-  success: "border-go/30 bg-go-soft text-[#064d29]",
+  error: "border-signal/30 bg-signal-soft text-signal-text",
+  success: "border-go/30 bg-go-soft text-go-text",
   info: "border-line-strong bg-surface-2 text-fg",
-  warning: "border-accent bg-[#fff6d6] text-ink-soft",
+  warning: "border-accent bg-wait-soft text-wait-text",
 } as const;
 
 /** Inline message. Errors are announced immediately (role="alert"), everything else politely. */

@@ -2,10 +2,10 @@ import { RESERVATION_STATUS } from "@/lib/format";
 import type { ReservationStatus } from "@/lib/types";
 
 const tones = {
-  go: "bg-go-soft text-[#064d29] ring-go/25",
-  wait: "bg-[#fff3c4] text-ink-soft ring-accent/60",
+  go: "bg-go-soft text-go-text ring-go/25",
+  wait: "bg-wait-soft text-wait-text ring-accent/60",
   muted: "bg-surface-2 text-fg-muted ring-line-strong",
-  stop: "bg-signal-soft text-[#7a0600] ring-signal/25",
+  stop: "bg-signal-soft text-signal-text ring-signal/25",
 } as const;
 
 export function StatusBadge({ status }: { status: ReservationStatus }) {

@@ -59,7 +59,7 @@ export function ChartView({ accounts, onChanged }: { accounts: Account[]; onChan
         <div className={`flex flex-wrap items-center gap-3 rounded-xl px-3 py-2 ${account.is_group ? "bg-surface-2 font-black" : "hover:bg-surface-2"} ${account.active ? "" : "opacity-50"}`} style={{ marginRight: depth * 20 }}>
           <span className="w-14 text-sm text-fg-muted">{fa(account.code)}</span>
           <span className="flex-1">{account.name}</span>
-          {account.is_system && <span className="rounded-full bg-[#fff3c4] px-2 py-0.5 text-xs font-bold text-ink-soft">سیستمی</span>}
+          {account.is_system && <span className="rounded-full bg-wait-soft px-2 py-0.5 text-xs font-bold text-ink-soft">سیستمی</span>}
           {!account.active && <span className="text-xs text-fg-subtle">غیرفعال</span>}
           <button type="button" className="text-sm font-bold underline underline-offset-4" onClick={() => setDraft({ id: account.id, code: account.code, name: account.name, type: account.type, parent: account.parent_id ?? "", group: account.is_group, active: account.active })}>
             ویرایش

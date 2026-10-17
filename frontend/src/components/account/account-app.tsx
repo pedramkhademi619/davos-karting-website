@@ -134,7 +134,7 @@ function SignedInAccount({ me, onSignedOut }: { me: Me; onSignedOut: () => void 
               aria-controls={`panel-${t.id}`}
               onClick={() => select(t.id)}
               className={`rounded-full px-5 py-2.5 text-sm font-extrabold ring-1 transition-colors ${
-                tab === t.id ? "bg-ink text-white ring-ink" : "bg-surface text-fg-muted ring-line-strong hover:text-fg"
+                tab === t.id ? "bg-accent text-ink ring-accent" : "bg-surface text-fg-muted ring-line-strong hover:text-fg"
               }`}
             >
               {t.label}

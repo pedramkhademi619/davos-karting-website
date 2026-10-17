@@ -75,7 +75,7 @@ export function AccountTickets({
               aria-selected={filter === f.id}
               onClick={() => setFilter(f.id)}
               className={`rounded-full px-4 py-2 text-sm font-bold ring-1 transition-colors ${
-                filter === f.id ? "bg-ink text-white ring-ink" : "bg-surface text-fg-muted ring-line-strong hover:text-fg"
+                filter === f.id ? "bg-accent text-ink ring-accent" : "bg-surface text-fg-muted ring-line-strong hover:text-fg"
               }`}
             >
               {f.label} <span className="opacity-70">{fa(counts[f.id])}</span>

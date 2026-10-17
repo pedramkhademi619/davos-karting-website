@@ -145,7 +145,7 @@ export function AssistantPanel({ id, open, onClose, onNavigate }: AssistantPanel
             <p
               dir="auto"
               className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[0.95rem] leading-7 ${
-                message.role === "user" ? "rounded-ss-md bg-ink text-white" : "rounded-se-md bg-surface-2 text-fg"
+                message.role === "user" ? "rounded-ss-md bg-accent text-ink" : "rounded-se-md bg-surface-2 text-fg"
               }`}
             >
               {message.text}

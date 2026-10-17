@@ -8,14 +8,16 @@ type PageHeroProps = {
   title: ReactNode;
   lead?: ReactNode;
   children?: ReactNode;
+  /** A shorter band (the booking page wants the wizard high on the screen). */
+  compact?: boolean;
 };
 
 /** The inner pages' header: a carbon cockpit band with speed lines, closed by the checkered finish-line edge. */
-export function PageHero({ eyebrow, title, lead, children }: PageHeroProps) {
+export function PageHero({ eyebrow, title, lead, children, compact = false }: PageHeroProps) {
   return (
     <section className="carbon relative isolate overflow-hidden">
       <SpeedLines />
-      <div className="container-page relative py-16 md:py-24">
+      <div className={`container-page relative ${compact ? "py-10 md:py-16" : "py-14 md:py-24"}`}>
         <div className="rise" style={stagger(0)}>
           <SectionHeading as="h1" eyebrow={eyebrow} title={title} lead={lead} onCarbon />
         </div>

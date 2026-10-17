@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BookingApp } from "@/components/booking/booking-app";
+import { BookingWizard } from "@/components/booking/wizard/booking-wizard";
 import { PageHero } from "@/components/page-hero";
 import { BOOKING_HOME } from "@/lib/urls";
 
@@ -12,10 +12,19 @@ export const metadata: Metadata = {
 export default function BookingPage() {
   return (
     <>
-      <PageHero eyebrow="رزرو آنلاین" title="سانس خودت را انتخاب کن" lead="روز، ساعت و تعداد خودرو را انتخاب کنید؛ بقیه‌اش با ما." />
+      <PageHero
+        eyebrow="رزرو آنلاین"
+        title={
+          <>
+            یک دور تا <span className="glow-text">پشت فرمان</span>
+          </>
+        }
+        lead="بگویید چه کسانی می‌آیند؛ خودروها، روز و سانس مناسب را با هم پیدا می‌کنیم. هر مرحله یک سکتور است."
+        compact
+      />
 
-      <section className="container-page py-12 md:py-16">
-        <BookingApp />
+      <section className="container-page py-8 md:py-14">
+        <BookingWizard />
       </section>
     </>
   );

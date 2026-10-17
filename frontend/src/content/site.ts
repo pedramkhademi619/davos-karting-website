@@ -78,12 +78,12 @@ export const experience = [
   },
 ] as const;
 
-/** How online booking works, shown on the home page. */
+/** How online booking works, shown on the home page (the steps of the booking wizard, components/booking/wizard). */
 export const bookingSteps = [
-  { title: "ورود با موبایل", text: "شماره موبایل را بزنید و با کد پیامکی وارد شوید؛ بدون رمز عبور." },
-  { title: "انتخاب سانس", text: "روز و ساعت دلخواه را ببینید؛ جای خالی هر سانس زنده نمایش داده می‌شود." },
-  { title: "پرداخت امن", text: "تعداد خودرو را انتخاب کنید و مبلغ را از درگاه رسمی بانک ملت بپردازید." },
-  { title: "بلیت پیامکی", text: "کد رزرو پیامک می‌شود و در «حساب من» هم هست؛ همان را در پیست نشان دهید." },
+  { title: "خدمه را بچینید", text: "بگویید چه کسانی می‌آیند؛ خودروهای تک‌نفره و دونفره را طبق قوانین سن و قد خودمان می‌چینیم." },
+  { title: "روز و سانس", text: "از روی جدول استارت انتخاب کنید؛ فقط سانس‌هایی که برای کل گروه جا دارند روشن می‌مانند." },
+  { title: "لانچ کنترل", text: "دکمه را نگه دارید تا چراغ‌ها خاموش شوند؛ خودروها برایتان نگه داشته می‌شود و از درگاه بانک ملت می‌پردازید." },
+  { title: "پاس پیامکی", text: "کد رزرو پیامک می‌شود و در «حساب من» هم هست؛ همان را در پیست نشان دهید." },
 ] as const;
 
 /** Owner's riding rules (not admin settings), summarised for the home page. Kept identical to backend/knowledge. */

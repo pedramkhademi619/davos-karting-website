@@ -139,7 +139,7 @@ export function AssistantCache({ onChanged }: { onChanged: () => void }) {
                 <td className={cell}>{dateTime(entry.last_used_at)}</td>
                 <td className={cell}>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-bold ${entry.is_active ? "bg-go-soft text-[#064d29]" : "bg-signal-soft text-[#7a0600]"}`}
+                    className={`rounded-full px-3 py-1 text-xs font-bold ${entry.is_active ? "bg-go-soft text-go-text" : "bg-signal-soft text-signal-text"}`}
                   >
                     {entry.is_active ? "فعال" : "غیرفعال"}
                   </span>

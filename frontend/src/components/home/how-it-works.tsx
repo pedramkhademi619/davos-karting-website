@@ -13,8 +13,8 @@ export function HowItWorks() {
         <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
           <SectionHeading
             eyebrow="رزرو آنلاین"
-            title="مثل خرید بلیت سینما، فقط سریع‌تر"
-            lead="چهار قدم تا پشت فرمان؛ بدون تماس، بدون انتظار."
+            title="یک دور تا پشت فرمان"
+            lead="رزرو مثل یک دور پیست است: چهار سکتور، بدون تماس و بدون انتظار."
             onCarbon
           />
           <ButtonLink href={site.booking.href} size="lg">

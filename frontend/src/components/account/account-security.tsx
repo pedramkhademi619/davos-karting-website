@@ -85,7 +85,7 @@ export function AccountSecurity({ me, onSignedOut, onLogout }: { me: Me; onSigne
                   <p className="font-black">
                     {deviceName(d.user_agent)}
                     {d.is_current && (
-                      <span className="mr-2 rounded-full bg-go-soft px-2.5 py-0.5 text-xs font-bold text-[#064d29]">این دستگاه</span>
+                      <span className="mr-2 rounded-full bg-go-soft px-2.5 py-0.5 text-xs font-bold text-go-text">این دستگاه</span>
                     )}
                   </p>
                   <p className="mt-1 text-sm text-fg-muted">

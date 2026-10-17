@@ -81,7 +81,7 @@ export function CustomersTab() {
                 <td className={cell}>{c.marketing_opt_in ? "بله" : "خیر"}</td>
                 <td className={cell}>{dateTime(c.created_at)}</td>
                 <td className={cell}>
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${c.status === "active" ? "bg-go-soft text-[#064d29]" : "bg-signal-soft text-[#7a0600]"}`}>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${c.status === "active" ? "bg-go-soft text-go-text" : "bg-signal-soft text-signal-text"}`}>
                     {c.status === "active" ? "فعال" : "مسدود"}
                   </span>
                 </td>

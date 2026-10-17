@@ -12,9 +12,9 @@ import { clock, fa } from "@/lib/format";
 import type { ServiceStatus, StatusLevel, SystemStatus } from "@/lib/types";
 
 const LEVEL: Record<StatusLevel, { label: string; badge: string; dot: string }> = {
-  ok: { label: "سالم", badge: "bg-go-soft text-[#064d29] ring-go/25", dot: "bg-go" },
-  degraded: { label: "نیازمند توجه", badge: "bg-[#fff3c4] text-ink-soft ring-accent/60", dot: "bg-accent" },
-  down: { label: "از کار افتاده", badge: "bg-signal-soft text-[#7a0600] ring-signal/25", dot: "bg-signal" },
+  ok: { label: "سالم", badge: "bg-go-soft text-go-text ring-go/25", dot: "bg-go" },
+  degraded: { label: "نیازمند توجه", badge: "bg-wait-soft text-wait-text ring-accent/60", dot: "bg-accent" },
+  down: { label: "از کار افتاده", badge: "bg-signal-soft text-signal-text ring-signal/25", dot: "bg-signal" },
   disabled: { label: "غیرفعال", badge: "bg-surface-2 text-fg-muted ring-line-strong", dot: "bg-fg-subtle" },
   test: { label: "آزمایشی", badge: "bg-[#e3ecff] text-[#1b3a8a] ring-[#1b3a8a]/20", dot: "bg-[#3b6cf6]" },
 };

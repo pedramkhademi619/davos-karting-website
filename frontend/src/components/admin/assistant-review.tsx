@@ -84,7 +84,7 @@ export function AssistantReview() {
                 <td className={cell}>{dateTime(item.occurred_at)}</td>
                 <td className={cell}>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-bold ${PROBLEM_OUTCOMES.includes(item.outcome) ? "bg-signal-soft text-[#7a0600]" : "bg-surface-2"}`}
+                    className={`rounded-full px-3 py-1 text-xs font-bold ${PROBLEM_OUTCOMES.includes(item.outcome) ? "bg-signal-soft text-signal-text" : "bg-surface-2"}`}
                   >
                     {OUTCOME_LABELS[item.outcome] ?? item.outcome}
                   </span>
