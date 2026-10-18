@@ -285,6 +285,15 @@
     border-color: var(--color-accent);
     box-shadow: 0 0 0 4px rgb(255 196 0 / 0.25);
   }
+  /* The open list of a drop-down is drawn by the browser: with light text inherited from the dark card it came out light on
+     white (unreadable). Tell it to draw the list dark and give every option its own background and colour. */
+  select.field-dark {
+    color-scheme: dark;
+  }
+  select.field-dark option {
+    background: #16181d;
+    color: #f4f4f5;
+  }
   .label {
     display: block;
     margin-bottom: 0.5rem;
