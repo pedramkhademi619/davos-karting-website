@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PaymentResult } from "@/components/booking/payment-result";
-import { Spinner } from "@/components/ui/spinner";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "نتیجه پرداخت",
@@ -13,9 +13,7 @@ export default function PaymentResultPage() {
     <section className="container-page py-14 md:py-20">
       <Suspense
         fallback={
-          <div className="grid min-h-[40vh] place-items-center">
-            <Spinner label="در حال بررسی پرداخت" className="h-9 w-9" />
-          </div>
+          <PageSkeleton variant="form" label="در حال بررسی پرداخت" />
         }
       >
         <PaymentResult />

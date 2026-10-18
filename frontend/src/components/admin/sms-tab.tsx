@@ -11,6 +11,7 @@ import { SMS_STATUS, dateTime, fa, mobile, toLatinDigits, toman } from "@/lib/fo
 import { SingleDatePicker } from "@/components/admin/date-picker-field";
 import { currentBusinessDay, isoToJalali } from "@/lib/jalali";
 import type { Page, SmsAccount, SmsLog, SmsSent } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const LIMIT = 50;
 const MAX_TEXT = 600;
@@ -71,7 +72,7 @@ export function SmsTab() {
         <div className="xl:col-span-7">
           <Card title="پیامک‌های ارسال‌شده">
             {!log ? (
-              <Spinner className="h-7 w-7" />
+              <PageSkeleton variant="rows" />
             ) : (
               <>
                 <Table head={["زمان", "گیرنده", "متن", "وضعیت", "ارسال‌کننده"]} empty={log.items.length === 0}>

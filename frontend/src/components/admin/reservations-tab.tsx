@@ -13,6 +13,7 @@ import { fa, jalali, karts, mobile, toLatinDigits, toman } from "@/lib/format";
 import { SingleDatePicker } from "@/components/admin/date-picker-field";
 import { addDays, currentBusinessDay } from "@/lib/jalali";
 import type { DayAvailability, Page, Reservation } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 /** One business day at a glance: the seat board, the day's reservations, and counter sales entered by staff. */
 export function ReservationsTab() {
@@ -133,7 +134,7 @@ export function ReservationsTab() {
         <div className="space-y-6 xl:col-span-8">
           <Card title="جدول سانس‌ها">
             {!board ? (
-              <Spinner className="h-7 w-7" />
+              <PageSkeleton variant="rows" />
             ) : (
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-8">
                 {board.sessions.map((s) => {
@@ -161,7 +162,7 @@ export function ReservationsTab() {
           </Card>
 
           <Card title="رزروهای این روز">
-            {!list ? <Spinner className="h-7 w-7" /> : <ReservationRows items={list} onChanged={reload} />}
+            {!list ? <PageSkeleton variant="rows" /> : <ReservationRows items={list} onChanged={reload} />}
           </Card>
         </div>
 

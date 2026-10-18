@@ -6,7 +6,6 @@ import { Card, Kpi } from "@/components/admin/admin-ui";
 import { MonthStepper } from "@/components/admin/accounting/month-stepper";
 import { buttonClasses } from "@/components/button-link";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import {
   csvToman,
@@ -22,6 +21,7 @@ import {
 } from "@/lib/accounting";
 import { fa } from "@/lib/format";
 import { currentBusinessDay } from "@/lib/jalali";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 /** Change against the previous month, as "+۱۲٪" / "−۵٪" (nothing when there is no previous month to compare with). */
 function change(now: number, before: number): string | null {
@@ -80,7 +80,7 @@ export function ReportView() {
       </div>
       {error && <Alert tone="error">{error}</Alert>}
       {!data ? (
-        !error && <Spinner className="h-8 w-8" />
+        !error && <PageSkeleton variant="cards" />
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-3">

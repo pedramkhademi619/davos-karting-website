@@ -6,10 +6,10 @@ import { Kpi, Pager, TabHeader, Table, cell } from "@/components/admin/admin-ui"
 import { buttonClasses } from "@/components/button-link";
 import { SearchIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { PAYMENT_STATUS, dateTime, fa, toLatinDigits, toman } from "@/lib/format";
 import type { AdminPayment, PaymentStatusValue } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const LIMIT = 50;
 type PaymentPage = { items: AdminPayment[]; total: number; paid_total_toman: number };
@@ -83,7 +83,7 @@ export function PaymentsTab() {
         </Alert>
       )}
       {!page ? (
-        <Spinner className="h-8 w-8" />
+        <PageSkeleton variant="rows" />
       ) : (
         <>
           <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:w-2/3">

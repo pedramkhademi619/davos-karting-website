@@ -5,10 +5,10 @@ import { useAdmin } from "@/components/admin/admin-session";
 import { Card, Pager, Table, cell } from "@/components/admin/admin-ui";
 import { buttonClasses } from "@/components/button-link";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { dateTime, fa } from "@/lib/format";
 import type { CachedAnswer, Page } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const LIMIT = 20;
 const MAX_QUESTION = 400;
@@ -127,7 +127,7 @@ export function AssistantCache({ onChanged }: { onChanged: () => void }) {
       )}
 
       {!page ? (
-        <Spinner className="h-7 w-7" />
+        <PageSkeleton variant="cards" />
       ) : (
         <>
           <Table head={["پرسش", "پاسخ", "تعداد استفاده", "آخرین استفاده", "وضعیت", ""]} empty={page.items.length === 0}>

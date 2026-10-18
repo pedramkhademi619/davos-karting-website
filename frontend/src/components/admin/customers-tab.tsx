@@ -6,10 +6,10 @@ import { Pager, TabHeader, Table, cell } from "@/components/admin/admin-ui";
 import { buttonClasses } from "@/components/button-link";
 import { SearchIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { dateTime, fa, mobile, toLatinDigits } from "@/lib/format";
 import type { Customer, Page } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const LIMIT = 50;
 
@@ -68,7 +68,7 @@ export function CustomersTab() {
         </Alert>
       )}
       {!page ? (
-        <Spinner className="h-8 w-8" />
+        <PageSkeleton variant="rows" />
       ) : (
         <>
           <Table head={["نام", "موبایل", "خبرنامه پیامکی", "عضویت", "وضعیت", ""]} empty={page.items.length === 0}>

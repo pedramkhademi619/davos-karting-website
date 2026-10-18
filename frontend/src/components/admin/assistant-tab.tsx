@@ -8,10 +8,10 @@ import { AssistantKnowledge } from "@/components/admin/assistant-knowledge";
 import { OUTCOME_LABELS } from "@/components/admin/assistant-labels";
 import { AssistantReview } from "@/components/admin/assistant-review";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { fa, number } from "@/lib/format";
 import type { AssistantOverview } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const PERIODS = [7, 30, 90];
 
@@ -69,7 +69,7 @@ export function AssistantTab() {
         }
       />
       {error && <Alert tone="error">{error}</Alert>}
-      {!overview && !error && <Spinner className="h-8 w-8" />}
+      {!overview && !error && <PageSkeleton variant="cards" />}
       {overview && (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

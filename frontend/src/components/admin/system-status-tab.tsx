@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { clock, fa } from "@/lib/format";
 import type { ServiceStatus, StatusLevel, SystemStatus } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const LEVEL: Record<StatusLevel, { label: string; badge: string; dot: string }> = {
   ok: { label: "سالم", badge: "bg-go-soft text-go-text ring-go/25", dot: "bg-go" },
@@ -84,7 +85,7 @@ export function SystemStatusTab() {
         </Alert>
       )}
       {!status ? (
-        !error && <Spinner className="h-8 w-8" />
+        !error && <PageSkeleton variant="cards" />
       ) : (
         <div className="space-y-8">
           <Alert tone={OVERALL[status.overall as "ok" | "degraded" | "down"].tone}>

@@ -6,10 +6,10 @@ import { Kpi, TabHeader } from "@/components/admin/admin-ui";
 import { buttonClasses } from "@/components/button-link";
 import { RefreshIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { fa, number, toman } from "@/lib/format";
 import type { Dashboard } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 type Target = "reservations" | "payments" | "sms" | "settings";
 
@@ -46,7 +46,7 @@ export function DashboardTab({ onOpen }: { onOpen: (tab: Target) => void }) {
         }
       />
       {error && <Alert tone="error">{error}</Alert>}
-      {!data && !error && <Spinner className="h-8 w-8" />}
+      {!data && !error && <PageSkeleton variant="cards" />}
       {data && (
         <div className="space-y-6">
           {(!data.online_booking_enabled || !data.payments_enabled) && (

@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { toLatinDigits, toman } from "@/lib/format";
 import type { ScheduleSettings } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 // Python weekday numbers (Monday = 0), in the order of the Iranian week.
 const WEEK = [
@@ -42,7 +43,7 @@ export function SettingsTab() {
     };
   }, [call]);
 
-  if (!settings) return message ? <Alert tone="error">{message.text}</Alert> : <Spinner className="h-8 w-8" />;
+  if (!settings) return message ? <Alert tone="error">{message.text}</Alert> : <PageSkeleton variant="form" />;
 
   const set = <K extends keyof ScheduleSettings>(key: K, value: ScheduleSettings[K]) => setSettings({ ...settings, [key]: value });
   const num = (key: keyof ScheduleSettings) => (event: React.ChangeEvent<HTMLInputElement>) =>

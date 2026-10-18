@@ -24,6 +24,7 @@ import { goToGateway } from "@/lib/gateway";
 import { SPLIT_HOSTS, hrefFor } from "@/lib/urls";
 import type { BookingCalendar, BookingInfo, DayAvailability, Me, Reservation, StartPayment } from "@/lib/types";
 import { useCustomer } from "@/lib/use-customer";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const REFRESH_MS = 20_000; // seat counts are refreshed while the customer is choosing
 const STEPS = ["crew", "day", "session", "finish"] as const;
@@ -256,8 +257,14 @@ export function BookingWizard() {
   if (calendarError) return <Alert tone="error">{calendarError}</Alert>;
   if (!calendar) {
     return (
-      <div className="grid min-h-[50vh] place-items-center">
-        <Spinner label="در حال روشن کردن موتورها" className="h-9 w-9" />
+      <div role="status" className="space-y-4 py-4">
+        <span className="sr-only">در حال روشن کردن موتورها</span>
+        <Skeleton className="h-28 rounded-3xl" />
+        <Skeleton className="h-16 rounded-3xl" />
+        <div className="grid grid-cols-2 gap-3">
+          <Skeleton className="h-32 rounded-3xl" />
+          <Skeleton className="h-32 rounded-3xl" />
+        </div>
       </div>
     );
   }
@@ -407,8 +414,11 @@ export function BookingWizard() {
                   <>
                     {dayError && <Alert tone="error">{dayError}</Alert>}
                     {!day && !dayError && (
-                      <div className="grid min-h-48 place-items-center">
-                        <Spinner label="در حال خواندن جدول استارت" className="h-8 w-8" />
+                      <div role="status" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        <span className="sr-only">در حال خواندن جدول استارت</span>
+                        {Array.from({ length: 9 }, (_, i) => (
+                          <Skeleton key={i} className="h-24 rounded-2xl" />
+                        ))}
                       </div>
                     )}
                     {day && day.is_closed && <Alert tone="info">این روز رزرو آنلاین ندارد؛ روز دیگری را انتخاب کنید.</Alert>}
@@ -623,8 +633,10 @@ function FinishStep(props: FinishStepProps) {
           </p>
         </>
       ) : props.loading ? (
-        <div className="grid min-h-24 place-items-center">
-          <Spinner label="در حال بررسی ورود" className="h-7 w-7" />
+        <div role="status" className="space-y-3">
+          <span className="sr-only">در حال بررسی ورود</span>
+          <Skeleton className="h-6 w-48 rounded-lg" />
+          <Skeleton className="h-14 rounded-2xl" />
         </div>
       ) : (
         <div className="carbon rounded-[1.6rem] border border-white/10 p-5">

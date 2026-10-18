@@ -1156,3 +1156,29 @@ body[data-sticky-bar] .assistant-launcher {
   background-color: #1b1e25;
   outline: 1px solid rgb(255 255 255 / 0.08);
 }
+
+
+/* Loading placeholders: a soft sweep over a neutral block (works on light and dark surfaces). */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgb(128 128 128 / 0.16);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.2), transparent);
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}

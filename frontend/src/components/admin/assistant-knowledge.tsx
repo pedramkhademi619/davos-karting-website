@@ -6,10 +6,10 @@ import { Card } from "@/components/admin/admin-ui";
 import { SOURCE_TYPE_LABELS } from "@/components/admin/assistant-labels";
 import { buttonClasses } from "@/components/button-link";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { dateTime, fa } from "@/lib/format";
 import type { KnowledgeCatalog, KnowledgeEntry } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const MAX_BODY = 4000;
 /** Their titles find the quick answers (hours, booking, prices...), so renaming one turns that shortcut off. */
@@ -85,7 +85,7 @@ export function AssistantKnowledge({ onChanged }: { onChanged: () => void }) {
           {error}
         </Alert>
       )}
-      {!catalog && !error && <Spinner className="h-7 w-7" />}
+      {!catalog && !error && <PageSkeleton variant="rows" />}
       {catalog && (
         <>
           <Alert tone={catalog.sent_whole ? "success" : "warning"} className="mb-5">

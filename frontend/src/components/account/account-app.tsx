@@ -6,7 +6,6 @@ import { OtpLogin } from "@/components/auth/otp-login";
 import { buttonClasses } from "@/components/button-link";
 import { LogoutIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { site } from "@/content/site";
 import { api } from "@/lib/api";
 import { fa, mobile } from "@/lib/format";
@@ -19,6 +18,7 @@ import { AccountProfile } from "./account-profile";
 import { AccountSecurity } from "./account-security";
 import { AccountTickets } from "./account-tickets";
 import { isOpenTicket, useAccountData } from "./use-account-data";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const TABS = [
   { id: "overview", label: "نمای کلی" },
@@ -40,7 +40,7 @@ export function AccountApp() {
   if (state.status === "loading") {
     return (
       <div className="grid min-h-[30vh] place-items-center">
-        <Spinner className="h-9 w-9" />
+        <PageSkeleton variant="page" />
       </div>
     );
   }
@@ -85,7 +85,7 @@ function SignedInAccount({ me, onSignedOut }: { me: Me; onSignedOut: () => void 
   if (!data) {
     return (
       <div className="grid min-h-[30vh] place-items-center">
-        <Spinner className="h-9 w-9" />
+        <PageSkeleton variant="page" />
       </div>
     );
   }

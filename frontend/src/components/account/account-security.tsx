@@ -8,6 +8,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ApiError, api, errorMessage } from "@/lib/api";
 import { dateTime, deviceName, fa } from "@/lib/format";
 import type { DeviceSession, Me } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 /** The devices signed in to the account; any other one can be signed out. */
 export function AccountSecurity({ me, onSignedOut, onLogout }: { me: Me; onSignedOut: () => void; onLogout: () => void }) {
@@ -74,7 +75,7 @@ export function AccountSecurity({ me, onSignedOut, onLogout }: { me: Me; onSigne
 
       {!devices && !error ? (
         <div className="grid min-h-[12vh] place-items-center">
-          <Spinner className="h-7 w-7" />
+          <PageSkeleton variant="form" />
         </div>
       ) : (
         devices && (

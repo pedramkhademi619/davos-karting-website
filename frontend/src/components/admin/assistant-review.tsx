@@ -5,10 +5,10 @@ import { useAdmin } from "@/components/admin/admin-session";
 import { Card, Pager, Table, cell } from "@/components/admin/admin-ui";
 import { OUTCOME_LABELS, PROBLEM_OUTCOMES } from "@/components/admin/assistant-labels";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { dateTime, fa } from "@/lib/format";
 import type { AssistantInteraction, Page } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const LIMIT = 20;
 
@@ -75,7 +75,7 @@ export function AssistantReview() {
         </Alert>
       )}
       {!page ? (
-        <Spinner className="h-7 w-7" />
+        <PageSkeleton variant="rows" />
       ) : (
         <>
           <Table head={["زمان", "نتیجه", "پرسش", "پاسخ", "نظر", "توکن"]} empty={page.items.length === 0}>

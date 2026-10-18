@@ -11,6 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { dateTime } from "@/lib/format";
 import type { AdminUser, PermissionCatalog } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 /** Staff accounts (owner only) and changing one's own password (everyone). */
 export function UsersTab() {
@@ -57,7 +58,7 @@ export function UsersTab() {
           {isOwner ? (
             <Card title="حساب‌ها">
               {!users ? (
-                <Spinner className="h-7 w-7" />
+                <PageSkeleton variant="rows" />
               ) : (
                 <Table head={["نام کاربری", "نام", "نقش", "دسترسی‌ها", "آخرین ورود", "وضعیت", ""]} empty={users.length === 0}>
                   {users.map((u) => (

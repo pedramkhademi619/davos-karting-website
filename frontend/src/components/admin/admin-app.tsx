@@ -14,6 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { api, errorMessage } from "@/lib/api";
 import { SITE_HOME } from "@/lib/urls";
 import type { AdminMe } from "@/lib/types";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 /** The staff panel: sign-in, then one screen per area. The API enforces every permission; the UI only mirrors it. */
 export function AdminApp() {
@@ -48,7 +49,7 @@ export function AdminApp() {
   if (checking) {
     return (
       <div className="grid min-h-svh place-items-center">
-        <Spinner className="h-9 w-9" />
+        <PageSkeleton variant="page" />
       </div>
     );
   }

@@ -13,7 +13,7 @@ import { useAccountingData } from "@/components/admin/accounting/use-accounting-
 import { buttonClasses } from "@/components/button-link";
 import { PlusIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const SECTIONS = [
   { id: "overview", label: "خلاصه" },
@@ -88,7 +88,7 @@ export function AccountingTab() {
         </Alert>
       )}
       {!ready ? (
-        <Spinner className="h-8 w-8" />
+        <PageSkeleton variant="page" />
       ) : (
         <>
           <div key={section === "daybook" ? section : `${section}-${version}`}>

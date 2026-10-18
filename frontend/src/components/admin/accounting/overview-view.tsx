@@ -5,11 +5,11 @@ import { useAdmin } from "@/components/admin/admin-session";
 import { Card, Kpi } from "@/components/admin/admin-ui";
 import { buttonClasses } from "@/components/button-link";
 import { Alert } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
 import { toman, type AccountingDashboard } from "@/lib/accounting";
 import { fa } from "@/lib/format";
 import { JALALI_MONTHS } from "@/lib/jalali";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 function monthLabel(key: string): string {
   const [year, month] = key.split("-").map(Number);
@@ -33,7 +33,7 @@ export function OverviewView({ onPayRefunds }: { onPayRefunds: (owedIrr: number)
   }, [call]);
 
   if (error) return <Alert tone="error">{error}</Alert>;
-  if (!data) return <Spinner className="h-8 w-8" />;
+  if (!data) return <PageSkeleton variant="cards" />;
 
   const bank = data.bank_irr + data.pos_irr + data.gateway_irr;
   const peak = Math.max(1, ...data.trend.flatMap((p) => [p.revenue_irr, p.expenses_irr]));

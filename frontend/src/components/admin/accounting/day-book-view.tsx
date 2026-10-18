@@ -21,6 +21,7 @@ import {
 } from "@/lib/accounting";
 import { fa } from "@/lib/format";
 import { currentBusinessDay, isoToJalaliParts, JALALI_MONTHS, weekdayIndex } from "@/lib/jalali";
+import { PageSkeleton } from "@/components/ui/skeleton";
 
 const PAGE = 200;
 const WEEKDAYS = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"];
@@ -102,7 +103,7 @@ export function DayBookView({ accounts, version, onChanged }: { accounts: Accoun
       <MonthStepper month={month} onChange={setMonth} />
       {error && <Alert tone="error">{error}</Alert>}
       {entries === null ? (
-        <Spinner className="h-8 w-8" />
+        <PageSkeleton variant="rows" />
       ) : days.length === 0 ? (
         <p className="panel p-8 text-center text-fg-muted">در این ماه چیزی ثبت نشده است.</p>
       ) : (
