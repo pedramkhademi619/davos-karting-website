@@ -87,8 +87,10 @@ jobs:
           echo "api health: $status"
           [ "$status" = healthy ]
           sleep 15
-          for path in / /booking /faq /contact /api/v1/health/live; do
-            code=$(curl -s -o /dev/null -m 30 -w '%{http_code}' -A 'Mozilla/5.0 (deploy-check)' "$DEMO_URL$path")
+          # Checked on the server itself, straight at the web proxy: Cloudflare in front rejects requests from a CI
+          # runner (a datacenter address) as bots, which would fail a deploy that actually worked.
+          for path in / /booking /faq /contact /api/v1/health/live /api/v1/reservations/info; do
+            code=$(ssh demo "curl -s -o /dev/null -m 30 -w '%{http_code}' -H 'Host: test.davoskarting.ir' -H 'X-Forwarded-Proto: https' http://127.0.0.1:8090$path")
             echo "$path -> $code"
             [ "$code" = 200 ]
           done
