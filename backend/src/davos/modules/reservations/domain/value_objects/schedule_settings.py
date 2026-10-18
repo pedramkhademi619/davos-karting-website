@@ -4,12 +4,16 @@ from dataclasses import dataclass, field
 from datetime import date, time
 
 from davos.modules.reservations.domain.enums.daily_booking_limit_mode import DailyBookingLimitMode
+from davos.modules.reservations.domain.enums.junior_scope import JuniorScope
 from davos.modules.reservations.domain.value_objects.price_tier import PriceTier
+from davos.modules.reservations.domain.value_objects.tehran_time import BUSINESS_DAY_ROLLOVER_HOUR
 from davos.shared_kernel.domain.errors.validation_error import ValidationError
 from davos.shared_kernel.domain.money import Money
 
-# Python weekday numbers (Monday = 0): Thursday = 3, Friday = 4.
+# Python weekday numbers (Monday = 0): Thursday = 3, Friday = 4; Saturday to Wednesday = 5, 6, 0, 1, 2.
 THURSDAY_AND_FRIDAY = frozenset({3, 4})
+SATURDAY_TO_WEDNESDAY = frozenset({5, 6, 0, 1, 2})
+_DAY_STARTS = time(BUSINESS_DAY_ROLLOVER_HOUR, 0)
 # The owner's current prices (Toman per kart per session).
 DEFAULT_NORMAL_PRICES = PriceTier(Money.from_toman(790_000), Money.from_toman(1_000_000))
 DEFAULT_HOLIDAY_PRICES = PriceTier(Money.from_toman(940_000), Money.from_toman(1_200_000))
@@ -19,15 +23,23 @@ DEFAULT_HOLIDAY_PRICES = PriceTier(Money.from_toman(940_000), Money.from_toman(1
 class ScheduleSettings:
     """Everything the owner can change about online booking, edited in the admin panel.
 
-    Defaults follow the counter's own booking app and the owner's rules: sessions every 10 minutes from 15:00 to
-    01:00, six single-seaters and one two-seater per session, booking only for the next day, no booking for Thursday
-    and Friday, holiday prices on Thursday and Friday. The session starting at :50 past every hour (16:50, 21:50...)
-    is never sold, online or at the counter: the karts are refuelled then.
+    Defaults follow the counter's own booking app and the owner's rules: a morning shift from 10:00 and the evening
+    shift from 15:00 to 01:00, sessions every 10 minutes, six single-seaters and one two-seater per session, booking
+    only for the next day, no booking for Thursday and Friday, holiday prices on Thursday and Friday. The session
+    starting at :50 past every hour (16:50, 21:50...) is never sold, online or at the counter: the karts are refuelled
+    then.
     """
 
     online_booking_enabled: bool = True
+    # The evening shift. Its end at or before its start means "after midnight" (but no later than 06:00, when the next
+    # business day begins).
     shift_start: time = time(15, 0)
-    shift_end: time = time(1, 0)  # at or before the start means "after midnight"
+    shift_end: time = time(1, 0)
+    # The morning shift on the same business day, before the evening one (the owner: it starts at 10:00). It can be
+    # switched off or moved in the admin panel.
+    morning_shift_enabled: bool = True
+    morning_start: time = time(10, 0)
+    morning_end: time = time(14, 0)
     interval_minutes: int = 10
     single_capacity: int = 6
     double_capacity: int = 1
@@ -56,6 +68,14 @@ class ScheduleSettings:
     # Online booking (any future date) is refused once the time of day passes this, so customers switch to the
     # counter once the track is actually open; None means online booking never closes for the time of day.
     online_booking_cutoff: time | None = time(15, 0)
+    # When under-15s may ride, edited in the admin panel. The owner's rule: 11-14 year olds drive a single-seater only
+    # Saturday to Wednesday in sessions starting 15:00-17:59. ``junior_scope`` says whether the window binds only those
+    # young drivers or every under-15 (back-seat passengers too). The site's booking wizard and the assistant apply it;
+    # the server cannot (it does not know anyone's age).
+    junior_weekdays: frozenset[int] = SATURDAY_TO_WEDNESDAY
+    junior_from: time = time(15, 0)
+    junior_until: time = time(18, 0)
+    junior_scope: JuniorScope = JuniorScope.DRIVERS
 
     def __post_init__(self) -> None:
         problems: list[str] = []
@@ -81,6 +101,18 @@ class ScheduleSettings:
             problems.append("یک تاریخ نمی‌تواند هم باز و هم بسته باشد")
         if self.shift_start == self.shift_end:
             problems.append("ساعت شروع و پایان شیفت نباید یکی باشد")
+        if self.shift_start < _DAY_STARTS:
+            problems.append("شیفت عصر باید از ساعت ۰۶:۰۰ به بعد شروع شود")
+        elif self.shift_end < self.shift_start and self.shift_end > _DAY_STARTS:
+            problems.append("شیفت عصر اگر از نیمه‌شب می‌گذرد، باید تا ساعت ۰۶:۰۰ تمام شود")
+        if self.morning_shift_enabled and not (
+            _DAY_STARTS <= self.morning_start < self.morning_end <= self.shift_start
+        ):
+            problems.append("شیفت صبح باید از ساعت ۰۶:۰۰ به بعد شروع شود و پیش از شروع شیفت عصر تمام شود")
+        if any(not 0 <= d <= 6 for d in self.junior_weekdays):
+            problems.append("روز هفته‌ی حضور زیر ۱۵ سال معتبر نیست")
+        if not self.junior_from < self.junior_until:
+            problems.append("در ساعت حضور زیر ۱۵ سال، شروع باید پیش از پایان باشد")
         mode = self.daily_booking_limit_mode
         needs_people = mode in (DailyBookingLimitMode.PEOPLE, DailyBookingLimitMode.BOTH)
         needs_tickets = mode in (DailyBookingLimitMode.TICKETS, DailyBookingLimitMode.BOTH)
@@ -103,3 +135,7 @@ class ScheduleSettings:
 
     def prices_for(self, day: date) -> PriceTier:
         return self.holiday_prices if self.is_holiday(day) else self.normal_prices
+
+    def is_junior_time(self, day: date, value: time) -> bool:
+        """A session (business day and start time) inside the under-15 hours."""
+        return day.weekday() in self.junior_weekdays and self.junior_from <= value < self.junior_until

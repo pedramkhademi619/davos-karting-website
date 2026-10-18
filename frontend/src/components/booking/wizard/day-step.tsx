@@ -2,7 +2,7 @@
 
 import { fa, jalaliParts, toman } from "@/lib/format";
 import type { BookableDay } from "@/lib/types";
-import { TEEN_DAYS } from "@/components/booking/wizard/crew";
+import type { JuniorWindow } from "@/components/booking/wizard/crew";
 
 type DayStepProps = {
   days: BookableDay[];
@@ -10,19 +10,30 @@ type DayStepProps = {
   onSelect: (date: string) => void;
   singles: number;
   doubles: number;
-  teenDrivers: number;
+  /** The under-15 hours when they bind this crew, else null. */
+  junior: JuniorWindow | null;
+  /** Who the hours bind, for the labels: "نوجوان‌ها" or "زیر ۱۵ سال‌ها". */
+  juniorWho: string;
+  /** A day the crew's under-15s may not come on was tapped: offer the fix instead of refusing. */
+  onBlocked: (date: string, weekday: string) => void;
 };
 
 /**
  * Step 2: the day. Each card already shows what the whole crew pays that day, and days the teens may not drive on are
  * set aside with the reason.
  */
-export function DayStep({ days, selected, onSelect, singles, doubles, teenDrivers }: DayStepProps) {
+export function DayStep({ days, selected, onSelect, singles, doubles, junior, juniorWho, onBlocked }: DayStepProps) {
   return (
+    <>
+    {junior !== null && (
+      <p id="teen-day-note" className="mb-3 text-sm leading-7 text-fg-muted">
+        روزهایی که خط‌چین هستند برای {juniorWho} نیستند؛ رویشان بزنید تا راه‌حل را ببینید.
+      </p>
+    )}
     <div role="radiogroup" aria-label="انتخاب روز" className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
       {days.map((day, index) => {
         const active = day.date === selected;
-        const blockedForTeens = teenDrivers > 0 && !TEEN_DAYS.has(day.weekday);
+        const blockedForTeens = junior !== null && !junior.days.has(day.weekday);
         const price = singles * day.single_price_toman + doubles * day.double_price_toman;
         const { day: dayNumber, month } = jalaliParts(day.date);
         return (
@@ -31,13 +42,13 @@ export function DayStep({ days, selected, onSelect, singles, doubles, teenDriver
             type="button"
             role="radio"
             aria-checked={active}
-            disabled={blockedForTeens}
-            onClick={() => onSelect(day.date)}
+            aria-describedby={blockedForTeens ? "teen-day-note" : undefined}
+            onClick={() => (blockedForTeens ? onBlocked(day.date, day.weekday) : onSelect(day.date))}
             className={`edge-glow group relative overflow-hidden rounded-3xl border p-4 text-right transition-all duration-300 ease-out-expo ${
               active
                 ? "border-accent bg-accent text-ink shadow-[0_18px_40px_-16px_rgb(255_196_0/0.7)]"
                 : blockedForTeens
-                  ? "cursor-not-allowed border-dashed border-white/10 bg-white/[0.02] opacity-50"
+                  ? "border-dashed border-white/15 bg-white/[0.02] text-fg-muted hover:border-accent/50"
                   : "border-white/10 bg-white/[0.035] hover:-translate-y-0.5 hover:border-white/25"
             }`}
           >
@@ -57,12 +68,13 @@ export function DayStep({ days, selected, onSelect, singles, doubles, teenDriver
             </span>
             {index === 0 && <span className={`mt-1 block text-xs ${active ? "text-ink/70" : "text-fg-subtle"}`}>{day.weekday}</span>}
             <span className={`mt-3 block border-t pt-2 text-xs font-bold ${active ? "border-ink/15" : "border-white/10"}`}>
-              {blockedForTeens ? "نوجوان‌ها این روز نمی‌رانند" : price > 0 ? toman(price) : "—"}
+              {blockedForTeens ? <span className="text-accent">شرط {juniorWho} · بزنید</span> : price > 0 ? toman(price) : "—"}
             </span>
             <span className="sr-only">{fa(day.date_jalali)}</span>
           </button>
         );
       })}
     </div>
+    </>
   );
 }

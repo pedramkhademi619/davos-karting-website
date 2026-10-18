@@ -6,6 +6,7 @@ from collections.abc import Callable
 from davos.modules.assistant.application.ports.booking_facts_port import BookingFactsPort
 from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
 from davos.modules.reservations.application.use_cases.schedule_settings_use_case import ScheduleSettingsUseCase
+from davos.modules.reservations.domain.enums.junior_scope import JuniorScope
 from davos.modules.reservations.domain.value_objects.schedule_settings import ScheduleSettings
 
 
@@ -47,4 +48,10 @@ class ScheduleBookingFacts(BookingFactsPort):
             first_session=s.shift_start,
             interval_minutes=s.interval_minutes,
             online_booking_cutoff=s.online_booking_cutoff,
+            last_session_before=s.shift_end,
+            morning_shift=(s.morning_start, s.morning_end) if s.morning_shift_enabled else None,
+            junior_weekdays=s.junior_weekdays,
+            junior_from=s.junior_from,
+            junior_until=s.junior_until,
+            junior_everyone=s.junior_scope is JuniorScope.EVERYONE,
         )

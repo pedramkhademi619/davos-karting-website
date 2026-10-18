@@ -3,6 +3,7 @@ import "package:flutter_test/flutter_test.dart";
 import "package:davos_admin/core/constants/urls.dart";
 import "package:davos_admin/core/utils/fa.dart";
 import "package:davos_admin/core/utils/jalali.dart";
+import "package:davos_admin/features/settings/model/schedule_settings.dart";
 import "package:davos_admin/shared/models/json_read.dart";
 
 void main() {
@@ -66,6 +67,32 @@ void main() {
       final page = PageResult.parse<String>({"items": [{"id": "x"}], "total": 9}, (j) => j.str("id"));
       expect(page.items, ["x"]);
       expect(page.total, 9);
+    });
+  });
+
+  group("schedule settings", () {
+    test("an older server without shifts gets the owner's defaults", () {
+      final s = ScheduleSettings.fromJson(const {"shift_start": "15:00"});
+      expect(s.morningShiftEnabled, isTrue);
+      expect([s.morningStart, s.morningEnd], ["10:00", "14:00"]);
+      expect(s.juniorWeekdays, [5, 6, 0, 1, 2]);
+      expect([s.juniorFrom, s.juniorUntil, s.juniorScope], ["15:00", "18:00", "drivers"]);
+    });
+
+    test("shifts and under-15 hours go back to the server as they came", () {
+      final json = ScheduleSettings.fromJson(const {
+        "morning_shift_enabled": false,
+        "morning_start": "09:30",
+        "morning_end": "13:00",
+        "junior_weekdays": [5, 6],
+        "junior_from": "16:00",
+        "junior_until": "19:00",
+        "junior_scope": "everyone",
+      }).toJson();
+      expect(json["morning_shift_enabled"], isFalse);
+      expect([json["morning_start"], json["morning_end"]], ["09:30", "13:00"]);
+      expect(json["junior_weekdays"], [5, 6]);
+      expect([json["junior_from"], json["junior_until"], json["junior_scope"]], ["16:00", "19:00", "everyone"]);
     });
   });
 }

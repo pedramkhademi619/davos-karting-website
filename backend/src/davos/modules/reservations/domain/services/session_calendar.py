@@ -3,24 +3,38 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta
 
 from davos.modules.reservations.domain.value_objects.schedule_settings import ScheduleSettings
-from davos.modules.reservations.domain.value_objects.tehran_time import TEHRAN, business_date, local
+from davos.modules.reservations.domain.value_objects.tehran_time import (
+    BUSINESS_DAY_ROLLOVER_HOUR,
+    TEHRAN,
+    business_date,
+    local,
+)
 
 
 class SessionCalendar:
     """Which days and session times exist, and which of them can be booked right now.
 
-    A business day runs from ``shift_start`` to ``shift_end``; when the end is at or before the start the shift runs
-    past midnight, and a 00:30 session belongs to the business day that started the evening before.
+    A business day has an optional morning shift and the evening shift (``shift_start`` to ``shift_end``); when the
+    evening's end is at or before its start the shift runs past midnight, and a 00:30 session belongs to the business
+    day that started the evening before (the next business day only begins at 06:00).
     """
 
     def __init__(self, settings: ScheduleSettings) -> None:
         self._settings = settings
 
     def session_times(self) -> list[time]:
-        start = self._minutes(self._settings.shift_start)
-        end = self._minutes(self._settings.shift_end)
+        """Every session start of a business day in order: the morning shift (when on), then the evening shift."""
+        s = self._settings
+        times: list[time] = []
+        if s.morning_shift_enabled:
+            times += self._grid(self._minutes(s.morning_start), self._minutes(s.morning_end))
+        start = self._minutes(s.shift_start)
+        end = self._minutes(s.shift_end)
         if end <= start:
             end += 24 * 60
+        return times + self._grid(start, end)
+
+    def _grid(self, start: int, end: int) -> list[time]:
         return [time((m // 60) % 24, m % 60) for m in range(start, end, self._settings.interval_minutes)]
 
     def is_session_time(self, value: time) -> bool:
@@ -34,7 +48,8 @@ class SessionCalendar:
         return self.is_session_time(value) and not self.is_blocked(value)
 
     def starts_at(self, day: date, value: time) -> datetime:
-        calendar_day = day + timedelta(days=1) if value < self._settings.shift_start else day
+        # Before 06:00 the clock belongs to the evening shift that started the day before.
+        calendar_day = day + timedelta(days=1) if value.hour < BUSINESS_DAY_ROLLOVER_HOUR else day
         return datetime.combine(calendar_day, value, tzinfo=TEHRAN)
 
     def bookable_dates(self, now: datetime) -> list[date]:

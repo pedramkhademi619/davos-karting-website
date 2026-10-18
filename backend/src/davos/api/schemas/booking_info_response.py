@@ -29,8 +29,11 @@ class BookingInfoResponse(BaseModel):
     holiday_double_toman: int
     holiday_weekdays: list[str]
     closed_weekdays: list[str]
-    first_session: str
+    first_session: str  # the evening shift
     last_session_before: str
+    morning_shift_enabled: bool
+    morning_first_session: str
+    morning_last_session_before: str
     interval_minutes: int
     hold_minutes: int
     min_days_ahead: int
@@ -41,6 +44,11 @@ class BookingInfoResponse(BaseModel):
     daily_ticket_limit: int | None
     online_booking_cutoff: str | None
     online_booking_cutoff_passed: bool
+    # When under-15s may ride (the booking wizard applies it; weekday names as in the calendar).
+    junior_weekdays: list[str]
+    junior_from: str
+    junior_until: str
+    junior_scope: str
 
     @classmethod
     def of(cls, s: ScheduleSettings, *, payments_enabled: bool, now: datetime) -> BookingInfoResponse:
@@ -57,6 +65,9 @@ class BookingInfoResponse(BaseModel):
             closed_weekdays=_names(s.closed_weekdays),
             first_session=s.shift_start.strftime("%H:%M"),
             last_session_before=s.shift_end.strftime("%H:%M"),
+            morning_shift_enabled=s.morning_shift_enabled,
+            morning_first_session=s.morning_start.strftime("%H:%M"),
+            morning_last_session_before=s.morning_end.strftime("%H:%M"),
             interval_minutes=s.interval_minutes,
             hold_minutes=s.hold_minutes,
             min_days_ahead=s.min_days_ahead,
@@ -67,4 +78,8 @@ class BookingInfoResponse(BaseModel):
             daily_ticket_limit=s.daily_ticket_limit,
             online_booking_cutoff=s.online_booking_cutoff.strftime("%H:%M") if s.online_booking_cutoff else None,
             online_booking_cutoff_passed=SessionCalendar(s).is_online_cutoff_passed(now),
+            junior_weekdays=_names(s.junior_weekdays),
+            junior_from=s.junior_from.strftime("%H:%M"),
+            junior_until=s.junior_until.strftime("%H:%M"),
+            junior_scope=s.junior_scope.value,
         )

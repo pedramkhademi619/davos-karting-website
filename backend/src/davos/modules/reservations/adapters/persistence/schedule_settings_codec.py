@@ -4,6 +4,7 @@ from datetime import date, time
 from typing import Any
 
 from davos.modules.reservations.domain.enums.daily_booking_limit_mode import DailyBookingLimitMode
+from davos.modules.reservations.domain.enums.junior_scope import JuniorScope
 from davos.modules.reservations.domain.value_objects.price_tier import PriceTier
 from davos.modules.reservations.domain.value_objects.schedule_settings import ScheduleSettings
 from davos.shared_kernel.domain.money import Money
@@ -22,6 +23,9 @@ class ScheduleSettingsCodec:
             "online_booking_enabled": settings.online_booking_enabled,
             "shift_start": settings.shift_start.strftime("%H:%M"),
             "shift_end": settings.shift_end.strftime("%H:%M"),
+            "morning_shift_enabled": settings.morning_shift_enabled,
+            "morning_start": settings.morning_start.strftime("%H:%M"),
+            "morning_end": settings.morning_end.strftime("%H:%M"),
             "interval_minutes": settings.interval_minutes,
             "single_capacity": settings.single_capacity,
             "double_capacity": settings.double_capacity,
@@ -47,6 +51,10 @@ class ScheduleSettingsCodec:
             "online_booking_cutoff": (
                 settings.online_booking_cutoff.strftime("%H:%M") if settings.online_booking_cutoff else None
             ),
+            "junior_weekdays": sorted(settings.junior_weekdays),
+            "junior_from": settings.junior_from.strftime("%H:%M"),
+            "junior_until": settings.junior_until.strftime("%H:%M"),
+            "junior_scope": settings.junior_scope.value,
         }
 
     @staticmethod
@@ -55,6 +63,7 @@ class ScheduleSettingsCodec:
         values: dict[str, Any] = {}
         for key in (
             "online_booking_enabled",
+            "morning_shift_enabled",
             "interval_minutes",
             "single_capacity",
             "double_capacity",
@@ -69,7 +78,7 @@ class ScheduleSettingsCodec:
         ):
             if key in data:
                 values[key] = data[key]
-        for key in ("shift_start", "shift_end"):
+        for key in ("shift_start", "shift_end", "morning_start", "morning_end", "junior_from", "junior_until"):
             if key in data:
                 values[key] = time.fromisoformat(data[key])
         if "online_booking_cutoff" in data:
@@ -81,7 +90,9 @@ class ScheduleSettingsCodec:
         for key in ("normal_prices", "holiday_prices"):
             if key in data:
                 values[key] = PriceTier(Money(int(data[key]["single"])), Money(int(data[key]["double"])))
-        for key in ("holiday_weekdays", "closed_weekdays"):
+        if "junior_scope" in data:
+            values["junior_scope"] = JuniorScope(data["junior_scope"])
+        for key in ("holiday_weekdays", "closed_weekdays", "junior_weekdays"):
             if key in data:
                 values[key] = frozenset(int(d) for d in data[key])
         for key in ("holiday_dates", "closed_dates", "open_dates"):

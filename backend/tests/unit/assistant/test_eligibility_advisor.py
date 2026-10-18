@@ -193,7 +193,8 @@ def test_a_fifteen_year_old_gets_an_undecided_verdict_not_a_yes() -> None:
         ("سه شنبه ساعت ۱۲:۳۰ شب بازید؟", "نتیجه: نه"),  # after midnight only Thursday, Friday and holidays
         ("پنجشنبه ساعت ۱۲:۳۰ شب بازید؟", "نتیجه: بله"),
         ("ساعت ۱۲:۳۰ شب بازید؟", "فقط در پنجشنبه، جمعه و روزهای تعطیل"),
-        ("ساعت ۱۱ صبح باز هستید؟", "نتیجه: نه"),
+        ("ساعت ۱۱ صبح باز هستید؟", "نتیجه: بله"),  # the morning shift (10:00-14:00 by default)
+        ("ساعت ۲:۳۰ بعدازظهر بازید؟", "بین شیفت صبح و شیفت عصر"),
     ],
 )
 def test_opening_hours_are_compared_by_code(text: str, expected: str) -> None:

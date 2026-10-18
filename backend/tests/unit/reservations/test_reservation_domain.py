@@ -37,9 +37,10 @@ S = ReservationStatus
 # ---------------------------------------------------------------- calendar
 
 
-def test_default_sessions_run_every_10_minutes_from_15_to_01() -> None:
+def test_default_sessions_run_every_10_minutes_from_10_to_14_and_from_15_to_01() -> None:
     times = SessionCalendar(ScheduleSettings()).session_times()
-    assert times[0] == time(15, 0) and times[-1] == time(0, 50) and len(times) == 60
+    assert times[0] == time(10, 0) and times[-1] == time(0, 50) and len(times) == 24 + 60
+    assert time(13, 50) in times and time(14, 0) not in times and time(14, 50) not in times
 
 
 def test_an_after_midnight_session_starts_on_the_next_calendar_day() -> None:
@@ -102,7 +103,8 @@ def test_same_day_booking_keeps_a_lead_time_before_the_session() -> None:
 def test_only_real_session_times_are_bookable() -> None:
     calendar = SessionCalendar(ScheduleSettings())
     assert not calendar.is_bookable(SUN, time(18, 7), SATURDAY_MORNING)
-    assert not calendar.is_bookable(SUN, time(12, 0), SATURDAY_MORNING)
+    assert not calendar.is_bookable(SUN, time(14, 20), SATURDAY_MORNING)  # between the two shifts
+    assert calendar.is_bookable(SUN, time(12, 0), SATURDAY_MORNING)  # the morning shift
     assert calendar.is_bookable(SUN, time(0, 40), SATURDAY_MORNING)  # the last session of the night
 
 

@@ -1,9 +1,10 @@
 import { ButtonLink } from "@/components/button-link";
 import { SectionHeading } from "@/components/section-heading";
-import { ridingRules } from "@/content/site";
+import { ridingRulesFor } from "@/lib/hours";
+import type { BookingInfo } from "@/lib/types";
 
 /** The owner's riding rules at a glance (the assistant checks the details for each family). */
-export function RidingRules() {
+export function RidingRules({ info }: { info: BookingInfo | null }) {
   return (
     <section className="relative isolate overflow-hidden border-y border-line bg-surface py-24 md:py-32">
       <div className="container-page">
@@ -19,7 +20,7 @@ export function RidingRules() {
         </div>
 
         <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {ridingRules.map((rule) => (
+          {ridingRulesFor(info).map((rule) => (
             <li key={rule.title} className="reveal group rounded-[1.75rem] border border-line bg-canvas p-7 transition-colors duration-300 hover:border-fg">
               <span dir="ltr" className="race-number inline-block rounded-xl bg-ink px-3 py-1.5 text-lg font-black text-accent">
                 {rule.badge}

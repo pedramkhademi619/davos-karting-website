@@ -351,8 +351,9 @@ class AskAssistantUseCase:
     async def _quick_passage(self, topic: QuickTopic | None, booking: BookingFacts | None) -> RetrievedPassage | None:
         """The published entry that answers `topic`; None if no topic or no such entry, and the normal flow follows.
 
-        Prices and kart counts are answered from the admin panel's settings, and the booking entry gets the current
-        booking days and hold time appended, so a changed setting is never contradicted by a stale text.
+        Prices and kart counts are answered from the admin panel's settings, the booking entry gets the current
+        booking days and hold time appended and the working hours the current shifts, so a changed setting is never
+        contradicted by a stale text.
         """
         if topic is None:
             return None
@@ -370,6 +371,9 @@ class AskAssistantUseCase:
         found = next((p for p in candidates if self._normalizer.normalize(p.title) == title), None)
         if found is not None and booking is not None and topic is QuickTopic.BOOKING:
             found = replace(found, text=f"{found.text.rstrip()} {self._live.booking(booking)}")
+        if found is not None and booking is not None and topic is QuickTopic.HOURS:
+            # The shifts are admin-panel settings: state the ones in force after the owner's text.
+            found = replace(found, text=f"{found.text.rstrip()} {self._live.shifts(booking)}")
         return found
 
     async def _select_passages(self, query: SearchQuery) -> tuple[list[RetrievedPassage], list[RetrievedPassage]]:

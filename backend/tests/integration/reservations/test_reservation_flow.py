@@ -89,8 +89,10 @@ async def test_the_calendar_offers_tomorrow_with_prices_and_every_session(site: 
     assert [d["date"] for d in calendar["days"]] == ["2026-01-04"]
     assert calendar["days"][0]["single_price_toman"] == 790_000 and calendar["days"][0]["weekday"] == "یکشنبه"
     day = (await site.get("/api/v1/reservations/availability", params={"date": "2026-01-04"})).json()
-    # 60 ten-minute slots from 15:00 to 00:50, minus the 10 fuel-break (:50) slots customers never see.
-    assert len(day["sessions"]) == 50 and day["sessions"][0]["time"] == "15:00"
+    # Morning shift 10:00–13:50 (24 slots) and evening 15:00–00:50 (60 slots), minus the 14 fuel-break (:50)
+    # slots customers never see.
+    assert len(day["sessions"]) == 70 and day["sessions"][0]["time"] == "10:00"
+    assert "14:00" not in {s["time"] for s in day["sessions"]} and day["sessions"][20]["time"] == "15:00"
     assert all(not s["blocked"] for s in day["sessions"])
     assert all(s["bookable"] and s["singles_left"] == 6 and s["doubles_left"] == 1 for s in day["sessions"])
     assert day["date_jalali"] == "1404/10/14"

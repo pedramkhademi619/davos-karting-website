@@ -23,6 +23,14 @@ export type BookingInfo = {
   daily_ticket_limit: number | null;
   online_booking_cutoff: string | null;
   online_booking_cutoff_passed: boolean;
+  morning_shift_enabled: boolean;
+  morning_first_session: string;
+  morning_last_session_before: string;
+  /** When under-15s may ride (weekday names as in the calendar); `junior_scope` "everyone" binds back-seat passengers too. */
+  junior_weekdays: string[];
+  junior_from: string;
+  junior_until: string;
+  junior_scope: "drivers" | "everyone";
 };
 
 export type BookableDay = {
@@ -210,6 +218,13 @@ export type ScheduleSettings = {
   online_booking_enabled: boolean;
   shift_start: string;
   shift_end: string;
+  morning_shift_enabled: boolean;
+  morning_start: string;
+  morning_end: string;
+  junior_weekdays: number[];
+  junior_from: string;
+  junior_until: string;
+  junior_scope: "drivers" | "everyone";
   interval_minutes: number;
   single_capacity: number;
   double_capacity: number;

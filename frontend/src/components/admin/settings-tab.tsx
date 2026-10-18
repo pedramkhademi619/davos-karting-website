@@ -56,6 +56,8 @@ export function SettingsTab() {
     });
   const toggleDay = (key: "holiday_weekdays" | "closed_weekdays", day: number) =>
     set(key, settings[key].includes(day) ? settings[key].filter((d) => d !== day) : [...settings[key], day]);
+  const toggleJuniorDay = (day: number) =>
+    set("junior_weekdays", settings.junior_weekdays.includes(day) ? settings.junior_weekdays.filter((d) => d !== day) : [...settings.junior_weekdays, day]);
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -130,10 +132,25 @@ export function SettingsTab() {
           )}
         </Card>
 
-        <Card title="سانس‌ها و خودروها">
-          <div className="grid grid-cols-2 gap-4">
-            <TimeField label="شروع اولین سانس" value={settings.shift_start} onChange={(v) => set("shift_start", v)} />
-            <TimeField label="پایان سانس‌ها (بعد از نیمه‌شب هم مجاز)" value={settings.shift_end} onChange={(v) => set("shift_end", v)} />
+        <Card title="شیفت‌ها و خودروها">
+          <label className="flex items-center gap-3 font-bold">
+            <input
+              type="checkbox"
+              className="h-5 w-5 accent-[#0c0d10]"
+              checked={settings.morning_shift_enabled}
+              onChange={(e) => set("morning_shift_enabled", e.target.checked)}
+            />
+            شیفت صبح داریم
+          </label>
+          {settings.morning_shift_enabled && (
+            <div className="mt-4 grid grid-cols-2 gap-4 rounded-2xl bg-surface-2 p-4">
+              <TimeField label="شیفت صبح: اولین سانس" value={settings.morning_start} onChange={(v) => set("morning_start", v)} />
+              <TimeField label="شیفت صبح: پایان" value={settings.morning_end} onChange={(v) => set("morning_end", v)} />
+            </div>
+          )}
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <TimeField label="شیفت عصر: اولین سانس" value={settings.shift_start} onChange={(v) => set("shift_start", v)} />
+            <TimeField label="شیفت عصر: پایان (بعد از نیمه‌شب هم مجاز)" value={settings.shift_end} onChange={(v) => set("shift_end", v)} />
             <NumberField label="فاصله سانس‌ها (دقیقه)" value={settings.interval_minutes} onChange={num("interval_minutes")} />
             <div />
             <NumberField label="تعداد خودروی تک‌نفره هر سانس" value={settings.single_capacity} onChange={num("single_capacity")} />
@@ -157,6 +174,40 @@ export function SettingsTab() {
             <p className="mt-2 text-xs leading-6 text-fg-subtle">
               برداشتن یک روز از این فهرست، همهٔ آن روزهای هفته را باز می‌کند. برای باز کردن فقط یک تاریخ مشخص از «روزهای باز استثنایی» پایین صفحه استفاده کنید.
             </p>
+          </div>
+        </Card>
+
+        <Card title="ساعت حضور زیر ۱۵ سال">
+          <p className="mb-4 text-sm leading-7 text-fg-muted">
+            روزها و ساعتی که افراد زیر ۱۵ سال می‌توانند سوار شوند. جادوگر رزرو سایت و دستیار هوشمند همین را اعمال می‌کنند؛ سانس‌هایی که از
+            ساعت شروع تا پیش از ساعت پایان شروع می‌شوند مجازند.
+          </p>
+          <DayChecks title="روزهای مجاز" selected={settings.junior_weekdays} onToggle={toggleJuniorDay} />
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <TimeField label="از ساعت" value={settings.junior_from} onChange={(v) => set("junior_from", v)} />
+            <TimeField label="تا ساعت" value={settings.junior_until} onChange={(v) => set("junior_until", v)} />
+          </div>
+          <div className="mt-5 space-y-2" role="radiogroup" aria-label="این ساعت برای چه کسانی است">
+            {(
+              [
+                { value: "drivers", label: "فقط نوجوان‌های ۱۱ تا ۱۴ ساله‌ای که خودشان تک‌نفره می‌رانند", hint: "کودکی که پشت بزرگسال روی صندلی عقب دونفره می‌نشیند، همه‌ی ساعت‌ها می‌تواند بیاید (قانون فعلی مجموعه)." },
+                { value: "everyone", label: "همه‌ی افراد زیر ۱۵ سال، چه راننده و چه سرنشین صندلی عقب", hint: "خارج از این ساعت هیچ فرد زیر ۱۵ سالی سوار نمی‌شود." },
+              ] as const
+            ).map((option) => (
+              <label key={option.value} className={`flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-3 ${settings.junior_scope === option.value ? "border-ink" : "border-line"}`}>
+                <input
+                  type="radio"
+                  name="junior-scope"
+                  className="mt-1 h-4 w-4 accent-[#0c0d10]"
+                  checked={settings.junior_scope === option.value}
+                  onChange={() => set("junior_scope", option.value)}
+                />
+                <span>
+                  <span className="block text-sm font-bold">{option.label}</span>
+                  <span className="block text-xs leading-6 text-fg-subtle">{option.hint}</span>
+                </span>
+              </label>
+            ))}
           </div>
         </Card>
 

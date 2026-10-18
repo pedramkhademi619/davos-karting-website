@@ -20,6 +20,14 @@ def _clock(value: time) -> str:
     return _fa(value.strftime("%H:%M"))
 
 
+def _day_list(days: frozenset[int]) -> str:
+    """ "شنبه تا چهارشنبه" for that run of the week, otherwise the days one by one."""
+    ordered = [d for d in _WEEK_ORDER if d in days]
+    if len(ordered) >= 3 and ordered == list(_WEEK_ORDER[_WEEK_ORDER.index(ordered[0]) :][: len(ordered)]):
+        return f"{_WEEKDAY_NAMES[ordered[0]]} تا {_WEEKDAY_NAMES[ordered[-1]]}"
+    return "، ".join(_WEEKDAY_NAMES[d] for d in ordered)
+
+
 class EligibilityAdvisor:
     """Applies the owner's rules to the facts of one message and states the results as plain sentences.
 
@@ -52,12 +60,14 @@ class EligibilityAdvisor:
         if age < r.min_driving_age:
             return [
                 f"{who}: نمی‌تواند رانندگی کند (زیر {_fa(r.min_driving_age)} سال). فقط می‌تواند روی صندلی عقب "
-                f"خودرو دونفره بنشیند، پشت یک بزرگسال {_fa(r.front_seat_min_age)} سال به بالا که گواهینامه دارد."
+                f"خودرو دونفره بنشیند، پشت یک بزرگسال {_fa(r.front_seat_min_age)} سال به بالا که گواهینامه دارد.",
+                *self._junior_presence(who, facts),
             ]
         if age < r.unclear_age:
             return [
                 self._junior(who, facts),
                 f"{who}: اگر نتواند رانندگی کند، می‌تواند روی صندلی عقب خودرو دونفره بنشیند.",
+                *self._junior_presence(who, facts),
             ]
         if age == r.unclear_age:
             return [
@@ -89,13 +99,14 @@ class EligibilityAdvisor:
             limit = _fa(r.junior_min_height_cm - 1)
             checks.append(f"قد {_fa(facts.height_cm)} بیشتر از {limit} نیست: شرط قد برقرار نیست")
             verdict = False
+        days = _day_list(r.junior_weekdays)
         if facts.weekday is None:
-            checks.append("فقط شنبه تا چهارشنبه (روز گفته نشده)")
+            checks.append(f"فقط {days} (روز گفته نشده)")
             verdict = None if verdict else verdict
         elif facts.weekday in r.junior_weekdays:
-            checks.append(f"{facts.weekday_name} جزو شنبه تا چهارشنبه است: درست")
+            checks.append(f"{facts.weekday_name} جزو {days} است: درست")
         else:
-            checks.append(f"{facts.weekday_name} جزو شنبه تا چهارشنبه نیست: مجاز نیست")
+            checks.append(f"{facts.weekday_name} جزو {days} نیست: مجاز نیست")
             verdict = False
         window = f"{_clock(r.junior_from)} تا {_clock(r.junior_until)}"
         if facts.at is None:
@@ -112,6 +123,18 @@ class EligibilityAdvisor:
             None: "نتیجه: به شرط‌های گفته‌نشده بستگی دارد.",
         }[verdict]
         return f"{who}: تک‌نفره فقط با همه این شرط‌ها: " + "؛ ".join(checks) + ". " + result
+
+    def _junior_presence(self, who: str, facts: PartyFacts) -> list[str]:
+        """When the admin panel applies the under-15 hours to every under-15, the back seat is bound by them too."""
+        r = self._r
+        if not r.junior_everyone:
+            return []
+        window = f"{_day_list(r.junior_weekdays)}، ساعت {_clock(r.junior_from)} تا {_clock(r.junior_until)}"
+        if facts.weekday is not None and facts.weekday not in r.junior_weekdays:
+            return [f"{who}: حضور زیر ۱۵ سال فقط {window} است؛ {facts.weekday_name} مجاز نیست، حتی روی صندلی عقب."]
+        if facts.at is not None and not r.junior_from <= facts.at < r.junior_until:
+            return [f"{who}: حضور زیر ۱۵ سال فقط {window} است؛ ساعت {_clock(facts.at)} مجاز نیست، حتی روی صندلی عقب."]
+        return [f"{who}: حضور زیر ۱۵ سال (حتی روی صندلی عقب) فقط {window} است."]
 
     # ------------------------------------------------------------------ the two-seater
     def _two_seater(self, facts: PartyFacts) -> list[str]:
@@ -165,6 +188,13 @@ class EligibilityAdvisor:
             f"ساعت {_clock(opens)} تا {_clock(late_until)} بامداد روز بعد."
         )
         when = f"ساعت {_clock(at)}"
+        if r.morning_shift is not None:
+            morning_from, morning_until = r.morning_shift
+            hours = f"شیفت صبح هر روز ساعت {_clock(morning_from)} تا {_clock(morning_until)} است. " + hours
+            if morning_from <= at < morning_until:
+                return [f"نتیجه: بله، {when} (شیفت صبح) باز است. {hours}"]
+            if morning_until <= at < opens:
+                return [f"نتیجه: نه، {when} بین شیفت صبح و شیفت عصر است و باز نیست. {hours}"]
         if at >= opens:
             return [f"نتیجه: بله، {when} باز است. {hours}"]
         if at > late_until:

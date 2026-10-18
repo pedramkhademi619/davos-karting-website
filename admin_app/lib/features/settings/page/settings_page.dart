@@ -195,12 +195,21 @@ class _SettingsFormState extends State<_SettingsForm> {
               onChanged: (v) => setState(() => s.onlineBookingEnabled = v),
             ),
           ),
-          const SectionTitle("سانس‌ها و خودروها"),
+          const SectionTitle("شیفت‌ها و خودروها"),
           AppCard(
             child: Column(
               children: [
-                TimeField(label: "شروع اولین سانس", value: s.shiftStart, onChanged: (v) => setState(() => s.shiftStart = v ?? s.shiftStart)),
-                TimeField(label: "پایان سانس‌ها (بعد از نیمه‌شب هم مجاز)", value: s.shiftEnd, onChanged: (v) => setState(() => s.shiftEnd = v ?? s.shiftEnd)),
+                SwitchRow(
+                  title: "شیفت صبح داریم",
+                  value: s.morningShiftEnabled,
+                  onChanged: (v) => setState(() => s.morningShiftEnabled = v),
+                ),
+                if (s.morningShiftEnabled) ...[
+                  TimeField(label: "شیفت صبح: اولین سانس", value: s.morningStart, onChanged: (v) => setState(() => s.morningStart = v ?? s.morningStart)),
+                  TimeField(label: "شیفت صبح: پایان", value: s.morningEnd, onChanged: (v) => setState(() => s.morningEnd = v ?? s.morningEnd)),
+                ],
+                TimeField(label: "شیفت عصر: اولین سانس", value: s.shiftStart, onChanged: (v) => setState(() => s.shiftStart = v ?? s.shiftStart)),
+                TimeField(label: "شیفت عصر: پایان (بعد از نیمه‌شب هم مجاز)", value: s.shiftEnd, onChanged: (v) => setState(() => s.shiftEnd = v ?? s.shiftEnd)),
                 _num("فاصلهٔ سانس‌ها", "interval", suffix: "دقیقه"),
                 _num("تعداد خودروی تک‌نفره هر سانس", "single_capacity"),
                 _num("تعداد خودروی دونفره هر سانس", "double_capacity"),
@@ -242,6 +251,35 @@ class _SettingsFormState extends State<_SettingsForm> {
                 _dates("تعطیلی‌های خاص", "این تاریخ‌ها با قیمت تعطیل حساب می‌شوند.", s.holidayDates),
                 _dates("روزهای بسته", "در این تاریخ‌ها رزرو آنلاین بسته است.", s.closedDates),
                 _dates("روزهای باز استثنایی", "این تاریخ‌ها حتی اگر روز هفته‌شان بسته باشد برای رزرو باز می‌شوند.", s.openDates),
+              ],
+            ),
+          ),
+          const SectionTitle("ساعت حضور زیر ۱۵ سال"),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "روزها و ساعتی که افراد زیر ۱۵ سال می‌توانند سوار شوند. جادوگر رزرو سایت و دستیار هوشمند همین را اعمال می‌کنند.",
+                  style: TextStyle(fontSize: 13, height: 1.8, color: Theme.of(context).hintColor),
+                ),
+                const SizedBox(height: 10),
+                _days("روزهای مجاز", s.juniorWeekdays),
+                const SizedBox(height: 10),
+                TimeField(label: "از ساعت", value: s.juniorFrom, onChanged: (v) => setState(() => s.juniorFrom = v ?? s.juniorFrom)),
+                TimeField(label: "تا ساعت", value: s.juniorUntil, onChanged: (v) => setState(() => s.juniorUntil = v ?? s.juniorUntil)),
+                PillSelector<String>(
+                  options: const {"drivers": "فقط نوجوان‌های راننده", "everyone": "همه‌ی زیر ۱۵ سال‌ها"},
+                  value: s.juniorScope,
+                  onChanged: (v) => setState(() => s.juniorScope = v),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  s.juniorScope == "drivers"
+                      ? "کودکی که پشت بزرگسال روی صندلی عقب دونفره می‌نشیند، همه‌ی ساعت‌ها می‌تواند بیاید."
+                      : "خارج از این ساعت هیچ فرد زیر ۱۵ سالی سوار نمی‌شود، حتی روی صندلی عقب.",
+                  style: TextStyle(fontSize: 12, height: 1.7, color: Theme.of(context).hintColor),
+                ),
               ],
             ),
           ),

@@ -53,13 +53,60 @@ class BookingFactsPassage:
             "قیمت هر خودرو برای یک سانس است."
         )
 
+    def shifts(self, facts: BookingFacts) -> str:
+        evening = f"شیفت عصر: سانس‌ها از ساعت {_clock(facts.first_session)}"
+        if facts.last_session_before is not None:
+            after_midnight = facts.last_session_before <= facts.first_session
+            evening += f" تا {_clock(facts.last_session_before)}{' بامداد روز بعد' if after_midnight else ''}"
+        evening += f"، هر {_fa(facts.interval_minutes)} دقیقه یک سانس."
+        if facts.morning_shift is None:
+            return "سانس‌ها فقط در یک شیفت است. " + evening
+        start, end = facts.morning_shift
+        return f"سانس‌ها در دو شیفت است. شیفت صبح: از ساعت {_clock(start)} تا {_clock(end)}. {evening}"
+
+    def juniors(self, facts: BookingFacts) -> str | None:
+        if facts.junior_weekdays is None or facts.junior_from is None or facts.junior_until is None:
+            return None
+        days = _days(facts.junior_weekdays)
+        start, until = _clock(facts.junior_from), _clock(facts.junior_until)
+        window = f"روزهای {days}، سانس‌هایی که از ساعت {start} تا پیش از {until} شروع می‌شوند"
+        if facts.junior_everyone:
+            return (
+                f"ساعت حضور افراد زیر ۱۵ سال (هم نوجوان راننده و هم کودک روی صندلی عقب دونفره): فقط {window}. "
+                "در روزها و ساعت‌های دیگر هیچ فرد زیر ۱۵ سالی سوار نمی‌شود."
+            )
+        return (
+            f"رانندگی نوجوان ۱۱ تا ۱۴ ساله با خودرو تک‌نفره (با قد بیشتر از ۱۴۰ سانتی‌متر) فقط {window}. "
+            "کودک یا نوجوانی که پشت یک بزرگسال گواهینامه‌دار روی صندلی عقب دونفره می‌نشیند، "
+            "همه‌ی روزها و ساعت‌ها می‌تواند بیاید."
+        )
+
+    def wizard(self, facts: BookingFacts) -> str:
+        """How the site's booking pages work, step by step (only meaningful while online booking is open)."""
+        return (
+            "رزرو آنلاین از سایت davoskarting.ir، صفحه «رزرو سانس»، چهار مرحله دارد: "
+            "۱) خدمه: می‌گویید چه کسانی می‌آیند (بزرگسال با گواهینامه، بالای ۱۶ سال، نوجوان ۱۱ تا ۱۴ سال، "
+            "کودک ۴ تا ۱۵ سال) و سایت خودش تعداد خودرو تک‌نفره و دونفره را طبق قوانین سن و قد و گواهینامه می‌چیند "
+            "(اگر نوجوان داشته باشید، انتخاب می‌کنید خودش براند یا پشت یک بزرگسال بنشیند؛ "
+            "کسی هم که تعداد خودرو را می‌داند می‌تواند مستقیم تعداد را بزند). "
+            "۲) روز: روی هر روز مبلغ کل گروه نوشته شده است. "
+            "۳) سانس: سانس‌ها مثل جدول استارت نشان داده می‌شوند و جای خالی هر سانس زنده است؛ "
+            "فقط سانس‌هایی که برای کل گروه جا دارند انتخاب می‌شوند. اگر روز یا سانسی به گروه نمی‌خورد "
+            "(مثلاً برای رانندگی نوجوان‌ها)، با زدن رویش دلیل و راه‌حل نشان داده می‌شود، "
+            "مثل نشستن نوجوان‌ها پشت بزرگسال یا ویرایش خدمه. "
+            "۴) پایان: با شماره موبایل و کد پیامکی وارد می‌شوید و دکمه‌ی «لانچ کنترل» را نگه می‌دارید "
+            "تا چراغ‌ها خاموش شوند؛ "
+            f"آن‌وقت خودروها {_fa(facts.hold_minutes)} دقیقه برای پرداخت نگه داشته می‌شوند و مبلغ را از درگاه بانک ملت "
+            "می‌پردازید. بعد از پرداخت کد رزرو و شماره بلیت پیامک می‌شود و در «حساب من» هم هست."
+        )
+
     def booking(self, facts: BookingFacts) -> str:
+        """The booking rules in force: open or closed, the daily cutoff, how far ahead, days without booking."""
         if not facts.online_booking_enabled:
             online = "رزرو آنلاین از سایت فعلاً بسته است؛ برای رزرو حضوری به پیست مراجعه کنید."
         else:
             online = (
-                f"رزرو آنلاین از صفحه «رزرو سانس» سایت باز است؛ سانس‌ها از ساعت {_clock(facts.first_session)} هر "
-                f"{_fa(facts.interval_minutes)} دقیقه یک‌بار شروع می‌شوند و بعد از انتخاب سانس، خودروها "
+                f"رزرو آنلاین از صفحه «رزرو سانس» سایت باز است و بعد از انتخاب سانس، خودروها "
                 f"{_fa(facts.hold_minutes)} دقیقه برای پرداخت نگه داشته می‌شوند."
             )
             if facts.online_booking_cutoff is not None:
@@ -78,7 +125,14 @@ class BookingFactsPassage:
         return f"{online} {ahead}" + (f" روزهای بدون رزرو: {closed}." if closed else "")
 
     def passage(self, facts: BookingFacts) -> RetrievedPassage:
-        text = "\n".join(f"- {line}" for line in (self.capacity(facts), self.prices(facts), self.booking(facts)))
+        lines = [self.capacity(facts), self.prices(facts)]
+        if facts.online_booking_enabled:
+            lines.append(self.wizard(facts))
+        lines += [self.booking(facts), self.shifts(facts)]
+        juniors = self.juniors(facts)
+        if juniors:
+            lines.append(juniors)
+        text = "\n".join(f"- {line}" for line in lines)
         return RetrievedPassage(
             entry_id=LIVE_ENTRY_ID,
             source_type=KnowledgeSourceType.SERVICE,

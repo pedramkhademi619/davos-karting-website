@@ -6,7 +6,8 @@ import { OtpLogin } from "@/components/auth/otp-login";
 import { useCountdown } from "@/components/booking/use-countdown";
 import { CrewStep } from "@/components/booking/wizard/crew-step";
 import { DayStep } from "@/components/booking/wizard/day-step";
-import { EMPTY_CREW, planKarts, type Crew } from "@/components/booking/wizard/crew";
+import { DEFAULT_JUNIOR_WINDOW, EMPTY_CREW, juniorRule, planKarts, type Crew, type JuniorWindow } from "@/components/booking/wizard/crew";
+import { FixSheet, type Fix } from "@/components/booking/wizard/fix-sheet";
 import { LapTracker, seconds, sectorTone, type Sector } from "@/components/booking/wizard/lap-tracker";
 import { LaunchButton } from "@/components/booking/wizard/launch-button";
 import { RacePass } from "@/components/booking/wizard/race-pass";
@@ -62,11 +63,19 @@ export function BookingWizard() {
   const [busy, setBusy] = useState<"hold" | "pay" | "release" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [launchAttempt, setLaunchAttempt] = useState(0);
+  const [fix, setFix] = useState<Fix | null>(null);
   const [sectors, setSectors] = useState<Record<Step, number | null>>({ crew: null, day: null, session: null, finish: null });
   const enteredAt = useRef<number>(0);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   const maxKarts = calendar?.max_karts_per_reservation ?? 7;
+  const juniorWindow: JuniorWindow = useMemo(
+    () =>
+      info
+        ? { days: new Set(info.junior_weekdays), from: info.junior_from, until: info.junior_until, everyone: info.junior_scope === "everyone" }
+        : DEFAULT_JUNIOR_WINDOW,
+    [info],
+  );
   const plan = useMemo(() => {
     if (!manual) return planKarts(crew, teensDrive, maxKarts);
     const total = manualSingles + manualDoubles;
@@ -218,6 +227,20 @@ export function BookingWizard() {
     }
   }
 
+  /** The fix sheet's way out for teens: seat them behind an adult, keep the day or session that was tapped. */
+  function seatTeensAndKeep() {
+    const current = fix;
+    setTeensDrive(false);
+    setFix(null);
+    if (current?.reason === "teen-day") chooseDate(current.date);
+    if (current?.reason === "teen-time") chooseTime(current.time);
+  }
+
+  function editCrew() {
+    setFix(null);
+    go("crew");
+  }
+
   /** An expired hold is already gone on the server: start the session choice again without calling the API. */
   function restart() {
     setReservation(null);
@@ -245,6 +268,24 @@ export function BookingWizard() {
   const total = selectedDay ? plan.singles * selectedDay.single_price_toman + plan.doubles * selectedDay.double_price_toman : 0;
   const stepIndex = STEPS.indexOf(step);
   const progress = reservation ? 1 : stepIndex / STEPS.length;
+  // The under-15 hours bind this crew when a teen drives, or, if the owner applies them to everyone, when anyone under 15 comes.
+  const juniorBound = plan.teenDrivers > 0 || (juniorWindow.everyone && !manual && crew.kid + crew.teen > 0);
+  const juniorWho = juniorWindow.everyone ? "زیر ۱۵ سال‌ها" : "رانندگی نوجوان‌ها";
+  // What the crew becomes with the teens in the back seat (offered by the fix sheet; no help when the hours bind everyone).
+  const seated = !manual && crew.teen > 0 && !juniorWindow.everyone ? planKarts(crew, false, maxKarts) : null;
+  const fixDay = fix?.reason === "teen-day" ? calendar.days.find((d) => d.date === fix.date) ?? null : selectedDay;
+  const passengersAlternative = seated
+    ? seated.ok
+      ? {
+          ok: true as const,
+          singles: seated.singles,
+          doubles: seated.doubles,
+          price: fixDay ? seated.singles * fixDay.single_price_toman + seated.doubles * fixDay.double_price_toman : 0,
+        }
+      : crew.kid + crew.teen > crew.licensed
+        ? { ok: false as const, missingDrivers: crew.kid + crew.teen - crew.licensed }
+        : null
+    : null;
   const sectorList: Sector[] = STEPS.map((key) => ({ key, label: TITLES[key].sector, ms: sectors[key] }));
   const lapMs = STEPS.reduce((sum, key) => sum + (sectors[key] ?? 0), 0);
 
@@ -322,6 +363,15 @@ export function BookingWizard() {
               <div className="mt-4">
                 <TeamRadio message={radio} />
               </div>
+              {(step === "day" || step === "session") && plan.ok && (
+                <CrewChip
+                  people={plan.people}
+                  singles={plan.singles}
+                  doubles={plan.doubles}
+                  teens={manual ? null : crew.teen > 0 ? (teensDrive ? "خودشان می‌رانند" : "پشت بزرگسال") : null}
+                  onEdit={() => go("crew")}
+                />
+              )}
 
               <div className="mt-6">
                 {step === "crew" && (
@@ -335,6 +385,7 @@ export function BookingWizard() {
                     onManual={setManual}
                     manualSingles={manualSingles}
                     manualDoubles={manualDoubles}
+                    juniorWindow={juniorWindow}
                     onManualSingles={(v) => setManualSingles(Math.max(0, v))}
                     onManualDoubles={(v) => setManualDoubles(Math.max(0, v))}
                     maxKarts={maxKarts}
@@ -347,7 +398,9 @@ export function BookingWizard() {
                     onSelect={chooseDate}
                     singles={plan.singles}
                     doubles={plan.doubles}
-                    teenDrivers={plan.teenDrivers}
+                    junior={juniorBound ? juniorWindow : null}
+                    juniorWho={juniorWho}
+                    onBlocked={(blocked, weekday) => setFix({ reason: "teen-day", date: blocked, label: weekday })}
                   />
                 )}
                 {step === "session" && (
@@ -367,7 +420,14 @@ export function BookingWizard() {
                         onSelect={chooseTime}
                         singles={plan.singles}
                         doubles={plan.doubles}
-                        teenDrivers={plan.teenDrivers}
+                        junior={juniorBound ? juniorWindow : null}
+                        onBlocked={(session, kind) =>
+                          setFix(
+                            kind === "teen"
+                              ? { reason: "teen-time", time: session.time, label: fa(session.time) }
+                              : { reason: "capacity", time: session.time, label: fa(session.time), singlesLeft: session.singles_left, doublesLeft: session.doubles_left },
+                          )
+                        }
                       />
                     )}
                   </>
@@ -413,6 +473,19 @@ export function BookingWizard() {
           )}
         </div>
 
+        {fix && (
+          <FixSheet
+            fix={fix}
+            passengers={fix.reason === "capacity" ? null : passengersAlternative}
+            need={{ singles: plan.singles, doubles: plan.doubles }}
+            teenRule={juniorRule(juniorWindow, fa)}
+            everyone={juniorWindow.everyone}
+            onSeatTeens={seatTeensAndKeep}
+            onEditCrew={editCrew}
+            onClose={() => setFix(null)}
+          />
+        )}
+
         {/* Computers: the pit board beside the steps, with the lap and the pass filling in live. */}
         <aside className="hidden lg:col-span-5 lg:block">
           <div className="sticky top-28 space-y-5">
@@ -433,6 +506,22 @@ export function BookingWizard() {
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+/** The crew in one line at the top of the day and session steps, with a one-tap way back to change it. */
+function CrewChip({ people, singles, doubles, teens, onEdit }: { people: number; singles: number; doubles: number; teens: string | null; onEdit: () => void }) {
+  return (
+    <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-2.5">
+      <p className="min-w-0 text-sm leading-6">
+        <span className="font-black">{fa(people)} نفر</span>
+        <span className="text-fg-muted"> · {karts(singles, doubles)}</span>
+        {teens && <span className="text-fg-muted"> · نوجوان‌ها {teens}</span>}
+      </p>
+      <button type="button" onClick={onEdit} className="shrink-0 rounded-full border border-white/15 px-3 py-1 text-xs font-bold text-accent transition hover:border-accent">
+        ویرایش خدمه
+      </button>
     </div>
   );
 }

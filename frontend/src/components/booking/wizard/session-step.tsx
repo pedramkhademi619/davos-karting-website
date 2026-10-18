@@ -2,10 +2,12 @@
 
 import { fa } from "@/lib/format";
 import type { SessionAvailability } from "@/lib/types";
-import { sessionMinutes, teenSession } from "@/components/booking/wizard/crew";
+import { juniorSession, sessionMinutes, type JuniorWindow } from "@/components/booking/wizard/crew";
 
 const PERIODS = [
-  { title: "عصر", from: 0, to: 18 * 60 },
+  { title: "صبح", from: 0, to: 12 * 60 },
+  { title: "ظهر", from: 12 * 60, to: 15 * 60 },
+  { title: "عصر", from: 15 * 60, to: 18 * 60 },
   { title: "شب", from: 18 * 60, to: 21 * 60 },
   { title: "آخر شب", from: 21 * 60, to: 30 * 60 },
 ] as const;
@@ -13,22 +15,24 @@ const PERIODS = [
 /** The sky over the track at that hour: late-afternoon sun, sunset, then floodlit night. */
 function skyFor(time: string): string {
   const m = sessionMinutes(time);
+  if (m < 12 * 60) return "linear-gradient(160deg, rgb(120 200 255 / 0.22), rgb(255 230 150 / 0.08) 55%, transparent)";
   if (m < 17 * 60) return "linear-gradient(160deg, rgb(255 196 0 / 0.28), rgb(255 120 40 / 0.08) 55%, transparent)";
   if (m < 19 * 60) return "linear-gradient(160deg, rgb(255 90 40 / 0.32), rgb(170 40 120 / 0.12) 55%, transparent)";
   if (m < 22 * 60) return "linear-gradient(160deg, rgb(80 90 255 / 0.28), rgb(20 30 90 / 0.15) 55%, transparent)";
   return "linear-gradient(160deg, rgb(120 70 255 / 0.25), rgb(10 10 40 / 0.2) 55%, transparent)";
 }
 
-type Fit = { fits: boolean; reason: string };
+/** "closed" and "full" cannot be helped; "teen" and "capacity" open the fix sheet when tapped. */
+type Fit = { fits: boolean; kind: "ok" | "closed" | "full" | "teen" | "capacity"; reason: string };
 
-function fitFor(session: SessionAvailability, singles: number, doubles: number, teenDrivers: number): Fit {
-  if (!session.bookable) return { fits: false, reason: "بسته" };
-  if (session.singles_left + session.doubles_left === 0) return { fits: false, reason: "تکمیل" };
-  if (teenDrivers > 0 && !teenSession(session.time)) return { fits: false, reason: "نوجوان‌ها فقط ۱۵ تا ۱۸" };
+function fitFor(session: SessionAvailability, singles: number, doubles: number, junior: JuniorWindow | null): Fit {
+  if (!session.bookable) return { fits: false, kind: "closed", reason: "بسته" };
+  if (session.singles_left + session.doubles_left === 0) return { fits: false, kind: "full", reason: "تکمیل" };
+  if (junior !== null && !juniorSession(session.time, junior)) return { fits: false, kind: "teen", reason: "خارج از ساعت زیر ۱۵ سال · بزنید" };
   if (session.singles_left < singles || session.doubles_left < doubles) {
-    return { fits: false, reason: `فقط ${fa(session.singles_left)} تک و ${fa(session.doubles_left)} دونفره خالی` };
+    return { fits: false, kind: "capacity", reason: `فقط ${fa(session.singles_left)} تک و ${fa(session.doubles_left)} دونفره · بزنید` };
   }
-  return { fits: true, reason: "" };
+  return { fits: true, kind: "ok", reason: "" };
 }
 
 type SessionStepProps = {
@@ -39,15 +43,18 @@ type SessionStepProps = {
   onSelect: (time: string) => void;
   singles: number;
   doubles: number;
-  teenDrivers: number;
+  /** The under-15 hours when they bind this crew, else null. */
+  junior: JuniorWindow | null;
+  /** A session that cannot take the crew as it is was tapped. */
+  onBlocked: (session: SessionAvailability, kind: "teen" | "capacity") => void;
 };
 
 /**
  * Step 3: the session, drawn as a starting grid. Every kart of the session is a grid box; the crew's karts light up in
  * free boxes. Sessions that cannot take the whole crew stay visible but dimmed, with the reason.
  */
-export function SessionStep({ cutoffPassed, sessions, selected, onSelect, singles, doubles, teenDrivers }: SessionStepProps) {
-  const fitting = sessions.filter((s) => fitFor(s, singles, doubles, teenDrivers).fits).length;
+export function SessionStep({ cutoffPassed, sessions, selected, onSelect, singles, doubles, junior, onBlocked }: SessionStepProps) {
+  const fitting = sessions.filter((s) => fitFor(s, singles, doubles, junior).fits).length;
   const message =
     fitting > 0
       ? `${fa(fitting)} سانس برای کل گروه شما جا دارد.`
@@ -74,10 +81,11 @@ export function SessionStep({ cutoffPassed, sessions, selected, onSelect, single
                   key={session.time}
                   session={session}
                   active={session.time === selected}
-                  fit={fitFor(session, singles, doubles, teenDrivers)}
+                  fit={fitFor(session, singles, doubles, junior)}
                   singles={singles}
                   doubles={doubles}
                   onSelect={onSelect}
+                  onBlocked={onBlocked}
                 />
               ))}
             </div>
@@ -95,6 +103,7 @@ function GridTile({
   singles,
   doubles,
   onSelect,
+  onBlocked,
 }: {
   session: SessionAvailability;
   active: boolean;
@@ -102,7 +111,9 @@ function GridTile({
   singles: number;
   doubles: number;
   onSelect: (time: string) => void;
+  onBlocked: (session: SessionAvailability, kind: "teen" | "capacity") => void;
 }) {
+  const fixable = fit.kind === "teen" || fit.kind === "capacity";
   const free = session.singles_left + session.doubles_left;
   const lastSeats = fit.fits && free <= 3;
   const takenSingles = session.single_capacity - session.singles_left;
@@ -113,15 +124,17 @@ function GridTile({
       type="button"
       role="radio"
       aria-checked={active}
-      disabled={!fit.fits}
-      onClick={() => onSelect(session.time)}
+      disabled={!fit.fits && !fixable}
+      onClick={() => (fit.fits ? onSelect(session.time) : fixable && onBlocked(session, fit.kind as "teen" | "capacity"))}
       aria-label={`سانس ساعت ${fa(session.time)}، ${label}`}
       className={`edge-glow relative overflow-hidden rounded-3xl border p-3.5 text-right transition-all duration-300 ease-out-expo ${
         active
           ? "border-accent shadow-[0_0_0_1px_var(--color-accent),0_20px_40px_-18px_rgb(255_196_0/0.6)]"
           : fit.fits
             ? "border-white/10 hover:-translate-y-0.5 hover:border-white/30"
-            : "cursor-not-allowed border-dashed border-white/10 opacity-45"
+            : fixable
+              ? "border-dashed border-white/15 opacity-75 hover:border-accent/50 hover:opacity-100"
+              : "cursor-not-allowed border-dashed border-white/10 opacity-40"
       }`}
     >
       <span aria-hidden="true" className="absolute inset-0 -z-10 bg-[#0d0e12]" />
@@ -144,7 +157,7 @@ function GridTile({
           return <GridBox key={`d${i}`} state={taken ? "taken" : yours ? "yours" : "free"} offset={i % 2 === 1} double />;
         })}
       </span>
-      <span className={`mt-3 block text-xs font-bold ${active ? "text-accent" : lastSeats ? "text-[#ff8a7e]" : "text-fg-muted"}`}>{label}</span>
+      <span className={`mt-3 block text-xs font-bold ${active || fixable ? "text-accent" : lastSeats ? "text-[#ff8a7e]" : "text-fg-muted"}`}>{label}</span>
     </button>
   );
 }

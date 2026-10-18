@@ -7,6 +7,7 @@ import { PageHero } from "@/components/page-hero";
 import { PhoneLink } from "@/components/phone-link";
 import { WorkingHours } from "@/components/working-hours";
 import { site } from "@/content/site";
+import { getBookingInfo } from "@/lib/server-api";
 
 export const metadata: Metadata = {
   title: "تماس با ما",
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const info = await getBookingInfo();
   return (
     <>
       <PageHero eyebrow="ارتباط با ما" title="تماس با ما" lead="برای رزرو، پرسش یا هماهنگی گروهی با ما در ارتباط باشید." />
@@ -25,7 +27,7 @@ export default function ContactPage() {
             <MapLink />
           </InfoCard>
           <InfoCard icon={ClockIcon} label="ساعات کاری">
-            <WorkingHours />
+            <WorkingHours info={info} />
           </InfoCard>
           <InfoCard icon={PhoneIcon} label="تلفن رزرو">
             <PhoneLink />

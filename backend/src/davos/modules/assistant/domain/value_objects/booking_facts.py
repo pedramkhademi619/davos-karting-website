@@ -24,6 +24,14 @@ class BookingFacts:
     online_booking_enabled: bool
     min_days_ahead: int
     hold_minutes: int
-    first_session: time
+    first_session: time  # the evening shift
     interval_minutes: int
     online_booking_cutoff: time | None  # None: online booking stays open all day
+    last_session_before: time | None = None  # end of the evening shift (after midnight when not after the start)
+    morning_shift: tuple[time, time] | None = None  # (first session, end) when there is a morning shift
+    # When under-15s may ride: weekdays (Monday = 0), from (inclusive) and until (exclusive), and whether the window
+    # binds every under-15 (True) or only 11-14 year olds driving a single-seater (False).
+    junior_weekdays: frozenset[int] | None = None
+    junior_from: time | None = None
+    junior_until: time | None = None
+    junior_everyone: bool = False

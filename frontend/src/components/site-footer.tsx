@@ -4,11 +4,12 @@ import { Logo } from "@/components/logo";
 import { MapLink } from "@/components/map-link";
 import { PhoneLink } from "@/components/phone-link";
 import { WorkingHours } from "@/components/working-hours";
+import type { BookingInfo } from "@/lib/types";
 import { navigation, site } from "@/content/site";
 import { hrefFor } from "@/lib/urls";
 
 /** `onBookingHost`: rendered on the booking subdomain, so main-site links become absolute (see lib/urls.ts). */
-export function SiteFooter({ onBookingHost = false }: { onBookingHost?: boolean }) {
+export function SiteFooter({ onBookingHost = false, info = null }: { onBookingHost?: boolean; info?: BookingInfo | null }) {
   // Jalali year in Persian digits.
   const year = new Intl.DateTimeFormat("fa-IR", { year: "numeric" }).format(new Date());
 
@@ -51,7 +52,7 @@ export function SiteFooter({ onBookingHost = false }: { onBookingHost?: boolean 
               <MapLink className="transition-colors hover:text-accent" />
             </li>
             <li>
-              <WorkingHours />
+              <WorkingHours info={info} />
             </li>
             <li>
               <PhoneLink className="font-bold text-on-carbon" />

@@ -1,5 +1,6 @@
 import { site } from "@/content/site";
 import { fa, tomanWords } from "@/lib/format";
+import { juniorHours, openingLines } from "@/lib/hours";
 import type { BookingInfo } from "@/lib/types";
 
 export type FaqItem = { readonly question: string; readonly answer: string };
@@ -17,12 +18,13 @@ function days(names: readonly string[]): string {
  */
 export function buildFaq(info: BookingInfo | null): FaqItem[] {
   const phone = `رزرو تلفنی هم با ${fa(site.contact.phone.local)} انجام می‌شود.`;
-  const hours = site.contact.openingHours.map(({ label, text }) => `${label} از ساعت ${text}`).join("؛ ");
+  const hours = openingLines(info).map(({ label, text }) => `${label} از ساعت ${text}`).join("؛ ");
+  const junior = juniorHours(info) ?? "شنبه تا چهارشنبه از ساعت ۱۵ تا ۱۸";
   const closed = info ? days(info.closed_weekdays) : "";
   const booking = info
-    ? `از صفحه «رزرو سانس» با شماره موبایل وارد شوید، سانس خالی را انتخاب کنید و مبلغ را از درگاه بانک ملت بپردازید؛ خودروها ${fa(
+    ? `در صفحه «رزرو سانس» بگویید چه کسانی می‌آیند تا خودروها چیده شود، روز و سانس را از روی جدول استارت انتخاب کنید، با شماره موبایل وارد شوید و دکمه‌ی «لانچ کنترل» را نگه دارید؛ خودروها ${fa(
         info.hold_minutes,
-      )} دقیقه برای پرداخت نگه داشته می‌شوند و کد رزرو پیامک می‌شود. ${
+      )} دقیقه برای پرداخت نگه داشته می‌شوند، مبلغ را از درگاه بانک ملت می‌پردازید و کد رزرو پیامک می‌شود. ${
         info.min_days_ahead === 0 ? "رزرو برای همان روز هم ممکن است." : "رزرو از روز قبل انجام می‌شود و برای همان روز ممکن نیست."
       }${closed ? ` برای ${closed} رزرو نداریم.` : ""} ${phone}`
     : `از صفحه «رزرو سانس» با شماره موبایل وارد شوید، سانس خالی را انتخاب کنید و مبلغ را از درگاه بانک ملت بپردازید؛ کد رزرو پیامک می‌شود. ${phone}`;
@@ -36,7 +38,7 @@ export function buildFaq(info: BookingInfo | null): FaqItem[] {
     {
       question: "آیا محدودیت سنی و قد وجود دارد؟",
       answer:
-        "از ۱۶ سال به بالا بدون نیاز به تجربه رانندگی می‌توانید با خودروی تک‌نفره برانید. کودک زیر ۱۱ سال به هیچ عنوان رانندگی نمی‌کند. افراد ۱۱ تا ۱۴ ساله فقط با قد بیشتر از ۱۴۰ سانتی‌متر و فقط شنبه تا چهارشنبه از ساعت ۱۵ تا ۱۸ می‌توانند برانند. برای سن دقیقاً ۱۵ سال هنگام رزرو با مجموعه هماهنگ کنید.",
+        `از ۱۶ سال به بالا بدون نیاز به تجربه رانندگی می‌توانید با خودروی تک‌نفره برانید. کودک زیر ۱۱ سال به هیچ عنوان رانندگی نمی‌کند. افراد ۱۱ تا ۱۴ ساله فقط با قد بیشتر از ۱۴۰ سانتی‌متر و فقط ${junior} می‌توانند برانند.${info?.junior_scope === "everyone" ? ` حضور همه‌ی افراد زیر ۱۵ سال (حتی روی صندلی عقب) فقط ${junior} است.` : ""} برای سن دقیقاً ۱۵ سال هنگام رزرو با مجموعه هماهنگ کنید.`,
     },
     {
       question: "شرایط سوار شدن روی خودروی دونفره چیست؟",

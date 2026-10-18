@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { MinusIcon, PlusIcon } from "@/components/icons";
 import { fa } from "@/lib/format";
-import { type Crew, type KartPlan } from "@/components/booking/wizard/crew";
+import { dayRange, type Crew, type JuniorWindow, type KartPlan } from "@/components/booking/wizard/crew";
 
 type Group = { key: keyof Crew; title: string; hint: string; badge: string; colour: string };
 
@@ -36,6 +36,7 @@ type CrewStepProps = {
   onManual: (value: boolean) => void;
   manualSingles: number;
   manualDoubles: number;
+  juniorWindow: JuniorWindow;
   onManualSingles: (value: number) => void;
   onManualDoubles: (value: number) => void;
   maxKarts: number;
@@ -96,13 +97,17 @@ export function CrewStep(props: CrewStepProps) {
             checked={props.teensDrive}
             onSelect={() => props.onTeensDrive(true)}
             title="خودشان رانندگی کنند"
-            text="با خودروی تک‌نفره؛ فقط شنبه تا چهارشنبه و فقط در سانس‌های ساعت ۱۵ تا ۱۸."
+            text={`با خودروی تک‌نفره؛ فقط ${dayRange(props.juniorWindow.days)} و فقط در سانس‌های ساعت ${fa(props.juniorWindow.from)} تا ${fa(props.juniorWindow.until)}.`}
           />
           <TeenChoice
             checked={!props.teensDrive}
             onSelect={() => props.onTeensDrive(false)}
             title="پشت یک بزرگسال بنشینند"
-            text="روی صندلی عقب خودروی دونفره؛ همه‌ی روزها و همه‌ی ساعت‌ها. برای هر نوجوان یک بزرگسال با گواهینامه لازم است."
+            text={
+              props.juniorWindow.everyone
+                ? "روی صندلی عقب خودروی دونفره؛ برای هر نوجوان یک بزرگسال با گواهینامه لازم است. ساعت حضور زیر ۱۵ سال همچنان برقرار است."
+                : "روی صندلی عقب خودروی دونفره؛ همه‌ی روزها و همه‌ی ساعت‌ها. برای هر نوجوان یک بزرگسال با گواهینامه لازم است."
+            }
           />
         </fieldset>
       )}

@@ -7,6 +7,13 @@ class ScheduleSettings {
     required this.onlineBookingEnabled,
     required this.shiftStart,
     required this.shiftEnd,
+    required this.morningShiftEnabled,
+    required this.morningStart,
+    required this.morningEnd,
+    required this.juniorWeekdays,
+    required this.juniorFrom,
+    required this.juniorUntil,
+    required this.juniorScope,
     required this.intervalMinutes,
     required this.singleCapacity,
     required this.doubleCapacity,
@@ -35,6 +42,13 @@ class ScheduleSettings {
     onlineBookingEnabled: j.flag("online_booking_enabled"),
     shiftStart: j.str("shift_start", "10:00"),
     shiftEnd: j.str("shift_end", "22:00"),
+    morningShiftEnabled: j.flag("morning_shift_enabled", true),
+    morningStart: j.str("morning_start", "10:00"),
+    morningEnd: j.str("morning_end", "14:00"),
+    juniorWeekdays: List<int>.from((j["junior_weekdays"] as List?) ?? const [5, 6, 0, 1, 2]),
+    juniorFrom: j.str("junior_from", "15:00"),
+    juniorUntil: j.str("junior_until", "18:00"),
+    juniorScope: j.str("junior_scope", "drivers"),
     intervalMinutes: j.integer("interval_minutes", 30),
     singleCapacity: j.integer("single_capacity"),
     doubleCapacity: j.integer("double_capacity"),
@@ -60,8 +74,21 @@ class ScheduleSettings {
   );
 
   bool onlineBookingEnabled;
+
+  /// The evening shift.
   String shiftStart;
   String shiftEnd;
+
+  /// The morning shift (the owner's default: from 10:00).
+  bool morningShiftEnabled;
+  String morningStart;
+  String morningEnd;
+
+  /// When under-15s may ride; [juniorScope] "drivers" (11-14 year olds driving) or "everyone" (passengers too).
+  List<int> juniorWeekdays;
+  String juniorFrom;
+  String juniorUntil;
+  String juniorScope;
   int intervalMinutes;
   int singleCapacity;
   int doubleCapacity;
@@ -93,6 +120,13 @@ class ScheduleSettings {
     "online_booking_enabled": onlineBookingEnabled,
     "shift_start": shiftStart,
     "shift_end": shiftEnd,
+    "morning_shift_enabled": morningShiftEnabled,
+    "morning_start": morningStart,
+    "morning_end": morningEnd,
+    "junior_weekdays": juniorWeekdays,
+    "junior_from": juniorFrom,
+    "junior_until": juniorUntil,
+    "junior_scope": juniorScope,
     "interval_minutes": intervalMinutes,
     "single_capacity": singleCapacity,
     "double_capacity": doubleCapacity,

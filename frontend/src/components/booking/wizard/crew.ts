@@ -13,8 +13,37 @@ export type Crew = { licensed: number; adult: number; teen: number; kid: number 
 
 export const EMPTY_CREW: Crew = { licensed: 1, adult: 0, teen: 0, kid: 0 };
 
-/** Days on which 11-14 year olds may drive (weekday names as the API writes them). */
-export const TEEN_DAYS = new Set(["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه"]);
+/**
+ * When under-15s may ride, from the admin panel (BookingInfo.junior_*): weekday names as the API writes them, sessions
+ * starting from `from` up to before `until`. `everyone` binds back-seat passengers too; otherwise only 11-14 year olds
+ * who drive a single-seater.
+ */
+export type JuniorWindow = { days: ReadonlySet<string>; from: string; until: string; everyone: boolean };
+
+/** The owner's rule, used until the settings have loaded: Saturday to Wednesday, 15:00 to 18:00, young drivers only. */
+export const DEFAULT_JUNIOR_WINDOW: JuniorWindow = {
+  days: new Set(["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه"]),
+  from: "15:00",
+  until: "18:00",
+  everyone: false,
+};
+
+/** "شنبه تا چهارشنبه" for that run of days, otherwise the names one by one. */
+const WEEK = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"];
+export function dayRange(days: ReadonlySet<string>): string {
+  const ordered = WEEK.filter((d) => days.has(d));
+  const start = WEEK.indexOf(ordered[0]);
+  const contiguous = ordered.length >= 3 && ordered.every((d, i) => WEEK[start + i] === d);
+  return contiguous ? `${ordered[0]} تا ${ordered[ordered.length - 1]}` : ordered.join("، ");
+}
+
+/** The rule in one sentence for the fix sheet. */
+export function juniorRule(window: JuniorWindow, fa: (v: string) => string): string {
+  const when = `${dayRange(window.days)} و در سانس‌های ساعت ${fa(window.from)} تا ${fa(window.until)}`;
+  return window.everyone
+    ? `افراد زیر ۱۵ سال (چه راننده و چه سرنشین صندلی عقب) فقط ${when} می‌توانند سوار شوند.`
+    : `رانندگی نوجوان‌های ۱۱ تا ۱۴ سال فقط ${when} مجاز است. می‌توانند پشت یک بزرگسال گواهینامه‌دار بنشینند؛ آن‌وقت همه‌ی روزها و ساعت‌ها باز است.`;
+}
 
 export type KartPlan =
   | { ok: true; singles: number; doubles: number; teenDrivers: number; people: number }
@@ -57,8 +86,8 @@ export function sessionMinutes(time: string): number {
   return h < 6 ? value + 24 * 60 : value;
 }
 
-/** Sessions 11-14 year olds may drive in: starting from 15:00 to before 18:00. */
-export function teenSession(time: string): boolean {
+/** A session start inside the under-15 hours. */
+export function juniorSession(time: string, window: JuniorWindow): boolean {
   const minutes = sessionMinutes(time);
-  return minutes >= 15 * 60 && minutes < 18 * 60;
+  return minutes >= sessionMinutes(window.from) && minutes < sessionMinutes(window.until);
 }

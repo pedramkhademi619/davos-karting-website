@@ -30,12 +30,24 @@ export default async function HomePage() {
           telephone: site.contact.phone.e164,
           geo: { "@type": "GeoCoordinates", latitude: site.contact.geo.latitude, longitude: site.contact.geo.longitude },
           hasMap: site.contact.map.href,
-          openingHoursSpecification: site.contact.openingHours.map(({ schemaDays, opens, closes }) => ({
-            "@type": "OpeningHoursSpecification",
-            dayOfWeek: schemaDays,
-            opens,
-            closes,
-          })),
+          openingHoursSpecification: [
+            ...(info?.morning_shift_enabled
+              ? [
+                  {
+                    "@type": "OpeningHoursSpecification",
+                    dayOfWeek: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                    opens: info.morning_first_session,
+                    closes: info.morning_last_session_before,
+                  },
+                ]
+              : []),
+            ...site.contact.openingHours.map(({ schemaDays, opens, closes }) => ({
+              "@type": "OpeningHoursSpecification",
+              dayOfWeek: schemaDays,
+              opens,
+              closes,
+            })),
+          ],
           potentialAction: { "@type": "ReserveAction", target: BOOKING_HOME.startsWith("http") ? BOOKING_HOME : `${url}${BOOKING_HOME}` },
         }}
       />
@@ -44,9 +56,9 @@ export default async function HomePage() {
       <Experience />
       <HowItWorks />
       <TrackSection />
-      <RidingRules />
+      <RidingRules info={info} />
       <FaqPreview items={buildFaq(info)} />
-      <ContactPreview />
+      <ContactPreview info={info} />
       <BookingBand />
     </>
   );
