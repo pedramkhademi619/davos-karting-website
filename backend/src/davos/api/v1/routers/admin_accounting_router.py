@@ -40,6 +40,7 @@ from davos.modules.accounting.domain.value_objects.accounting_settings import Ac
 from davos.modules.accounting.domain.value_objects.journal_line import JournalLine
 from davos.modules.administration.domain.enums.admin_permission import AdminPermission
 from davos.shared_kernel.domain.errors.not_found_error import NotFoundError
+from davos.shared_kernel.domain.errors.validation_error import ValidationError
 
 router = APIRouter(prefix="/admin/accounting", tags=["accounting"])
 
@@ -64,6 +65,15 @@ def _optional(raw: str | None, error: type[NotFoundError]) -> uuid.UUID | None:
 
 def _irr(toman: int) -> int:
     return toman * 10
+
+
+def _sources(raw: str | None) -> frozenset[EntrySource]:
+    """ "expense,income" -> those entry sources; an unknown name is a 422, not an empty result."""
+    names = [name.strip() for name in (raw or "").split(",") if name.strip()]
+    try:
+        return frozenset(EntrySource(name) for name in names)
+    except ValueError as exc:
+        raise ValidationError("نوع سند نامعتبر است.", code="invalid_entry_source") from exc
 
 
 async def _lookups(container: ApplicationContainer) -> tuple[dict[uuid.UUID, Account], dict[uuid.UUID, str]]:
@@ -158,7 +168,9 @@ async def journal(
     date_to: Annotated[date | None, Query(alias="to")] = None,
     account_id: str | None = None,
     q: Annotated[str, Query(max_length=80)] = "",
-    source: str | None = None,
+    source: Annotated[
+        str | None, Query(max_length=200, description="One source, or several separated by commas")
+    ] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     _: AuthenticatedAdminRequest = Depends(_ALLOWED),
@@ -170,7 +182,7 @@ async def journal(
             date_to=date_to,
             account_id=_optional(account_id, AccountNotFoundError),
             text=q,
-            source=EntrySource(source) if source else None,
+            sources=_sources(source),
             offset=offset,
             limit=limit,
         )

@@ -68,7 +68,7 @@ void main() {
   test("validation details come back per field", () async {
     api.useAdapter(
       FakeServer({
-        "POST ${Uri.parse(Urls.vendors).path}": const FakeResponse({
+        "POST ${Uri.parse(Urls.accounts).path}": const FakeResponse({
           "message": "اطلاعات نادرست است.",
           "code": "validation_error",
           "details": [
@@ -78,7 +78,7 @@ void main() {
       }),
     );
     try {
-      await api.saveVendor(name: "", phone: "", note: "", active: true);
+      await api.saveAccount(code: "5999", name: "", type: "expense", active: true);
       fail("should have thrown");
     } on ApiError catch (e) {
       expect(e.fields["name"], "نام لازم است.");

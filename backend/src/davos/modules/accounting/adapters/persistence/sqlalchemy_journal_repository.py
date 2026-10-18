@@ -136,6 +136,8 @@ class SqlAlchemyJournalRepository(JournalRepository):
             conditions.append(E.entry_date <= query.date_to)
         if query.source:
             conditions.append(E.source == query.source.value)
+        if query.sources:
+            conditions.append(E.source.in_(sorted(s.value for s in query.sources)))
         if query.account_id:
             conditions.append(exists().where(L.entry_id == E.id, L.account_id == query.account_id))
         needle = query.text.strip()

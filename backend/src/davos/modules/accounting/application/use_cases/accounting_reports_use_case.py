@@ -29,7 +29,14 @@ from davos.shared_kernel.application.unit_of_work import UnitOfWork
 from davos.shared_kernel.domain.errors.validation_error import ValidationError
 
 _CASH_ROLES = (AccountRole.CASH, AccountRole.BANK, AccountRole.POS, AccountRole.GATEWAY)
-_RECEIPT_CHANNEL = {"gateway": "online", "cash": "cash", "pos": "card", "bank": "transfer"}
+
+
+def _channel(source: str, role: str) -> str:
+    """Online tickets, counter cash (the till), or counter card/transfer (the bank). Online and card money used to sit
+    in gateway and card-reader accounts and now goes straight to the bank, so the entry's source decides "online"."""
+    if source == "online_sale":
+        return "online"
+    return "cash" if role == "cash" else "card"
 
 
 class AccountingReportsUseCase:
@@ -107,7 +114,7 @@ class AccountingReportsUseCase:
             revenue = await self._ledger.revenue_by_day(date_from, date_to)
         by_day: dict[date, dict[str, int]] = defaultdict(lambda: defaultdict(int))
         for r in receipts:
-            by_day[r.day][_RECEIPT_CHANNEL.get(r.role, "transfer")] += r.amount_irr
+            by_day[r.day][_channel(r.source, r.role)] += r.amount_irr
         for item in revenue:
             by_day[item.day]["revenue"] += item.amount_irr
         days = tuple(
@@ -116,7 +123,6 @@ class AccountingReportsUseCase:
                 online_irr=v["online"],
                 cash_irr=v["cash"],
                 card_irr=v["card"],
-                transfer_irr=v["transfer"],
                 revenue_irr=v["revenue"],
             )
             for day, v in sorted(by_day.items())

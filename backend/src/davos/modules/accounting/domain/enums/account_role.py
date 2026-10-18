@@ -7,8 +7,8 @@ class AccountRole(StrEnum):
 
     CASH = "cash"  # the till
     BANK = "bank"  # the main bank account
-    POS = "pos"  # card-reader money not yet in the bank
-    GATEWAY = "gateway"  # online payments the gateway has not yet paid out
+    POS = "pos"  # card-reader money not yet in the bank (older books; card sales now go straight to the bank)
+    GATEWAY = "gateway"  # online payments not yet paid out (older books; online sales now go straight to the bank)
     RECEIVABLES = "receivables"
     VAT_RECEIVABLE = "vat_receivable"  # VAT paid on purchases
     FIXED_ASSET_KARTS = "fixed_asset_karts"

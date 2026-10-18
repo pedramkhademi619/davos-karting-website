@@ -80,39 +80,18 @@ class Urls {
 
   /// "$accountItem$id".
   static const String accountItem = "$accounting/accounts/";
-  static const String accountingSettings = "$accounting/settings";
   static const String journal = "$accounting/journal";
 
-  /// "$journalItem$id" and "$journalItem$id/reverse".
+  /// "$journalItem$id/reverse".
   static const String journalItem = "$accounting/journal/";
   static const String expenses = "$accounting/expenses";
   static const String income = "$accounting/income";
   static const String transfers = "$accounting/transfers";
-  static const String vendorPayments = "$accounting/payments";
-  static const String vendors = "$accounting/vendors";
-
-  /// "$vendorItem$id".
-  static const String vendorItem = "$accounting/vendors/";
-  static const String assets = "$accounting/assets";
-
-  /// "$assetItem$id/dispose".
-  static const String assetItem = "$accounting/assets/";
-  static const String depreciation = "$accounting/depreciation";
-  static const String budget = "$accounting/budget";
+  static const String refundPayments = "$accounting/payments";
   static const String cash = "$accounting/cash";
-
-  /// "$fiscalYearItem$year" and "$fiscalYearItem$year/close".
-  static const String fiscalYearItem = "$accounting/fiscal-years/";
-  static const String accountingSync = "$accounting/sync";
 
   // ---- accounting reports ----
   static const String reportDashboard = "$accounting/reports/dashboard";
-  static const String reportTrialBalance = "$accounting/reports/trial-balance";
-  static const String reportLedger = "$accounting/reports/ledger";
-  static const String reportIncomeStatement =
-      "$accounting/reports/income-statement";
-  static const String reportBalanceSheet = "$accounting/reports/balance-sheet";
+  static const String reportIncomeStatement = "$accounting/reports/income-statement";
   static const String reportSales = "$accounting/reports/sales";
-  static const String reportVat = "$accounting/reports/vat";
-  static const String reportCashPosition = "$accounting/reports/cash-position";
 }

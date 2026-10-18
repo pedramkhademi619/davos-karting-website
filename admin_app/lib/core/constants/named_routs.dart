@@ -19,13 +19,9 @@ class NamedRouts {
   static const String changePassword = "/change-password";
 
   // ---- accounting ----
-  static const String accountingJournal = "/accounting/journal";
-  static const String accountingQuickEntry = "/accounting/quick-entry";
-  static const String accountingChart = "/accounting/chart";
-  static const String accountingVendors = "/accounting/vendors";
-  static const String accountingAssets = "/accounting/assets";
+  static const String accountingEntry = "/accounting/entry";
+  static const String accountingDayBook = "/accounting/day-book";
   static const String accountingCash = "/accounting/cash";
-  static const String accountingBudget = "/accounting/budget";
-  static const String accountingReports = "/accounting/reports";
-  static const String accountingSettings = "/accounting/settings";
+  static const String accountingReport = "/accounting/report";
+  static const String accountingCategories = "/accounting/categories";
 }

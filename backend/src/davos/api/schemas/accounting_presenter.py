@@ -187,7 +187,6 @@ class AccountingPresenter:
                     "online_irr": d.online_irr,
                     "cash_irr": d.cash_irr,
                     "card_irr": d.card_irr,
-                    "transfer_irr": d.transfer_irr,
                     "received_irr": d.received_irr,
                     "revenue_irr": d.revenue_irr,
                 }
@@ -196,7 +195,6 @@ class AccountingPresenter:
             "online_irr": summary.online_irr,
             "cash_irr": summary.cash_irr,
             "card_irr": summary.card_irr,
-            "transfer_irr": summary.transfer_irr,
             "received_irr": summary.received_irr,
             "revenue_irr": summary.revenue_irr,
         }

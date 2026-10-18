@@ -4,30 +4,30 @@ import "package:davos_admin/core/services/api_service/api_service.dart";
 import "package:davos_admin/features/accounting/model/accounting_models.dart";
 import "package:davos_admin/shared/controllers/loadable_controller.dart";
 
-/// The chart of accounts and the suppliers, shared by every accounting screen that has to pick one.
+/// The accounts every accounting screen needs: the till, the bank, and the income and expense categories.
 class AccountingDataController extends LoadableController {
   final RxList<Account> accounts = <Account>[].obs;
-  final RxList<Vendor> vendors = <Vendor>[].obs;
 
   @override
-  Future<void> fetch() async {
-    final api = ApiService();
-    final loaded = await Future.wait([api.getAccounts(), api.getVendors()]);
-    accounts.assignAll(loaded[0] as List<Account>);
-    vendors.assignAll(loaded[1] as List<Vendor>);
+  Future<void> fetch() async => accounts.assignAll(await ApiService().getAccounts());
+
+  /// Categories of one kind ("expense" or "revenue") in code order; hidden ones only when asked for.
+  List<Account> categories(String kind, {bool includeHidden = false}) =>
+      accounts.where((a) => a.isCategory(kind) && (includeHidden || a.active)).toList()..sort((a, b) => a.code.compareTo(b.code));
+
+  Account? wallet(Wallet wallet) => accounts.firstWhereOrNull((a) => a.role == (wallet == Wallet.cash ? "cash" : "bank"));
+
+  Account? get capital => accounts.firstWhereOrNull((a) => a.role == "capital");
+
+  Map<String, Account> get byId => {for (final a in accounts) a.id: a};
+
+  /// The top heading a new category goes under (the "درآمدها" or "هزینه‌ها" group).
+  Account? parentFor(String kind) => accounts.firstWhereOrNull((a) => a.isGroup && a.type == kind && a.parentId == null);
+
+  /// The next free four-digit code of a kind (5xxx for expenses, 4xxx for income), so the owner never deals with codes.
+  String nextCode(String kind) {
+    final lead = kind == "expense" ? "5" : "4";
+    final used = accounts.map((a) => a.code).where((c) => c.length == 4 && c.startsWith(lead)).map(int.parse);
+    return "${[int.parse("${lead}000"), ...used].reduce((a, b) => a > b ? a : b) + 1}";
   }
-
-  /// Accounts a transaction may be booked on (not group headings, not retired), sorted by code.
-  List<Account> postable({String? type, bool Function(Account)? where}) =>
-      accounts.where((a) => !a.isGroup && a.active && (type == null || a.type == type) && (where?.call(a) ?? true)).toList()
-        ..sort((a, b) => a.code.compareTo(b.code));
-
-  List<Account> get moneyAccounts => postable(where: (a) => a.holdsMoney);
-
-  /// Options for a drop-down: id -> "code - name".
-  Map<String, String> options(List<Account> list) => {for (final a in list) a.id: a.label};
-
-  Map<String, String> get vendorOptions => {for (final v in vendors.where((v) => v.active)) v.id: v.name};
-
-  Account? byId(String? id) => accounts.where((a) => a.id == id).firstOrNull;
 }

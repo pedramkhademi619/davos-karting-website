@@ -17,19 +17,15 @@ import "package:davos_admin/shared/widgets/state_view.dart";
 const _quick = [
   ("expense", "هزینه", Icons.south_west_rounded, AppColors.danger),
   ("income", "درآمد", Icons.north_east_rounded, AppColors.success),
-  ("transfer", "انتقال", Icons.swap_horiz_rounded, AppColors.info),
-  ("vendor", "پرداخت", Icons.payments_rounded, AppColors.warning),
+  ("move", "جابجایی", Icons.swap_horiz_rounded, AppColors.info),
+  ("owner", "شخصی", Icons.person_rounded, AppColors.warning),
 ];
 
 const _sections = [
-  (NamedRouts.accountingJournal, "دفتر روزنامه", Icons.receipt_long_rounded),
-  (NamedRouts.accountingReports, "گزارش‌ها", Icons.assessment_rounded),
-  (NamedRouts.accountingCash, "صندوق‌گردانی", Icons.point_of_sale_rounded),
-  (NamedRouts.accountingVendors, "تامین‌کنندگان", Icons.local_shipping_rounded),
-  (NamedRouts.accountingAssets, "دارایی‌های ثابت", Icons.precision_manufacturing_rounded),
-  (NamedRouts.accountingBudget, "بودجه", Icons.savings_rounded),
-  (NamedRouts.accountingChart, "سرفصل حساب‌ها", Icons.account_tree_rounded),
-  (NamedRouts.accountingSettings, "تنظیمات", Icons.tune_rounded),
+  (NamedRouts.accountingDayBook, "دفتر روزانه", Icons.receipt_long_rounded),
+  (NamedRouts.accountingReport, "گزارش ماهانه", Icons.assessment_rounded),
+  (NamedRouts.accountingCash, "صندوق", Icons.point_of_sale_rounded),
+  (NamedRouts.accountingCategories, "دسته‌ها", Icons.category_rounded),
 ];
 
 /// The Finance tab: money in hand, this month, the everyday entries one tap away, then every accounting section.
@@ -74,7 +70,9 @@ class FinanceView extends GetView<AccountingHubController> {
                       for (final q in _quick)
                         Expanded(
                           child: Pressable(
-                            onTap: () => Get.toNamed(NamedRouts.accountingQuickEntry, arguments: q.$1),
+                            onTap: () async {
+                              if (await Get.toNamed(NamedRouts.accountingEntry, arguments: q.$1) == true) controller.reload();
+                            },
                             child: Column(
                               children: [
                                 Container(
@@ -108,19 +106,34 @@ class FinanceView extends GetView<AccountingHubController> {
                       ),
                     ),
                   ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: AppCard(
-                    child: Column(
-                      children: [
-                        _Line("بدهی به تامین‌کنندگان", controller.money(d.payablesIrr), d.payablesIrr > 0 ? AppColors.danger : null),
-                        _Line("مالیات بر ارزش افزوده", controller.money(d.vatBalanceIrr), null),
-                        _Line("پیش‌دریافت‌های تحقق‌نیافته", controller.money(d.unrecognizedAdvancesIrr), null),
-                        if (d.refundsPayableIrr > 0) _Line("استردادهای پرداخت‌نشده", controller.money(d.refundsPayableIrr), AppColors.warning),
-                      ],
+                if (d.refundsPayableIrr > 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: AppCard(
+                      borderColor: AppColors.warning.withValues(alpha: 0.4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("${controller.money(d.refundsPayableIrr)} تومان استرداد به مشتری‌ها مانده", style: const TextStyle(fontWeight: FontWeight.w700)),
+                                const SizedBox(height: 4),
+                                Text("وقتی پول را به حساب مشتری برگرداندید، ثبتش کنید.", style: TextStyle(color: p.mid, fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              final args = {"kind": "refund", "amountToman": irrToToman(d.refundsPayableIrr), "owedIrr": d.refundsPayableIrr};
+                              if (await Get.toNamed(NamedRouts.accountingEntry, arguments: args) == true) controller.reload();
+                            },
+                            child: const Text("ثبت پرداخت"),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
                 if (d.topExpenses.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -128,7 +141,7 @@ class FinanceView extends GetView<AccountingHubController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("بیشترین هزینه‌ها", style: TextStyle(fontWeight: FontWeight.w700)),
+                          const Text("خرج این ماه کجا رفت", style: TextStyle(fontWeight: FontWeight.w700)),
                           const SizedBox(height: 10),
                           for (final e in d.topExpenses) _Line(e.name, controller.money(e.amountIrr), null),
                         ],
@@ -136,7 +149,7 @@ class FinanceView extends GetView<AccountingHubController> {
                     ),
                   ),
               ],
-              const Padding(padding: EdgeInsets.fromLTRB(20, 26, 20, 12), child: Text("بخش‌های حسابداری", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+              const Padding(padding: EdgeInsets.fromLTRB(20, 26, 20, 12), child: Text("بخش‌ها", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: GridView.count(
@@ -145,7 +158,7 @@ class FinanceView extends GetView<AccountingHubController> {
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  mainAxisExtent: 84,
+                  mainAxisExtent: 72,
                   children: [
                     for (final s in _sections)
                       AppCard(
@@ -213,7 +226,7 @@ class _Hero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("نقدینگی در دسترس", style: TextStyle(color: p.isDark ? soft : Colors.white70, fontSize: 13.5)),
+          Text("پول در دسترس", style: TextStyle(color: p.isDark ? soft : Colors.white70, fontSize: 13.5)),
           const SizedBox(height: 6),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -233,8 +246,7 @@ class _Hero extends StatelessWidget {
               children: [
                 _Chip("صندوق", c.money(d.cashIrr)),
                 _Chip("بانک", c.money(d.bankIrr)),
-                _Chip("کارتخوان و درگاه", c.money(d.posIrr + d.gatewayIrr)),
-              ],
+                              ],
             ),
           ),
           // keep a use of fg so the palette helper above stays meaningful in light mode too

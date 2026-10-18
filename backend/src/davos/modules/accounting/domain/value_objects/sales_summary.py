@@ -22,13 +22,9 @@ class SalesSummary:
         return sum(d.card_irr for d in self.days)
 
     @property
-    def transfer_irr(self) -> int:
-        return sum(d.transfer_irr for d in self.days)
-
-    @property
     def revenue_irr(self) -> int:
         return sum(d.revenue_irr for d in self.days)
 
     @property
     def received_irr(self) -> int:
-        return self.online_irr + self.cash_irr + self.card_irr + self.transfer_irr
+        return self.online_irr + self.cash_irr + self.card_irr

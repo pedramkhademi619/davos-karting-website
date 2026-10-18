@@ -3,41 +3,40 @@
 import { useState } from "react";
 import { useAdmin } from "@/components/admin/admin-session";
 import { TabHeader } from "@/components/admin/admin-ui";
-import { AccountingDashboardView } from "@/components/admin/accounting/accounting-dashboard";
-import { AccountingSettingsView } from "@/components/admin/accounting/accounting-settings-view";
-import { AssetsView } from "@/components/admin/accounting/assets-view";
-import { BudgetView } from "@/components/admin/accounting/budget-view";
 import { CashView } from "@/components/admin/accounting/cash-view";
-import { ChartView } from "@/components/admin/accounting/chart-view";
-import { JournalView } from "@/components/admin/accounting/journal-view";
-import { QuickEntry } from "@/components/admin/accounting/quick-entry";
-import { ReportsView } from "@/components/admin/accounting/reports-view";
+import { CategoriesView } from "@/components/admin/accounting/categories-view";
+import { DayBookView } from "@/components/admin/accounting/day-book-view";
+import { EntrySheet, type EntryKind } from "@/components/admin/accounting/entry-sheet";
+import { OverviewView } from "@/components/admin/accounting/overview-view";
+import { ReportView } from "@/components/admin/accounting/report-view";
 import { useAccountingData } from "@/components/admin/accounting/use-accounting-data";
-import { VendorsView } from "@/components/admin/accounting/vendors-view";
+import { buttonClasses } from "@/components/button-link";
+import { PlusIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 
 const SECTIONS = [
-  { id: "dashboard", label: "داشبورد مالی" },
-  { id: "entry", label: "ثبت سریع" },
-  { id: "journal", label: "اسناد (دفتر روزنامه)" },
-  { id: "reports", label: "گزارش‌ها" },
-  { id: "vendors", label: "تامین‌کنندگان" },
-  { id: "assets", label: "دارایی‌ها و استهلاک" },
+  { id: "overview", label: "خلاصه" },
+  { id: "daybook", label: "دفتر روزانه" },
   { id: "cash", label: "صندوق" },
-  { id: "budget", label: "بودجه" },
-  { id: "chart", label: "سرفصل‌های حساب" },
-  { id: "settings", label: "تنظیمات" },
+  { id: "report", label: "گزارش ماهانه" },
+  { id: "categories", label: "دسته‌ها" },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
+type Sheet = { kind: EntryKind; amountToman?: number; refundsOwedIrr?: number };
 
-/** Double-entry accounting for the business: bookkeeping, statements, suppliers, assets, budgets and year-end. Owner only. */
+/**
+ * The money side of the track in plain words: ticket sales are booked by themselves; the owner records expenses and other
+ * income in a few taps, counts the till, and reads one simple monthly report. Owner only.
+ */
 export function AccountingTab() {
   const { isOwner } = useAdmin();
-  const { accounts, vendors, ready, error, reload } = useAccountingData();
-  const [section, setSection] = useState<SectionId>("dashboard");
+  const { accounts, ready, error, reload } = useAccountingData();
+  const [section, setSection] = useState<SectionId>("overview");
   const [version, setVersion] = useState(0);
+  const [sheet, setSheet] = useState<Sheet | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
   const changed = () => {
     setVersion((v) => v + 1);
     void reload();
@@ -49,7 +48,17 @@ export function AccountingTab() {
     <div>
       <TabHeader
         title="حسابداری"
-        lead="دفاتر مالی مجموعه: فروش بلیت‌ها خودکار ثبت می‌شود و هزینه‌ها، دارایی‌ها و بدهی‌ها را اینجا اضافه می‌کنید. همه گزارش‌ها از همین اسناد ساخته می‌شوند و مبلغ‌ها به تومان است."
+        lead="فروش بلیت خودش ثبت می‌شود؛ شما فقط خرج‌ها و درآمدهای دیگر را ثبت کنید. مبلغ‌ها به تومان است."
+        actions={
+          <>
+            <button type="button" onClick={() => setSheet({ kind: "expense" })} className={buttonClasses("primary", "md")}>
+              <PlusIcon className="h-4 w-4" /> ثبت هزینه
+            </button>
+            <button type="button" onClick={() => setSheet({ kind: "income" })} className={buttonClasses("dark", "md")}>
+              <PlusIcon className="h-4 w-4" /> ثبت درآمد
+            </button>
+          </>
+        }
       />
       <nav aria-label="بخش‌های حسابداری" className="-mx-1 mb-8 overflow-x-auto pb-1">
         <div role="tablist" className="flex min-w-max gap-2 px-1">
@@ -68,22 +77,42 @@ export function AccountingTab() {
         </div>
       </nav>
 
-      {error && <Alert tone="error" className="mb-6">{error}</Alert>}
+      {saved && (
+        <Alert tone="success" className="mb-6">
+          {saved}
+        </Alert>
+      )}
+      {error && (
+        <Alert tone="error" className="mb-6">
+          {error}
+        </Alert>
+      )}
       {!ready ? (
         <Spinner className="h-8 w-8" />
       ) : (
-        <div key={`${section}-${version}`}>
-          {section === "dashboard" && <AccountingDashboardView />}
-          {section === "entry" && <QuickEntry accounts={accounts} vendors={vendors} onDone={changed} />}
-          {section === "journal" && <JournalView accounts={accounts} vendors={vendors} onChanged={changed} />}
-          {section === "reports" && <ReportsView accounts={accounts} vendors={vendors} />}
-          {section === "vendors" && <VendorsView vendors={vendors} onChanged={changed} />}
-          {section === "assets" && <AssetsView accounts={accounts} vendors={vendors} onChanged={changed} />}
-          {section === "cash" && <CashView onChanged={changed} />}
-          {section === "budget" && <BudgetView accounts={accounts} />}
-          {section === "chart" && <ChartView accounts={accounts} onChanged={changed} />}
-          {section === "settings" && <AccountingSettingsView onChanged={changed} />}
-        </div>
+        <>
+          <div key={section === "daybook" ? section : `${section}-${version}`}>
+            {section === "overview" && <OverviewView onPayRefunds={(owed) => setSheet({ kind: "refund", amountToman: Math.floor(owed / 10), refundsOwedIrr: owed })} />}
+            {section === "daybook" && <DayBookView accounts={accounts} version={version} onChanged={changed} />}
+            {section === "cash" && <CashView onChanged={changed} />}
+            {section === "report" && <ReportView />}
+            {section === "categories" && <CategoriesView accounts={accounts} onChanged={changed} />}
+          </div>
+          {sheet && (
+            <EntrySheet
+              accounts={accounts}
+              kind={sheet.kind}
+              amountToman={sheet.amountToman}
+              refundsOwedIrr={sheet.refundsOwedIrr}
+              onClose={() => setSheet(null)}
+              onSaved={(message) => {
+                setSheet(null);
+                setSaved(message);
+                changed();
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

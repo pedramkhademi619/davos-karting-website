@@ -1,6 +1,7 @@
 /** Shapes of the accounting API (backend/src/davos/api/schemas/accounting_presenter.py). All amounts are Rial (`*_irr`). */
 
 import { fa } from "@/lib/format";
+import { isoToJalaliParts, jalaliMonthLength, jalaliToIso, JALALI_MONTHS } from "@/lib/jalali";
 
 export type AccountType = "asset" | "liability" | "equity" | "revenue" | "expense";
 
@@ -23,8 +24,6 @@ export type EntryLine = {
   debit_irr: number;
   credit_irr: number;
   memo: string;
-  vendor_id: string | null;
-  vendor_name: string;
 };
 
 export type Entry = {
@@ -44,42 +43,6 @@ export type Entry = {
   lines: EntryLine[];
 };
 
-export type AccountingSettings = {
-  auto_posting_enabled: boolean;
-  vat_percent: number;
-  gateway_fee_percent: number;
-  revenue_recognition: "on_payment" | "on_session";
-  locked_through: string | null;
-};
-
-export type Vendor = {
-  id: string;
-  name: string;
-  phone: string;
-  note: string;
-  active: boolean;
-  owed_irr: number;
-  age_0_30_irr: number;
-  age_31_60_irr: number;
-  age_61_90_irr: number;
-  age_over_90_irr: number;
-  advance_irr: number;
-};
-
-export type Asset = {
-  id: string;
-  name: string;
-  asset_account_id: string;
-  cost_irr: number;
-  salvage_irr: number;
-  in_service_date: string;
-  life_months: number;
-  status: "active" | "disposed";
-  note: string;
-  accumulated_irr: number;
-  book_value_irr: number;
-};
-
 export type StatementLine = { account_id: string | null; code: string; name: string; group: string; amount_irr: number };
 
 export type IncomeStatementPeriod = {
@@ -93,68 +56,9 @@ export type IncomeStatementPeriod = {
 };
 export type IncomeStatement = IncomeStatementPeriod & { previous: IncomeStatementPeriod };
 
-export type BalanceSheet = {
-  as_of: string;
-  assets: StatementLine[];
-  liabilities: StatementLine[];
-  equity: StatementLine[];
-  current_earnings_irr: number;
-  total_assets_irr: number;
-  total_liabilities_irr: number;
-  total_equity_irr: number;
-  difference_irr: number;
-};
+export type SalesDay = { date: string; online_irr: number; cash_irr: number; card_irr: number; received_irr: number; revenue_irr: number };
 
-export type TrialBalance = {
-  rows: {
-    account_id: string;
-    code: string;
-    name: string;
-    type: AccountType;
-    opening_debit_irr: number;
-    opening_credit_irr: number;
-    debit_irr: number;
-    credit_irr: number;
-    closing_debit_irr: number;
-    closing_credit_irr: number;
-  }[];
-  total_debit_irr: number;
-  total_credit_irr: number;
-  total_closing_debit_irr: number;
-  total_closing_credit_irr: number;
-};
-
-export type Ledger = {
-  account: Account;
-  opening_irr: number;
-  closing_irr: number;
-  lines: {
-    entry_id: string;
-    number: number;
-    fiscal_year: number;
-    date: string;
-    description: string;
-    memo: string;
-    debit_irr: number;
-    credit_irr: number;
-    balance_irr: number;
-    source: string;
-  }[];
-};
-
-export type SalesReport = {
-  days: { date: string; online_irr: number; cash_irr: number; card_irr: number; transfer_irr: number; received_irr: number; revenue_irr: number }[];
-  online_irr: number;
-  cash_irr: number;
-  card_irr: number;
-  transfer_irr: number;
-  received_irr: number;
-  revenue_irr: number;
-};
-
-export type VatReport = { collected_irr: number; paid_irr: number; opening_balance_irr: number; net_payable_irr: number };
-
-export type BudgetRow = { account_id: string; code: string; name: string; type: AccountType; budget_irr: number; actual_irr: number; variance_irr: number };
+export type SalesReport = { days: SalesDay[]; online_irr: number; cash_irr: number; card_irr: number; received_irr: number; revenue_irr: number };
 
 export type CashClosing = {
   id: string;
@@ -174,42 +78,88 @@ export type AccountingDashboard = {
   pos_irr: number;
   gateway_irr: number;
   liquid_irr: number;
-  payables_irr: number;
   refunds_payable_irr: number;
-  vat_balance_irr: number;
   today_revenue_irr: number;
   month_revenue_irr: number;
   month_expenses_irr: number;
   month_profit_irr: number;
-  unrecognized_advances_irr: number;
   trend: { key: string; revenue_irr: number; expenses_irr: number; profit_irr: number }[];
   top_expenses: StatementLine[];
 };
 
-export const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
-  asset: "دارایی",
-  liability: "بدهی",
-  equity: "حقوق صاحبان سرمایه",
-  revenue: "درآمد",
-  expense: "هزینه",
+/** Where money is kept. Card-reader and gateway balances are bank money on its way (older books), so they count as bank. */
+export type Wallet = "cash" | "bank";
+export const WALLET_LABEL: Record<Wallet, string> = { cash: "صندوق", bank: "بانک" };
+const WALLET_OF_ROLE: Record<string, Wallet> = { cash: "cash", bank: "bank", pos: "bank", gateway: "bank" };
+
+/** The entries the day book lists one by one; ticket sales are shown as one line per day instead. */
+export const DAY_BOOK_SOURCES = ["expense", "income", "transfer", "payroll", "vendor_payment", "manual", "opening", "cash_close", "asset_purchase", "refund"];
+
+/** The categories the owner picks from: active, postable, not a system account, of one type, in code order. */
+export function categories(accounts: Account[], type: "expense" | "revenue", includeHidden = false): Account[] {
+  return accounts
+    .filter((a) => a.type === type && !a.is_group && !a.is_system && (includeHidden || a.active))
+    .sort((a, b) => a.code.localeCompare(b.code, "en"));
+}
+
+/** The account of a wallet (the till or the main bank account). */
+export function walletAccount(accounts: Account[], wallet: Wallet): Account | undefined {
+  return accounts.find((a) => a.role === wallet);
+}
+
+export type EntryView = {
+  /** in: money came in; out: money went out; move: between the till and the bank; other: no money moved (e.g. a refund owed). */
+  direction: "in" | "out" | "move" | "other";
+  amount_irr: number;
+  title: string;
+  category: string | null;
+  wallet: string | null;
 };
+
+/** One journal entry in plain words: which way the money went, how much, for what, and from or into the till or bank. */
+export function viewEntry(entry: Entry, byId: Map<string, Account>): EntryView {
+  let moneyNet = 0;
+  const wallets = new Set<Wallet>();
+  let category: string | null = null;
+  for (const line of entry.lines) {
+    const account = byId.get(line.account_id);
+    const wallet = account?.role ? WALLET_OF_ROLE[account.role] : undefined;
+    if (wallet) {
+      moneyNet += line.debit_irr - line.credit_irr;
+      wallets.add(wallet);
+    } else if (account && (account.type === "expense" || account.type === "revenue") && !category) {
+      category = account.name;
+    }
+  }
+  const walletText = [...wallets].map((w) => WALLET_LABEL[w]).join("، ");
+  const title = entry.description || category || SOURCE_LABEL[entry.source] || "سند";
+  if (entry.source === "transfer" && wallets.size === 2) {
+    const paidFrom = entry.lines.find((l) => l.credit_irr > 0 && WALLET_OF_ROLE[byId.get(l.account_id)?.role ?? ""]);
+    const from = WALLET_OF_ROLE[byId.get(paidFrom?.account_id ?? "")?.role ?? ""] ?? "cash";
+    const to: Wallet = from === "cash" ? "bank" : "cash";
+    return { direction: "move", amount_irr: entry.total_irr, title, category: null, wallet: `${WALLET_LABEL[from]} ← ${WALLET_LABEL[to]}` };
+  }
+  if (moneyNet > 0) return { direction: "in", amount_irr: moneyNet, title, category, wallet: walletText || null };
+  if (moneyNet < 0) return { direction: "out", amount_irr: -moneyNet, title, category, wallet: walletText || null };
+  return { direction: "other", amount_irr: entry.total_irr, title, category, wallet: null };
+}
 
 export const SOURCE_LABEL: Record<string, string> = {
   manual: "سند دستی",
-  opening: "افتتاحیه",
+  opening: "موجودی اول دوره",
   online_sale: "فروش آنلاین",
   counter_sale: "فروش حضوری",
   recognition: "شناسایی درآمد",
-  refund: "استرداد",
+  refund: "استرداد بلیت",
   expense: "هزینه",
-  income: "درآمد متفرقه",
-  vendor_payment: "پرداخت به تامین‌کننده",
-  transfer: "انتقال / پرداخت",
-  asset_purchase: "خرید دارایی",
+  income: "درآمد",
+  vendor_payment: "پرداخت بدهی",
+  transfer: "جابجایی پول",
+  asset_purchase: "خرید تجهیزات",
   depreciation: "استهلاک",
-  cash_close: "صندوق‌گردانی",
+  cash_close: "شمارش صندوق",
   payroll: "حقوق",
-  reversal: "ابطال",
+  reversal: "حذف سند",
   closing: "بستن سال",
 };
 
@@ -219,11 +169,6 @@ export function toman(irr: number): string {
   const whole = Number.isInteger(value);
   const text = Math.abs(value).toLocaleString("en-US", { minimumFractionDigits: whole ? 0 : 1, maximumFractionDigits: whole ? 0 : 1 });
   return `${value < 0 ? "−" : ""}${fa(text).replace(/,/g, "٬")}`;
-}
-
-/** Like `toman` but a zero is shown as a dash (for tables). */
-export function tomanOrDash(irr: number): string {
-  return irr === 0 ? "—" : toman(irr);
 }
 
 /** Saves rows as a UTF-8 CSV (with a byte-order mark so Excel reads Persian text correctly). */
@@ -243,4 +188,25 @@ export function downloadCsv(name: string, header: string[], rows: (string | numb
 /** Rial amount -> plain Toman number for a CSV cell (no grouping, so spreadsheets can add it up). */
 export function csvToman(irr: number): number {
   return irr / 10;
+}
+
+/** A Jalali month as `{ year, month }` (month 1..12), counted as an index so months can be stepped through. */
+export type JalaliMonth = { year: number; month: number };
+
+export function monthOf(iso: string): JalaliMonth {
+  const { jy, jm } = isoToJalaliParts(iso);
+  return { year: jy, month: jm };
+}
+
+export function shiftMonth({ year, month }: JalaliMonth, by: number): JalaliMonth {
+  const index = year * 12 + (month - 1) + by;
+  return { year: Math.floor(index / 12), month: (index % 12) + 1 };
+}
+
+export function monthBounds({ year, month }: JalaliMonth): [string, string] {
+  return [jalaliToIso(year, month, 1), jalaliToIso(year, month, jalaliMonthLength(year, month))];
+}
+
+export function monthName({ year, month }: JalaliMonth): string {
+  return `${JALALI_MONTHS[month - 1]} ${fa(year)}`;
 }

@@ -2,21 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAdmin } from "@/components/admin/admin-session";
-import type { Account, Vendor } from "@/lib/accounting";
+import type { Account } from "@/lib/accounting";
 
-/** The chart of accounts and the suppliers, which almost every accounting screen needs for its drop-downs. */
+/** The accounts (the till, the bank and the income and expense categories) every accounting screen needs. */
 export function useAccountingData() {
   const { call } = useAdmin();
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     try {
-      const [a, v] = await Promise.all([call<Account[]>("/accounting/accounts"), call<Vendor[]>("/accounting/vendors")]);
-      setAccounts(a);
-      setVendors(v);
+      setAccounts(await call<Account[]>("/accounting/accounts"));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
@@ -30,5 +27,5 @@ export function useAccountingData() {
     void reload();
   }, [reload]);
 
-  return { accounts, vendors, ready, error, reload };
+  return { accounts, ready, error, reload };
 }

@@ -3,9 +3,9 @@
     docker compose run --rm --no-deps api python -m davos.tools.seed_demo_data            # add the data
     docker compose run --rm --no-deps api python -m davos.tools.seed_demo_data --clear    # remove it again
 
-The accounting books get the most care: a year of ticket sales, expenses, supplier bills and payments, bank deposits,
-till counts, asset purchases with depreciation, budgets and a closed fiscal year, all balanced and consistent with the
-reservations and payments created next to them. Every demo row can be recognised, so ``--clear`` removes exactly it.
+The accounting books get the most care: a year of ticket sales and refunds, the snack bar and events, everyday
+expenses, weekly bank deposits and nightly till counts, all balanced and consistent with the reservations and payments
+created next to them. Every demo row can be recognised, so ``--clear`` removes exactly it.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
 from davos.modules.accounting.domain.services.fiscal_calendar import FiscalCalendar
 from davos.platform.settings.app_settings import AppSettings
 from davos.tools.demo_data import bookings, extras, ledger
-from davos.tools.demo_data.common import MARK_SUFFIX, TEHRAN, at, new_id
+from davos.tools.demo_data.common import MARK_SUFFIX, TEHRAN, at
 from davos.tools.demo_data.people import CAMPAIGNS
 from davos.tools.demo_data.writer import clear_demo_data, insert_rows
 
@@ -92,26 +92,6 @@ async def _seed(conn: AsyncConnection, *, seed: int, scale: float, now: datetime
         raise SystemExit("The chart of accounts is empty; start the API once so it creates the default chart.")
     codes: dict[str, uuid.UUID] = {code: account_id for account_id, code, _ in accounts}
     roles: dict[str, uuid.UUID] = {role: account_id for account_id, _, role in accounts if role}
-    new_accounts: list[Row] = []
-    for code, name, kind, parent in ledger.EXTRA_ACCOUNTS:
-        if code in codes:
-            continue
-        account_id = new_id(rng)
-        codes[code] = account_id
-        new_accounts.append(
-            {
-                "id": account_id,
-                "code": code,
-                "name": name,
-                "type": kind,
-                "parent_id": codes[parent],
-                "is_group": False,
-                "role": None,
-                "active": True,
-                "is_system": False,
-                "created_at": now,
-            }
-        )
     first_number = {
         int(year): int(last)
         for year, last in (
@@ -123,21 +103,16 @@ async def _seed(conn: AsyncConnection, *, seed: int, scale: float, now: datetime
     )
 
     print("writing ...")
-    counts["accounts"] = await insert_rows(conn, "accounting_accounts", new_accounts)
     counts["reservations"] = await insert_rows(conn, "reservations", data["reservations"])
     counts["payments"] = await insert_rows(conn, "payments_attempts", data["payments"])
     counts["sms"] = await insert_rows(conn, "notifications_sms_messages", sms)
     counts["outbox"] = await insert_rows(conn, "outbox_messages", data["outbox"], jsonb=("payload",))
-    counts["vendors"] = await insert_rows(conn, "accounting_vendors", books["vendors"])
     entries = books["entries"]
     counts["journal_entries"] = await insert_rows(
         conn, "accounting_journal_entries", [{k: v for k, v in e.items() if k != "lines"} for e in entries]
     )
     lines = [{"entry_id": e["id"], "line_no": n, **line} for e in entries for n, line in enumerate(e["lines"], start=1)]
     counts["journal_lines"] = await insert_rows(conn, "accounting_journal_lines", lines)
-    counts["assets"] = await insert_rows(conn, "accounting_fixed_assets", books["assets"])
-    counts["depreciation_runs"] = await insert_rows(conn, "accounting_depreciation_runs", books["runs"])
-    counts["budgets"] = await insert_rows(conn, "accounting_budgets", books["budgets"])
     counts["cash_closings"] = await insert_rows(conn, "accounting_cash_closings", books["closings"])
     for counter in books["counters"]:
         await conn.execute(
@@ -146,14 +121,6 @@ async def _seed(conn: AsyncConnection, *, seed: int, scale: float, now: datetime
                 " ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value"
             ),
             counter,
-        )
-    if books.get("lock"):
-        await conn.execute(
-            text(
-                "INSERT INTO accounting_settings (id, data, updated_at) VALUES (1, CAST(:data AS jsonb), now())"
-                " ON CONFLICT (id) DO UPDATE SET data = accounting_settings.data || EXCLUDED.data, updated_at = now()"
-            ),
-            {"data": '{"locked_through": "' + books["lock"][0]["locked_through"].isoformat() + '"}'},
         )
 
     cache = extras.answer_cache(rng, count=int(300 * scale), now=now, start=start_dt, entry_ids=entry_ids)

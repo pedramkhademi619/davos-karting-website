@@ -63,6 +63,11 @@ async def clear_demo_data(conn: AsyncConnection) -> dict[str, int]:
         await delete("assets", f"DELETE FROM accounting_fixed_assets WHERE {_MARKED}")
         await delete("vendors", f"DELETE FROM accounting_vendors WHERE {_MARKED}")
         await delete("budgets", "DELETE FROM accounting_budgets")
+        await delete(
+            "accounts",
+            f"DELETE FROM accounting_accounts a WHERE {_MARKED}"
+            " AND NOT EXISTS (SELECT 1 FROM accounting_journal_lines l WHERE l.account_id = a.id)",
+        )
         await conn.execute(
             text(
                 "DELETE FROM accounting_counters c WHERE NOT EXISTS (SELECT 1 FROM accounting_journal_entries e"

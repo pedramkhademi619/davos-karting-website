@@ -225,7 +225,7 @@ async def test_a_locked_period_refuses_new_entries(container: ApplicationContain
 async def test_a_counter_sale_lands_in_the_right_account_once_and_a_cancellation_gives_it_back(
     container: ApplicationContainer,
 ) -> None:
-    cash, pos = await role(container, AccountRole.CASH), await role(container, AccountRole.POS)
+    cash, bank = await role(container, AccountRole.CASH), await role(container, AccountRole.BANK)
     revenue = await role(container, AccountRole.SALES_REVENUE)
     events = AccountingEvents(container)
     sale_id = await counter_sale(container, CounterPaymentMethod.CASH, 790_000)
@@ -234,7 +234,7 @@ async def test_a_counter_sale_lands_in_the_right_account_once_and_a_cancellation
     for reservation_id in (sale_id, sale_id, card_id, held_id):  # the same event twice changes nothing
         await events.book_sale(reservation_id)
     assert await balance(container, cash) == 7_900_000
-    assert await balance(container, pos) == 5_000_000
+    assert await balance(container, bank) == 5_000_000  # the card network settles into the bank by itself
     assert await balance(container, revenue) == -12_900_000  # no entry for the seat held without money
     await events.book_refund(sale_id)
     await events.book_refund(sale_id)
@@ -256,7 +256,8 @@ async def test_vat_and_the_gateway_fee_are_booked_for_an_online_sale_and_refunds
     )
     assert await balance(container, await role(container, AccountRole.VAT_PAYABLE)) == -100_000
     assert await balance(container, await role(container, AccountRole.GATEWAY_FEES)) == 11_000
-    assert await balance(container, await role(container, AccountRole.GATEWAY)) == 1_089_000
+    assert await balance(container, await role(container, AccountRole.BANK)) == 1_089_000
+    assert await balance(container, await role(container, AccountRole.GATEWAY)) == 0
     assert not await container.sales_posting().post_sale(
         reservation_id="r-1",
         amount_irr=1_100_000,
@@ -453,12 +454,22 @@ async def test_sales_summary_splits_receipts_by_channel(container: ApplicationCo
     await events.book_sale(await counter_sale(container, CounterPaymentMethod.CARD, 200_000))
     await events.book_sale(await counter_sale(container, CounterPaymentMethod.TRANSFER, 300_000))
     summary = await container.accounting_reports().sales_summary(TODAY, TODAY)
-    assert (summary.cash_irr, summary.card_irr, summary.transfer_irr, summary.revenue_irr) == (
+    # card and card-to-card both land in the bank, so they are one channel
+    assert (summary.online_irr, summary.cash_irr, summary.card_irr, summary.revenue_irr) == (
+        0,
         1_000_000,
-        2_000_000,
-        3_000_000,
+        5_000_000,
         6_000_000,
     )
+    online = await container.sales_posting().post_sale(
+        reservation_id="r-online",
+        amount_irr=700_000,
+        online=True,
+        counter_method=None,
+        session_day=TODAY,
+        label="آنلاین",
+    )
+    assert online and (await container.accounting_reports().sales_summary(TODAY, TODAY)).online_irr == 700_000
 
 
 # ---------------------------------------------------------------- the owner-only API
@@ -541,3 +552,33 @@ async def test_the_owner_posts_reverses_and_reads_reports_through_the_api(admin_
     assert again.status_code == 409 and again.json()["code"] == "entry_already_reversed"
     dashboard = (await admin_api.get("/api/v1/admin/accounting/reports/dashboard")).json()
     assert dashboard["cash_irr"] == 0 and len(dashboard["trend"]) == 6
+
+
+async def test_the_day_book_lists_only_the_kinds_of_entry_asked_for(
+    admin_api: httpx.AsyncClient, container: ApplicationContainer
+) -> None:
+    headers = await login(admin_api)
+    cash, bank = await role(container, AccountRole.CASH), await role(container, AccountRole.BANK)
+    fuel = await code(container, "5101")
+    await post(container, bank, await role(container, AccountRole.CAPITAL), 10_000_000)
+    await AccountingEvents(container).book_sale(await counter_sale(container, CounterPaymentMethod.CASH, 790_000))
+    spent = await admin_api.post(
+        "/api/v1/admin/accounting/expenses",
+        json={
+            "date": "2026-10-14",
+            "amount_toman": 120_000,
+            "expense_account_id": str(fuel),
+            "paid_from_account_id": str(cash),
+        },
+        headers=headers,
+    )
+    assert spent.status_code == 201, spent.text
+    moved = await admin_api.post(
+        "/api/v1/admin/accounting/transfers",
+        json={"date": "2026-10-14", "amount_toman": 50_000, "from_account_id": str(cash), "to_account_id": str(bank)},
+        headers=headers,
+    )
+    assert moved.status_code == 201, moved.text
+    page = (await admin_api.get("/api/v1/admin/accounting/journal", params={"source": "expense,transfer"})).json()
+    assert page["total"] == 2 and {e["source"] for e in page["items"]} == {"expense", "transfer"}
+    assert (await admin_api.get("/api/v1/admin/accounting/journal", params={"source": "nonsense"})).status_code == 422

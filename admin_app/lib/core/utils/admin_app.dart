@@ -8,21 +8,14 @@ import "package:davos_admin/core/utils/app_bindings.dart";
 import "package:davos_admin/core/utils/theme_controller.dart";
 import "package:davos_admin/features/accounting/controller/accounting_data_controller.dart";
 import "package:davos_admin/features/accounting/controller/accounting_hub_controller.dart";
-import "package:davos_admin/features/accounting/controller/accounting_settings_controller.dart";
-import "package:davos_admin/features/accounting/controller/assets_controller.dart";
-import "package:davos_admin/features/accounting/controller/budget_controller.dart";
 import "package:davos_admin/features/accounting/controller/cash_controller.dart";
-import "package:davos_admin/features/accounting/controller/journal_controller.dart";
-import "package:davos_admin/features/accounting/controller/reports_controller.dart";
-import "package:davos_admin/features/accounting/page/accounting_settings_page.dart";
-import "package:davos_admin/features/accounting/page/assets_page.dart";
-import "package:davos_admin/features/accounting/page/budget_page.dart";
+import "package:davos_admin/features/accounting/controller/day_book_controller.dart";
+import "package:davos_admin/features/accounting/controller/report_controller.dart";
 import "package:davos_admin/features/accounting/page/cash_page.dart";
-import "package:davos_admin/features/accounting/page/chart_page.dart";
-import "package:davos_admin/features/accounting/page/journal_page.dart";
-import "package:davos_admin/features/accounting/page/quick_entry_page.dart";
-import "package:davos_admin/features/accounting/page/reports_page.dart";
-import "package:davos_admin/features/accounting/page/vendors_page.dart";
+import "package:davos_admin/features/accounting/page/categories_page.dart";
+import "package:davos_admin/features/accounting/page/day_book_page.dart";
+import "package:davos_admin/features/accounting/page/entry_page.dart";
+import "package:davos_admin/features/accounting/page/report_page.dart";
 import "package:davos_admin/features/assistant/controller/assistant_controller.dart";
 import "package:davos_admin/features/assistant/page/assistant_page.dart";
 import "package:davos_admin/features/auth/page/change_password_page.dart";
@@ -55,7 +48,7 @@ import "package:davos_admin/features/users/page/users_page.dart";
 class AdminApp extends StatelessWidget {
   const AdminApp({super.key});
 
-  /// The accounting screens share the chart of accounts and the supplier list.
+  /// The accounting screens share the till, the bank and the income and expense categories.
   static void _accountingData() => Get.lazyPut<AccountingDataController>(AccountingDataController.new, fenix: true);
 
   @override
@@ -138,51 +131,18 @@ class AdminApp extends StatelessWidget {
           binding: BindingsBuilder(() => Get.lazyPut(UsersController.new)),
         ),
         // ---- accounting ----
-        GetPage(name: NamedRouts.accountingQuickEntry, page: () => const QuickEntryPage(), binding: BindingsBuilder(_accountingData)),
+        GetPage(name: NamedRouts.accountingEntry, page: () => const EntryPage(), binding: BindingsBuilder(_accountingData)),
         GetPage(
-          name: NamedRouts.accountingJournal,
-          page: () => const JournalPage(),
+          name: NamedRouts.accountingDayBook,
+          page: () => const DayBookPage(),
           binding: BindingsBuilder(() {
             _accountingData();
-            Get.lazyPut(JournalController.new);
+            Get.lazyPut(DayBookController.new);
           }),
         ),
-        GetPage(name: NamedRouts.accountingChart, page: () => const ChartPage(), binding: BindingsBuilder(_accountingData)),
-        GetPage(name: NamedRouts.accountingVendors, page: () => const VendorsPage(), binding: BindingsBuilder(_accountingData)),
-        GetPage(
-          name: NamedRouts.accountingAssets,
-          page: () => const AssetsPage(),
-          binding: BindingsBuilder(() {
-            _accountingData();
-            Get.lazyPut(AssetsController.new);
-          }),
-        ),
-        GetPage(
-          name: NamedRouts.accountingCash,
-          page: () => const CashPage(),
-          binding: BindingsBuilder(() => Get.lazyPut(CashController.new)),
-        ),
-        GetPage(
-          name: NamedRouts.accountingBudget,
-          page: () => const BudgetPage(),
-          binding: BindingsBuilder(() {
-            _accountingData();
-            Get.lazyPut(BudgetController.new);
-          }),
-        ),
-        GetPage(
-          name: NamedRouts.accountingReports,
-          page: () => const ReportsPage(),
-          binding: BindingsBuilder(() {
-            _accountingData();
-            Get.lazyPut(ReportsController.new);
-          }),
-        ),
-        GetPage(
-          name: NamedRouts.accountingSettings,
-          page: () => const AccountingSettingsPage(),
-          binding: BindingsBuilder(() => Get.lazyPut(AccountingSettingsController.new)),
-        ),
+        GetPage(name: NamedRouts.accountingCash, page: () => const CashPage(), binding: BindingsBuilder(() => Get.lazyPut(CashController.new))),
+        GetPage(name: NamedRouts.accountingReport, page: () => const ReportPage(), binding: BindingsBuilder(() => Get.lazyPut(ReportController.new))),
+        GetPage(name: NamedRouts.accountingCategories, page: () => const CategoriesPage(), binding: BindingsBuilder(_accountingData)),
       ],
     );
   }

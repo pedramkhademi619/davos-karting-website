@@ -14,5 +14,6 @@ class JournalQuery:
     account_id: uuid.UUID | None = None
     text: str = ""  # description or entry number
     source: EntrySource | None = None
+    sources: frozenset[EntrySource] = frozenset()  # any of these (empty = no filter)
     offset: int = 0
     limit: int = 50

@@ -16,7 +16,9 @@ from davos.modules.accounting.domain.services.tehran_calendar import TehranCalen
 from davos.shared_kernel.application.clock import Clock
 from davos.shared_kernel.application.unit_of_work import UnitOfWork
 
-_COUNTER_ACCOUNT_ROLE = {"cash": AccountRole.CASH, "card": AccountRole.POS, "transfer": AccountRole.BANK}
+# Card-reader and online (Shaparak) payments are settled into the bank account by the payment network itself, so they
+# are booked straight to the bank: nobody has to move "card reader" or "gateway" balances to the bank by hand.
+_COUNTER_ACCOUNT_ROLE = {"cash": AccountRole.CASH, "card": AccountRole.BANK, "transfer": AccountRole.BANK}
 _SYSTEM = "system"
 _RECOGNITION_BATCH = 500
 
@@ -59,7 +61,7 @@ class SalesPostingUseCase:
         if amount_irr <= 0:
             return False
         source = EntrySource.ONLINE_SALE if online else EntrySource.COUNTER_SALE
-        role = AccountRole.GATEWAY if online else _COUNTER_ACCOUNT_ROLE.get(counter_method or "")
+        role = AccountRole.BANK if online else _COUNTER_ACCOUNT_ROLE.get(counter_method or "")
         if role is None:
             return False
         async with self._uow:
