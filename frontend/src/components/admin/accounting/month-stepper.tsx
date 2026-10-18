@@ -11,13 +11,13 @@ export function MonthStepper({ month, onChange }: { month: JalaliMonth; onChange
   return (
     <div className="flex items-center justify-between gap-3 sm:justify-start">
       <button type="button" aria-label="ماه قبل" onClick={() => onChange(shiftMonth(month, -1))} className={button}>
-        ›
+        ‹
       </button>
       <p className="min-w-36 text-center text-lg font-black" aria-live="polite">
         {monthName(month)}
       </p>
       <button type="button" aria-label="ماه بعد" disabled={atNow} onClick={() => onChange(shiftMonth(month, 1))} className={button}>
-        ‹
+        ›
       </button>
     </div>
   );

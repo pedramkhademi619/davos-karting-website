@@ -15,12 +15,12 @@ import "package:davos_admin/shared/widgets/info_widgets.dart";
 import "package:davos_admin/shared/widgets/pressable.dart";
 import "package:davos_admin/shared/widgets/state_view.dart";
 
-const _kinds = {"expense": "هزینه", "income": "درآمد", "move": "جابجایی", "owner": "شخصی"};
+const _kinds = {"expense": "هزینه", "income": "درآمد", "owner": "شخصی"};
 
 /// Records money in plain words: an expense, an income that is not a ticket, cash taken to the bank (or back), the owner's
 /// own money, or a refund handed back to a customer. Amount, category, till or bank, done; the date defaults to today.
 ///
-/// Arguments: the kind ("expense", "income", "move", "owner", "refund"), or `{"kind": .., "amountToman": .., "owedIrr": ..}`.
+/// Arguments: the kind ("expense", "income", "owner", "refund"), or `{"kind": .., "amountToman": .., "owedIrr": ..}`.
 class EntryPage extends StatefulWidget {
   const EntryPage({super.key});
 
@@ -63,6 +63,34 @@ class _EntryPageState extends State<EntryPage> {
 
   bool get _needsCategory => _kind == "expense" || _kind == "income";
 
+  /// A category that is not in the list: typed here, saved for good (it also shows in the categories page).
+  Future<void> _addCategory() async {
+    final controller = TextEditingController();
+    final ok = await showFormSheet<bool>(
+      context,
+      title: _kind == "expense" ? "بابت تازه" : "محل درآمد تازه",
+      builder: (sheet) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LabeledField(label: "نام", controller: controller, autofocus: true, maxLength: 120),
+          AppButton(label: "افزودن", onPressed: () => Navigator.of(sheet).pop(true)),
+        ],
+      ),
+    );
+    final name = controller.text.trim();
+    controller.dispose();
+    if (ok != true || name.isEmpty) return;
+    final kind = _kind == "expense" ? "expense" : "revenue";
+    try {
+      await ApiService().saveAccount(code: data.nextCode(kind), name: name, type: kind, parentId: data.parentFor(kind)?.id, active: true);
+      await data.reload();
+      final created = data.categories(kind).where((a) => a.name == name).firstOrNull;
+      if (created != null && mounted) setState(() => _category = created.id);
+    } catch (e) {
+      toast(errorMessage(e), error: true);
+    }
+  }
+
   Future<void> _submit() async {
     final amount = moneyValue(_amount);
     final till = data.wallet(Wallet.cash);
@@ -83,9 +111,6 @@ class _EntryPageState extends State<EntryPage> {
           await api.recordExpense(date: _day, amountToman: amount, description: note, expenseAccountId: _category!, paidFromAccountId: chosen.id);
         case "income":
           await api.recordIncome(date: _day, amountToman: amount, description: note, revenueAccountId: _category!, depositAccountId: chosen.id);
-        case "move":
-          final (from, to) = _wallet == Wallet.cash ? (till, bank) : (bank, till);
-          await api.recordTransfer(date: _day, amountToman: amount, description: note, fromAccountId: from.id, toAccountId: to.id);
         case "owner":
           // the owner's own money: not an expense or income of the business, so profit does not change
           final capital = data.capital;
@@ -145,11 +170,19 @@ class _EntryPageState extends State<EntryPage> {
                 label: _kind == "expense" ? "بابت" : "از محل",
                 child: options.isEmpty
                     ? const Text("هنوز دسته‌ای ندارید؛ از بخش «دسته‌ها» یکی اضافه کنید.")
-                    : Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [for (final a in options) _Chip(a.name, selected: a.id == _category, onTap: () => setState(() => _category = a.id))],
-                      ),
+                    : const SizedBox.shrink(),
+              ),
+            if (_needsCategory)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final a in options) _Chip(a.name, selected: a.id == _category, onTap: () => setState(() => _category = a.id)),
+                    _Chip("+ جدید", selected: false, onTap: _addCategory),
+                  ],
+                ),
               ),
             if (_kind == "owner") ...[
               FieldShell(
@@ -166,9 +199,9 @@ class _EntryPageState extends State<EntryPage> {
               ),
             ],
             FieldShell(
-              label: _kind == "move" ? "جهت" : (_kind == "income" || (_kind == "owner" && !_ownerDraw) ? "واریز به" : "پرداخت از"),
+              label: _kind == "income" || (_kind == "owner" && !_ownerDraw) ? "واریز به" : "پرداخت از",
               child: PillSelector<Wallet>(
-                options: _kind == "move" ? const {Wallet.cash: "صندوق ← بانک", Wallet.bank: "بانک ← صندوق"} : walletLabels,
+                options: walletLabels,
                 value: _wallet,
                 onChanged: (w) => setState(() => _wallet = w),
               ),

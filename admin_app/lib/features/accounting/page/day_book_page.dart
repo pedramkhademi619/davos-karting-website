@@ -70,9 +70,9 @@ class MonthStepper extends StatelessWidget {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        IconButton.outlined(onPressed: () => onStep(-1), icon: const Icon(Icons.chevron_right_rounded), tooltip: "ماه قبل"),
+        IconButton.outlined(onPressed: () => onStep(-1), icon: const Icon(Icons.chevron_left_rounded), tooltip: "ماه قبل"),
         SizedBox(width: 150, child: Text(month.label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
-        IconButton.outlined(onPressed: month.isCurrent ? null : () => onStep(1), icon: const Icon(Icons.chevron_left_rounded), tooltip: "ماه بعد"),
+        IconButton.outlined(onPressed: month.isCurrent ? null : () => onStep(1), icon: const Icon(Icons.chevron_right_rounded), tooltip: "ماه بعد"),
       ],
     ),
   );

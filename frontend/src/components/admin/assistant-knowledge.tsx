@@ -17,7 +17,7 @@ const QUICK_TITLES = ["ساعت کاری", "نحوه رزرو نوبت", "خود
 
 type Draft = { id: string | null; source_type: string; title: string; body: string; url: string };
 
-const EMPTY: Draft = { id: null, source_type: "faq", title: "", body: "", url: "/faq" };
+const EMPTY: Draft = { id: null, source_type: "", title: "", body: "", url: "" };
 
 /** What the assistant may answer from. Stored in the database; the owner adds, edits and deletes here. */
 export function AssistantKnowledge({ onChanged }: { onChanged: () => void }) {
@@ -48,7 +48,7 @@ export function AssistantKnowledge({ onChanged }: { onChanged: () => void }) {
     if (!draft) return;
     setSaving(true);
     setError(null);
-    const body = { source_type: draft.source_type, title: draft.title, body: draft.body, url: draft.url };
+    const body = { source_type: draft.source_type || "faq", title: draft.title, body: draft.body, url: draft.url.trim() || "/" };
     try {
       if (draft.id) await call(`/assistant/knowledge/${draft.id}`, { method: "PUT", body });
       else await call("/assistant/knowledge", { method: "POST", body });
@@ -117,8 +117,9 @@ export function AssistantKnowledge({ onChanged }: { onChanged: () => void }) {
                   <input className="field" required maxLength={300} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-sm font-bold">نوع</span>
+                  <span className="mb-1 block text-sm font-bold">نوع (اختیاری)</span>
                   <select className="field" value={draft.source_type} onChange={(e) => setDraft({ ...draft, source_type: e.target.value })}>
+                    <option value="">بدون نوع</option>
                     {Object.entries(SOURCE_TYPE_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>
                         {label}
@@ -128,8 +129,8 @@ export function AssistantKnowledge({ onChanged }: { onChanged: () => void }) {
                 </label>
               </div>
               <label className="block">
-                <span className="mb-1 block text-sm font-bold">صفحهٔ مرتبط در سایت (باید با / شروع شود)</span>
-                <input className="field" dir="ltr" required maxLength={300} value={draft.url} onChange={(e) => setDraft({ ...draft, url: e.target.value })} />
+                <span className="mb-1 block text-sm font-bold">صفحهٔ مرتبط در سایت (اختیاری؛ اگر بنویسید باید با / شروع شود، مثل /faq)</span>
+                <input className="field" dir="ltr" maxLength={300} placeholder="/faq" value={draft.url} onChange={(e) => setDraft({ ...draft, url: e.target.value })} />
               </label>
               <label className="block">
                 <span className="mb-1 block text-sm font-bold">

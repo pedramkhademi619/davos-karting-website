@@ -102,6 +102,18 @@ export function categories(accounts: Account[], type: "expense" | "revenue", inc
     .sort((a, b) => a.code.localeCompare(b.code, "en"));
 }
 
+/** The next free four-digit code of a type (5xxx for expenses, 4xxx for income), so the owner never deals with codes. */
+export function nextCategoryCode(accounts: Account[], type: "expense" | "revenue"): string {
+  const lead = type === "expense" ? "5" : "4";
+  const used = accounts.map((a) => a.code).filter((c) => c.length === 4 && c.startsWith(lead)).map(Number);
+  return String(Math.max(Number(`${lead}000`), ...used) + 1);
+}
+
+/** The top heading ("درآمدها" / "هزینه‌ها") a new category goes under. */
+export function categoryParent(accounts: Account[], type: "expense" | "revenue"): Account | undefined {
+  return accounts.find((a) => a.is_group && a.type === type && a.parent_id === null);
+}
+
 /** The account of a wallet (the till or the main bank account). */
 export function walletAccount(accounts: Account[], wallet: Wallet): Account | undefined {
   return accounts.find((a) => a.role === wallet);

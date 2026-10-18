@@ -9,15 +9,14 @@ import { CloseIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
-import { categories, toman, walletAccount, WALLET_LABEL, type Account, type Wallet } from "@/lib/accounting";
+import { categories, categoryParent, nextCategoryCode, toman, walletAccount, WALLET_LABEL, type Account, type Wallet } from "@/lib/accounting";
 import { currentBusinessDay } from "@/lib/jalali";
 
-export type EntryKind = "expense" | "income" | "move" | "owner" | "refund";
+export type EntryKind = "expense" | "income" | "owner" | "refund";
 
 const KINDS: { id: EntryKind; label: string }[] = [
   { id: "expense", label: "هزینه" },
   { id: "income", label: "درآمد" },
-  { id: "move", label: "جابجایی" },
   { id: "owner", label: "شخصی" },
 ];
 
@@ -37,6 +36,7 @@ export function EntrySheet({
   refundsOwedIrr = 0,
   onClose,
   onSaved,
+  onCategoriesChanged,
 }: {
   accounts: Account[];
   kind: EntryKind;
@@ -44,6 +44,8 @@ export function EntrySheet({
   refundsOwedIrr?: number;
   onClose: () => void;
   onSaved: (message: string) => void;
+  /** A category was added from this form: reload the accounts (it stays for good, in the categories page too). */
+  onCategoriesChanged: () => void;
 }) {
   const { call } = useAdmin();
   const [kind, setKind] = useState<EntryKind>(initialKind);
@@ -70,6 +72,21 @@ export function EntrySheet({
   const needsCategory = kind === "expense" || kind === "income";
   const ready = amount > 0 && (!needsCategory || options.some((o) => o.id === category));
 
+  async function addCategory(name: string) {
+    const type = kind === "expense" ? "expense" : "revenue";
+    try {
+      const created = await call<Account>("/accounting/accounts", {
+        method: "POST",
+        body: { code: nextCategoryCode(accounts, type), name, type, parent_id: categoryParent(accounts, type)?.id ?? null, is_group: false },
+      });
+      onCategoriesChanged();
+      setCategory(created.id);
+      setError(null);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     const till = walletAccount(accounts, "cash");
@@ -87,9 +104,6 @@ export function EntrySheet({
         await call("/accounting/expenses", { method: "POST", body: { ...base, expense_account_id: category, paid_from_account_id: chosen.id } });
       } else if (kind === "income") {
         await call("/accounting/income", { method: "POST", body: { ...base, revenue_account_id: category, deposit_account_id: chosen.id } });
-      } else if (kind === "move") {
-        const [from, to] = wallet === "cash" ? [till, bank] : [bank, till];
-        await call("/accounting/transfers", { method: "POST", body: { ...base, from_account_id: from.id, to_account_id: to.id } });
       } else if (kind === "owner") {
         // the owner's own money: taking profit out, or putting money in; not an expense or income of the business
         const capital = accounts.find((a) => a.role === "capital");
@@ -115,11 +129,9 @@ export function EntrySheet({
           ? `هزینه «${name}» به مبلغ ${toman(amount * 10)} تومان ثبت شد.`
           : kind === "income"
             ? `درآمد «${name}» به مبلغ ${toman(amount * 10)} تومان ثبت شد.`
-            : kind === "move"
-              ? `${toman(amount * 10)} تومان از ${WALLET_LABEL[wallet]} به ${WALLET_LABEL[wallet === "cash" ? "bank" : "cash"]} رفت.`
-              : kind === "owner"
-                ? `${ownerDraw ? "برداشت" : "آورده‌ی"} شخصی ${toman(amount * 10)} تومان ثبت شد.`
-                : `پرداخت استرداد ${toman(amount * 10)} تومان ثبت شد.`,
+            : kind === "owner"
+              ? `${ownerDraw ? "برداشت" : "آورده‌ی"} شخصی ${toman(amount * 10)} تومان ثبت شد.`
+              : `پرداخت استرداد ${toman(amount * 10)} تومان ثبت شد.`,
       );
     } catch (err) {
       setError(errorMessage(err));
@@ -163,9 +175,9 @@ export function EntrySheet({
 
           {needsCategory &&
             (options.length ? (
-              <CategoryChips label={kind === "expense" ? "بابت" : "از محل"} options={options} value={category} onChange={setCategory} />
+              <CategoryChips label={kind === "expense" ? "بابت" : "از محل"} options={options} value={category} onChange={setCategory} onAdd={addCategory} />
             ) : (
-              <Alert tone="info">هنوز دسته‌ای ندارید؛ از بخش «دسته‌ها» یکی اضافه کنید.</Alert>
+              <CategoryChips label={kind === "expense" ? "بابت" : "از محل"} options={[]} value={category} onChange={setCategory} onAdd={addCategory} />
             ))}
 
           {kind === "owner" && (
@@ -183,24 +195,12 @@ export function EntrySheet({
             </>
           )}
 
-          {kind === "move" ? (
-            <Segmented
-              label="جهت"
-              options={[
-                { id: "cash", label: "صندوق ← بانک" },
-                { id: "bank", label: "بانک ← صندوق" },
-              ]}
-              value={wallet}
-              onChange={setWallet}
-            />
-          ) : (
             <Segmented
               label={kind === "income" || (kind === "owner" && !ownerDraw) ? "واریز به" : "پرداخت از"}
               options={WALLETS}
               value={wallet}
               onChange={setWallet}
             />
-          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="تاریخ">

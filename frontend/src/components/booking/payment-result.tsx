@@ -106,13 +106,13 @@ export function PaymentResult() {
             <CheckIcon className="h-10 w-10" />
           </span>
           <h1 className="mt-6 text-3xl font-black md:text-4xl">رزرو شما قطعی شد!</h1>
-          <p className="mt-3 text-on-carbon-muted">کد رزرو برایتان پیامک می‌شود. همین کد را در پیست نشان دهید.</p>
+          <p className="mt-3 text-on-carbon-muted">شماره بلیت برایتان پیامک می‌شود. همین شماره را در پیست اعلام کنید.</p>
         </div>
         {r && (
           <div className="ticket mt-8 bg-white/[0.06] p-6 ring-1 ring-white/10">
-            <p className="text-center text-sm text-on-carbon-muted">کد رزرو</p>
+            <p className="text-center text-sm text-on-carbon-muted">شماره بلیت</p>
             <p className="race-number mt-2 text-center text-4xl font-black tracking-wider text-accent" dir="ltr">
-              {r.code}
+              {r.ticket_number}
             </p>
             <dl className="mt-6 grid grid-cols-2 gap-4 text-center">
               <Fact label="روز" value={`${r.weekday} ${jalali(r.date_jalali)}`} />

@@ -17,7 +17,6 @@ import "package:davos_admin/shared/widgets/state_view.dart";
 const _quick = [
   ("expense", "هزینه", Icons.south_west_rounded, AppColors.danger),
   ("income", "درآمد", Icons.north_east_rounded, AppColors.success),
-  ("move", "جابجایی", Icons.swap_horiz_rounded, AppColors.info),
   ("owner", "شخصی", Icons.person_rounded, AppColors.warning),
 ];
 

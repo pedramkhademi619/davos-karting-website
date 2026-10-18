@@ -6,17 +6,10 @@ import { Card } from "@/components/admin/admin-ui";
 import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/api";
-import { categories, type Account } from "@/lib/accounting";
+import { categories, categoryParent, nextCategoryCode, type Account } from "@/lib/accounting";
 import { fa } from "@/lib/format";
 
 type Kind = "expense" | "revenue";
-
-/** The next free four-digit code of a type (5xxx for expenses, 4xxx for income), so the owner never deals with codes. */
-function nextCode(accounts: Account[], kind: Kind): string {
-  const lead = kind === "expense" ? "5" : "4";
-  const used = accounts.map((a) => a.code).filter((c) => c.length === 4 && c.startsWith(lead)).map(Number);
-  return String(Math.max(Number(`${lead}000`), ...used) + 1);
-}
 
 /** The income and expense categories the owner picks from when recording money: add, rename, hide or bring back. */
 export function CategoriesView({ accounts, onChanged }: { accounts: Account[]; onChanged: () => void }) {
@@ -41,7 +34,7 @@ function CategoryList({ kind, title, accounts, onChanged }: { kind: Kind; title:
   const all = categories(accounts, kind, true);
   const shown = all.filter((a) => a.active);
   const hidden = all.filter((a) => !a.active);
-  const parent = accounts.find((a) => a.is_group && a.type === kind && a.parent_id === null);
+  const parent = categoryParent(accounts, kind);
 
   async function run(key: string, action: () => Promise<unknown>) {
     setBusy(key);
@@ -69,7 +62,7 @@ function CategoryList({ kind, title, accounts, onChanged }: { kind: Kind; title:
     const clean = name.trim();
     if (!clean) return;
     const ok = await run("new", () =>
-      call("/accounting/accounts", { method: "POST", body: { code: nextCode(accounts, kind), name: clean, type: kind, parent_id: parent?.id ?? null, is_group: false } }),
+      call("/accounting/accounts", { method: "POST", body: { code: nextCategoryCode(accounts, kind), name: clean, type: kind, parent_id: parent?.id ?? null, is_group: false } }),
     );
     if (ok) setName("");
   }

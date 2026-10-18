@@ -16,5 +16,5 @@ class StaffReservationCommand:
     contact_mobile: str
     note: str
     amount_irr: int
-    allow_overbooking: bool = False
+    allow_overbooking: bool = False  # kept for old callers; ignored: capacity is always enforced
     payment_method: CounterPaymentMethod = CounterPaymentMethod.NONE

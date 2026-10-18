@@ -48,9 +48,9 @@ class CreateStaffReservationUseCase:
             if not calendar.is_session_time(command.session_time):
                 raise SessionNotBookableError
             await self._reservations.lock_session(command.day, command.session_time)
-            if not command.allow_overbooking:
-                load = await self._reservations.session_load(command.day, command.session_time, now)
-                SeatAllocator(settings).check(load, command.single_count, command.double_count)
+            # Never more than the karts that are left, counting every other ticket of the session (online and counter).
+            load = await self._reservations.session_load(command.day, command.session_time, now)
+            SeatAllocator(settings).check(load, command.single_count, command.double_count)
             reservation = Reservation.staff_entry(
                 code=self._codes.new_code(),
                 ticket_number=await self._reservations.next_ticket_number(),

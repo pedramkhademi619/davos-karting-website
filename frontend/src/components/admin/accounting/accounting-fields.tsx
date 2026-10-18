@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChangeEvent, ReactNode } from "react";
+import { useState, type ChangeEvent, type ReactNode } from "react";
 import { fa, toLatinDigits } from "@/lib/format";
 
 export function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {
@@ -90,12 +90,30 @@ export function CategoryChips({
   options,
   value,
   onChange,
+  onAdd,
 }: {
   label: string;
   options: { id: string; name: string }[];
   value: string;
   onChange: (id: string) => void;
+  /** When given, a "+ جدید" chip lets the owner type a category that is not in the list; it is saved for good. */
+  onAdd?: (name: string) => Promise<void>;
 }) {
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function add() {
+    const clean = name.trim();
+    if (!clean || !onAdd) return;
+    setBusy(true);
+    try {
+      await onAdd(clean);
+      setName("");
+      setAdding(false);
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <div role="radiogroup" aria-label={label}>
       <p className="label">{label}</p>
@@ -112,6 +130,32 @@ export function CategoryChips({
             {option.name}
           </button>
         ))}
+        {onAdd &&
+          (adding ? (
+            <span className="flex items-center gap-1.5">
+              <input
+                className="field !h-10 !w-44 !rounded-full text-sm"
+                autoFocus
+                maxLength={120}
+                value={name}
+                placeholder="اسم دسته‌ی تازه"
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void add();
+                  } else if (e.key === "Escape") setAdding(false);
+                }}
+              />
+              <button type="button" disabled={!name.trim() || busy} onClick={add} className="rounded-full bg-ink px-3.5 py-2 text-sm font-bold text-white disabled:opacity-40">
+                {busy ? "…" : "افزودن"}
+              </button>
+            </span>
+          ) : (
+            <button type="button" onClick={() => setAdding(true)} className="rounded-full border-2 border-dashed border-line-strong px-3.5 py-2 text-sm font-bold text-fg-muted hover:text-fg">
+              + جدید
+            </button>
+          ))}
       </div>
     </div>
   );

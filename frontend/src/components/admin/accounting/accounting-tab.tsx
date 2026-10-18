@@ -60,7 +60,7 @@ export function AccountingTab() {
           </>
         }
       />
-      <nav aria-label="بخش‌های حسابداری" className="-mx-1 mb-8 overflow-x-auto pb-1">
+      <nav aria-label="بخش‌های حسابداری" className="-mx-1 mb-8 overflow-x-auto px-1 pb-2 pt-1">
         <div role="tablist" className="flex min-w-max gap-2 px-1">
           {SECTIONS.map((s) => (
             <button
@@ -105,6 +105,7 @@ export function AccountingTab() {
               amountToman={sheet.amountToman}
               refundsOwedIrr={sheet.refundsOwedIrr}
               onClose={() => setSheet(null)}
+              onCategoriesChanged={() => void reload()}
               onSaved={(message) => {
                 setSheet(null);
                 setSaved(message);

@@ -82,7 +82,7 @@ export function ReservationsTab() {
           <form onSubmit={search} className="flex items-center gap-2">
             <input
               className="field h-11 w-56"
-              placeholder="کد رزرو، موبایل یا نام"
+              placeholder="شماره بلیت، موبایل یا نام"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="جستجوی رزرو"
@@ -202,11 +202,11 @@ function ReservationRows({ items, onChanged, showDate = false }: { items: Reserv
           {error}
         </Alert>
       )}
-      <Table head={["کد", showDate ? "روز و ساعت" : "ساعت", "نام / موبایل", "خودرو", "مبلغ", "وضعیت", "منبع", ""]} empty={items.length === 0}>
+      <Table head={["شماره بلیت", showDate ? "روز و ساعت" : "ساعت", "نام / موبایل", "خودرو", "مبلغ", "وضعیت", "منبع", ""]} empty={items.length === 0}>
         {items.map((r) => (
           <tr key={r.id} className="hover:bg-surface-2/60">
             <td className={`${cell} race-number text-xs font-bold`} dir="ltr">
-              {r.code}
+              {r.ticket_number}
             </td>
             <td className={`${cell} font-bold`}>{showDate ? `${jalali(r.date_jalali)} ${fa(r.time)}` : fa(r.time)}</td>
             <td className={cell}>
@@ -279,11 +279,15 @@ function StaffEntry({
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
   const [amount, setAmount] = useState("");
-  const [overbook, setOverbook] = useState(false);
   const [method, setMethod] = useState<"none" | "cash" | "card" | "transfer">("cash");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
+  // The session the operator picked and what is still free in it (online tickets and other counter sales already counted).
+  const chosen = board?.sessions.find((s) => s.time === time);
+  const maxSingles = chosen?.singles_left ?? 0;
+  const maxDoubles = chosen?.doubles_left ?? 0;
+  const tooMany = !!chosen && (singles > maxSingles || doubles > maxDoubles);
   const suggested = board ? singles * board.single_price_toman + doubles * board.double_price_toman : 0;
 
   async function submit(event: FormEvent) {
@@ -306,16 +310,14 @@ function StaffEntry({
           contact_mobile: toLatinDigits(phone.trim()),
           note: note.trim(),
           amount_toman: amount.trim() ? Number(toLatinDigits(amount).replace(/\D/g, "")) : suggested,
-          allow_overbooking: overbook,
           payment_method: method,
         },
       });
-      setMessage({ tone: "success", text: `ثبت شد: ${created.code}` });
+      setMessage({ tone: "success", text: `ثبت شد؛ شماره بلیت: ${created.ticket_number}` });
       setName("");
       setPhone("");
       setNote("");
       setAmount("");
-      setOverbook(false);
       onCreated();
     } catch (err) {
       setMessage({ tone: "error", text: errorMessage(err) });
@@ -345,13 +347,13 @@ function StaffEntry({
           <label className="label text-on-carbon-muted" htmlFor="entry-singles">
             تک‌نفره
           </label>
-          <input id="entry-singles" type="number" min={0} max={50} className="field field-dark" value={singles} onChange={(e) => setSingles(Math.max(0, Number(e.target.value)))} />
+          <input id="entry-singles" type="number" min={0} max={maxSingles} disabled={!chosen} className="field field-dark" value={singles} onChange={(e) => setSingles(Math.min(maxSingles, Math.max(0, Number(e.target.value))))} />
         </div>
         <div>
           <label className="label text-on-carbon-muted" htmlFor="entry-doubles">
             دونفره
           </label>
-          <input id="entry-doubles" type="number" min={0} max={50} className="field field-dark" value={doubles} onChange={(e) => setDoubles(Math.max(0, Number(e.target.value)))} />
+          <input id="entry-doubles" type="number" min={0} max={maxDoubles} disabled={!chosen} className="field field-dark" value={doubles} onChange={(e) => setDoubles(Math.min(maxDoubles, Math.max(0, Number(e.target.value))))} />
         </div>
       </div>
       <div>
@@ -398,12 +400,15 @@ function StaffEntry({
         </label>
         <textarea id="entry-note" className="field field-dark" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
       </div>
-      <label className="flex items-start gap-3 text-sm text-on-carbon-muted">
-        <input type="checkbox" checked={overbook} onChange={(e) => setOverbook(e.target.checked)} className="mt-1 h-4 w-4 accent-[#ffc400]" />
-        اجازه ثبت بیش از ظرفیت (فقط وقتی واقعاً خودرو دارید)
-      </label>
+      <p className={`text-sm ${tooMany ? "font-bold text-signal" : "text-on-carbon-muted"}`}>
+        {chosen
+          ? tooMany
+            ? `این سانس فقط ${fa(maxSingles)} تک‌نفره و ${fa(maxDoubles)} دونفره خالی دارد؛ تعداد را کم کنید یا سانس دیگری بزنید.`
+            : `ظرفیت خالی این سانس: ${fa(maxSingles)} تک‌نفره و ${fa(maxDoubles)} دونفره.`
+          : "اول سانس را انتخاب کنید؛ تعداد خودرو از ظرفیت خالی آن بیشتر نمی‌شود."}
+      </p>
       {message && <Alert tone={message.tone}>{message.text}</Alert>}
-      <button type="submit" disabled={busy || singles + doubles === 0} className={buttonClasses("primary", "lg", "w-full")}>
+      <button type="submit" disabled={busy || singles + doubles === 0 || tooMany} className={buttonClasses("primary", "lg", "w-full")}>
         {busy ? <Spinner /> : "ثبت و بستن جا"}
       </button>
     </form>

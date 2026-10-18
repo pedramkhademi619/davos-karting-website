@@ -38,7 +38,7 @@ class KnowledgeEntry:
     ) -> KnowledgeEntry:
         source_ref = source_ref.strip()
         if not source_ref:
-            raise InvalidKnowledgeEntryError("عنوان، متن و شناسه منبع الزامی است.")
+            raise InvalidKnowledgeEntryError("عنوان و متن الزامی است.")
         title, body, url = cls._checked(title, body, url)
         return cls(uuid.uuid4(), source_type, source_ref, title, body, url, now)
 
@@ -51,7 +51,7 @@ class KnowledgeEntry:
 
     @staticmethod
     def _checked(title: str, body: str, url: str) -> tuple[str, str, str]:
-        title, body, url = title.strip(), body.strip(), url.strip()
+        title, body, url = title.strip(), body.strip(), url.strip() or "/"
         if not title or not body:
             raise InvalidKnowledgeEntryError("عنوان، متن و شناسه منبع الزامی است.")
         if len(body) > MAX_BODY_CHARS:

@@ -15,5 +15,5 @@ class StaffReservationRequest(BaseModel):
     contact_mobile: str = Field(default="", max_length=20)
     note: str = Field(default="", max_length=500)
     amount_toman: int = Field(default=0, ge=0, le=1_000_000_000)
-    allow_overbooking: bool = False
+    allow_overbooking: bool = False  # ignored: capacity is always enforced
     payment_method: Literal["none", "cash", "card", "transfer"] = "none"

@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime, time
 
-from sqlalchemy import and_, func, or_, select, text, update
+from sqlalchemy import String, and_, cast, func, or_, select, text, update
 
 from davos.modules.reservations.adapters.persistence.reservation_mapper import ReservationMapper
 from davos.modules.reservations.adapters.persistence.reservation_model import (
@@ -121,6 +121,7 @@ class SqlAlchemyReservationRepository(ReservationRepository):
             conditions.append(
                 or_(
                     R.code.ilike(pattern, escape="\\"),
+                    cast(R.ticket_number, String).ilike(pattern, escape="\\"),
                     R.contact_name.ilike(pattern, escape="\\"),
                     R.contact_mobile.ilike(pattern, escape="\\"),
                 )
