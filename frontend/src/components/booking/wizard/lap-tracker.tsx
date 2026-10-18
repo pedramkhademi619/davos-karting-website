@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { KartShape } from "@/components/kart-shape";
 import { SMOOTHING, START_INDEX, TRACK_POINTS, TRACK_VIEWBOX, TRACK_WIDTHS } from "@/content/track";
 import { fa } from "@/lib/format";
 import { circuitPath, nearestIndex, smoothTrack } from "@/lib/track-geometry";
@@ -36,7 +37,7 @@ export function LapTracker({ progress, sectors, compact = false }: { progress: n
   const circuit = useCircuit();
   // Measured on a plain copy of the path: the drawn one has pathLength=1, which would rescale getPointAtLength.
   const pathRef = useRef<SVGPathElement>(null);
-  const [kart, setKart] = useState<{ x: number; y: number; p: number } | null>(null);
+  const [kart, setKart] = useState<{ x: number; y: number; p: number; angle: number } | null>(null);
   const shown = useRef(progress);
 
   // Drive the kart from where it is to the new progress along the path (eased, ~1 s; instant with reduced motion).
@@ -48,8 +49,11 @@ export function LapTracker({ progress, sectors, compact = false }: { progress: n
     const to = progress;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const place = (p: number) => {
-      const point = path.getPointAtLength(Math.min(0.9999, Math.max(0, p)) * length);
-      setKart({ x: point.x, y: point.y, p });
+      const at = Math.min(0.9999, Math.max(0, p)) * length;
+      const point = path.getPointAtLength(at);
+      const ahead = path.getPointAtLength(Math.min(length, at + 2)); // the kart faces where the track goes next
+      const angle = (Math.atan2(ahead.y - point.y, ahead.x - point.x) * 180) / Math.PI;
+      setKart({ x: point.x, y: point.y, p, angle });
     };
     if (reduce || from === to) {
       shown.current = to;
@@ -109,7 +113,9 @@ export function LapTracker({ progress, sectors, compact = false }: { progress: n
           {kart && (
             <g transform={`translate(${kart.x} ${kart.y})`}>
               <circle r="22" fill="rgb(255 196 0 / 0.25)" />
-              <circle r="11" fill="#ffc400" stroke="#0b0c0f" strokeWidth="4" />
+              <g transform={`rotate(${kart.angle}) scale(1.25)`}>
+                <KartShape colour="#ffc400" />
+              </g>
             </g>
           )}
         </svg>

@@ -23,7 +23,7 @@ export function SiteHeader({ onBookingHost = false }: { onBookingHost?: boolean 
         </Link>
 
         <nav aria-label="منوی اصلی" className="hidden lg:block">
-          <NavLinks items={items} className="flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] p-1" linkClassName={desktopLink} />
+          <NavLinks items={items} className="flex items-center gap-0 rounded-full border border-white/[0.08] bg-white/[0.03]" linkClassName={desktopLink} />
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">

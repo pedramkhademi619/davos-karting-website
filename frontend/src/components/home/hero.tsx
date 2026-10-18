@@ -77,11 +77,10 @@ export function Hero({ info }: { info: BookingInfo | null }) {
           <div className="relative">
             {/* Floodlight glow under the track. */}
             <div aria-hidden="true" className="absolute inset-[8%] -z-10 rounded-full bg-accent/15 blur-3xl" />
-            <NeonTrack className="h-auto w-full drop-shadow-[0_30px_60px_rgb(0_0_0/0.8)]" />
-
-            <div className="glass float-y absolute -top-2 start-0 rounded-2xl px-3 py-2 sm:px-4 sm:py-3">
+            <div className="glass float-y mb-3 w-fit rounded-2xl px-3 py-2 sm:px-4 sm:py-3">
               <StartLights />
             </div>
+            <NeonTrack className="h-auto w-full drop-shadow-[0_30px_60px_rgb(0_0_0/0.8)]" />
             <span className="race-number glass absolute bottom-2 end-0 hidden rounded-full sm:inline-block px-3 py-1 text-[0.6rem] tracking-[0.3em] text-on-carbon-muted sm:text-[0.65rem]" dir="ltr">
               DAVOS · LIVE
             </span>

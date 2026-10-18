@@ -1,3 +1,4 @@
+import { KartShape } from "@/components/kart-shape";
 import { SMOOTHING, START_INDEX, TRACK_POINTS, TRACK_VIEWBOX, TRACK_WIDTHS } from "@/content/track";
 import { circuitPath, headingAt, nearestIndex, smoothTrack } from "@/lib/track-geometry";
 
@@ -9,27 +10,27 @@ const [SX, SY] = TRACK.points[START];
 const START_ANGLE = headingAt(TRACK.points, START); // degrees
 const VIEWBOX = `${TRACK_VIEWBOX.x} ${TRACK_VIEWBOX.y} ${TRACK_VIEWBOX.width} ${TRACK_VIEWBOX.height}`;
 
-/** One kart: a glowing dot with a short comet tail, lapping the circuit (SMIL, no script). */
+/** One kart: a go-kart seen from above with a short comet tail, lapping the circuit nose first (SMIL, no script). */
 function Kart({ colour, duration, begin }: { colour: string; duration: number; begin: number }) {
+  const lap = (offset: number) => (
+    <animateMotion dur={`${duration}s`} begin={`${begin - offset}s`} repeatCount="indefinite" rotate="auto">
+      <mpath href="#neon-circuit" />
+    </animateMotion>
+  );
   return (
     <g className="kart">
       {[0.24, 0.16, 0.08].map((lag, i) => (
-        <circle key={lag} r={9 - i * 2.4} fill={colour} opacity={0.18 + i * 0.12}>
-          <animateMotion dur={`${duration}s`} begin={`${begin - lag}s`} repeatCount="indefinite" rotate="auto">
-            <mpath href="#neon-circuit" />
-          </animateMotion>
+        <circle key={lag} r={6 - i * 1.6} fill={colour} opacity={0.18 + i * 0.12}>
+          {lap(lag)}
         </circle>
       ))}
-      <circle r="11" fill={colour} opacity="0.35" filter="url(#neon-blur)">
-        <animateMotion dur={`${duration}s`} begin={`${begin}s`} repeatCount="indefinite" rotate="auto">
-          <mpath href="#neon-circuit" />
-        </animateMotion>
+      <circle r="14" fill={colour} opacity="0.3" filter="url(#neon-blur)">
+        {lap(0)}
       </circle>
-      <circle r="6.5" fill={colour} stroke="#0b0c0f" strokeWidth="2.5">
-        <animateMotion dur={`${duration}s`} begin={`${begin}s`} repeatCount="indefinite" rotate="auto">
-          <mpath href="#neon-circuit" />
-        </animateMotion>
-      </circle>
+      <g>
+        {lap(0)}
+        <KartShape colour={colour} />
+      </g>
     </g>
   );
 }
