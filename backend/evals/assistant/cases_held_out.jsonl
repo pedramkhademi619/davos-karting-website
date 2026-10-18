@@ -1,0 +1,26 @@
+# Held-out questions about things the knowledge never mentions. NEVER used to write or tune the prompt rules:
+# they exist only to measure honestly whether "say NO_ANSWER when the sources are silent" generalises (docs/ASSISTANT_EVALUATION.md).
+{"id": "heldout-01", "category": "held_out_unknown", "question": "حیوان خانگی هم میتونم با خودم بیارم؟", "kind": "defer"}
+{"id": "heldout-02", "category": "held_out_unknown", "question": "قلیان یا سیگار توی مجموعه آزاده؟", "kind": "defer"}
+{"id": "heldout-03", "category": "held_out_unknown", "question": "تماشاچی هم میتونه بیاد داخل و فقط نگاه کنه؟", "kind": "defer"}
+{"id": "heldout-04", "category": "held_out_unknown", "question": "ناهار یا غذا سفارش بدیم برامون میارید؟", "kind": "defer"}
+{"id": "heldout-05", "category": "held_out_unknown", "question": "بچه شیرخوار دارم، جایی برای نگهداریش هست؟", "kind": "defer"}
+{"id": "heldout-06", "category": "held_out_unknown", "question": "اقساطی هم میشه پرداخت کرد؟", "kind": "defer"}
+{"id": "heldout-07", "category": "held_out_unknown", "question": "برای مراسم عروسی یا نامزدی پیست رو اجاره میدید؟", "kind": "defer"}
+{"id": "heldout-08", "category": "held_out_unknown", "question": "میتونم با دوربین گوپرو خودم فیلم بگیرم؟", "kind": "defer"}
+{"id": "heldout-09", "category": "held_out_unknown", "question": "برای فرد ویلچری هم امکانات دارید؟", "kind": "defer"}
+{"id": "heldout-10", "category": "held_out_unknown", "question": "من آسم دارم میتونم سوار شم؟", "kind": "defer"}
+{"id": "heldout-11", "category": "held_out_unknown", "question": "ماسک و دستکش خودتون میدید؟", "kind": "defer"}
+{"id": "heldout-12", "category": "held_out_unknown", "question": "برای شرکت ما قرارداد سازمانی دارید؟", "kind": "defer"}
+{"id": "heldout-13", "category": "held_out_unknown", "question": "کیف و کوله ام رو کجا بذارم؟", "kind": "defer"}
+{"id": "heldout-14", "category": "held_out_unknown", "question": "ظرفیت پارکینگ ماشین چنده؟", "kind": "defer"}
+{"id": "heldout-15", "category": "held_out_unknown", "question": "نماز اونجا میشه خوند؟", "kind": "defer"}
+{"id": "heldout-16", "category": "held_out_unknown", "question": "ایستگاه مترو نزدیک شماست؟", "kind": "defer"}
+{"id": "heldout-17", "category": "held_out_unknown", "question": "اینترنت رایگان دارید؟", "kind": "defer"}
+{"id": "heldout-18", "category": "held_out_unknown", "question": "دوربین مداربسته هست؟", "kind": "defer"}
+{"id": "heldout-19", "category": "held_out_unknown", "question": "سن مربی‌های شما چنده؟", "kind": "defer"}
+{"id": "heldout-20", "category": "held_out_unknown", "question": "ماشین‌هاتون چند اسب بخار قدرت دارن؟", "kind": "defer"}
+{"id": "heldout-21", "category": "held_out_unknown", "question": "سرعت ماشین‌ها چقدره؟", "kind": "defer"}
+{"id": "heldout-22", "category": "held_out_unknown", "question": "با پول نقد هم میشه پرداخت کرد؟", "kind": "defer"}
+{"id": "heldout-23", "category": "held_out_unknown", "question": "برای دانش‌آموزا تخفیف مدرسه ای دارید؟", "kind": "defer"}
+{"id": "heldout-24", "category": "held_out_unknown", "question": "پیست سرپوشیده است یا روباز؟", "kind": "defer"}

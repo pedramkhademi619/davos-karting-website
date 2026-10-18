@@ -1,0 +1,98 @@
+name: admin-app-ios
+
+# Builds the Flutter admin app for iOS on a GitHub macOS runner (Xcode only runs on macOS).
+# Run it by hand from the Actions tab, or it runs when the app changes on main.
+#
+# Without Apple signing secrets it produces an UNSIGNED .ipa: it cannot be installed as it is, but it can be signed
+# later (Sideloadly, AltStore, or Xcode with a free or paid Apple ID). With the four secrets below it produces a signed
+# .ipa that installs on registered devices (ad-hoc) or goes to TestFlight.
+#   IOS_CERT_P12_BASE64        distribution certificate (.p12), base64
+#   IOS_CERT_PASSWORD          its password
+#   IOS_PROFILE_BASE64         provisioning profile (.mobileprovision), base64
+#   IOS_TEAM_ID                Apple developer team id
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_domain:
+        description: Server the app talks to
+        default: https://davoskarting.ir
+  push:
+    branches: [main]
+    paths: ["admin_app/**", ".github/workflows/admin-app-ios.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: admin_app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+      - name: Install signing files
+        id: signing
+        env:
+          CERT: ${{ secrets.IOS_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
+          PROFILE: ${{ secrets.IOS_PROFILE_BASE64 }}
+        run: |
+          if [ -z "$CERT" ] || [ -z "$PROFILE" ]; then
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          KEYCHAIN="$RUNNER_TEMP/build.keychain"
+          security create-keychain -p ci "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p ci "$KEYCHAIN"
+          echo "$CERT" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple: -k ci "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "$PROFILE" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/admin.mobileprovision"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Build (unsigned)
+        if: steps.signing.outputs.signed != 'true'
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define=API_DOMAIN=${{ inputs.api_domain || 'https://davoskarting.ir' }}
+          mkdir -p build/ipa/Payload
+          cp -R build/ios/iphoneos/Runner.app build/ipa/Payload/
+          (cd build/ipa && zip -qr davos-admin-unsigned.ipa Payload)
+
+      - name: Build (signed)
+        if: steps.signing.outputs.signed == 'true'
+        run: |
+          cat > ExportOptions.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>ad-hoc</string>
+            <key>teamID</key><string>${{ secrets.IOS_TEAM_ID }}</string>
+          </dict></plist>
+          PLIST
+          flutter build ipa --release --export-options-plist=ExportOptions.plist \
+            --dart-define=API_DOMAIN=${{ inputs.api_domain || 'https://davoskarting.ir' }}
+          mkdir -p build/ipa
+          cp build/ios/ipa/*.ipa build/ipa/davos-admin.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: davos-admin-ios
+          path: admin_app/build/ipa/*.ipa
+          retention-days: 30

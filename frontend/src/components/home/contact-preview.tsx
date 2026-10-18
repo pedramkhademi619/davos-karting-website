@@ -5,12 +5,13 @@ import { MapLink } from "@/components/map-link";
 import { PhoneLink } from "@/components/phone-link";
 import { SectionHeading } from "@/components/section-heading";
 import { WorkingHours } from "@/components/working-hours";
+import type { BookingInfo } from "@/lib/types";
 
-export function ContactPreview() {
+export function ContactPreview({ info }: { info: BookingInfo | null }) {
   return (
-    <section className="container-page pb-24 md:pb-36">
+    <section className="container-page pb-24 md:pb-32">
       <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-        <SectionHeading eyebrow="تماس با ما" title="راه‌های ارتباط با ما" />
+        <SectionHeading eyebrow="تماس با ما" title="تا پیست یک قدم فاصله دارید" />
         <ButtonLink href="/contact" variant="ghost">
           همه راه‌های ارتباطی
         </ButtonLink>
@@ -20,7 +21,7 @@ export function ContactPreview() {
           <MapLink />
         </InfoCard>
         <InfoCard icon={ClockIcon} label="ساعات کاری">
-          <WorkingHours />
+          <WorkingHours info={info} />
         </InfoCard>
         <InfoCard icon={PhoneIcon} label="تلفن رزرو">
           <PhoneLink />

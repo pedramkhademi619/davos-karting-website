@@ -1,12 +1,13 @@
-import { site } from "@/content/site";
+import { openingLines } from "@/lib/hours";
+import type { BookingInfo } from "@/lib/types";
 
-/** One line per schedule, so the two-line opening hours read the same on the home page, contact page and footer. */
-export function WorkingHours() {
+/** One line per schedule (the morning shift from the admin panel, then the evening hours), the same on every page. */
+export function WorkingHours({ info }: { info: BookingInfo | null }) {
   return (
     <>
-      {site.contact.hours.map((line) => (
-        <span key={line} className="block">
-          {line}
+      {openingLines(info).map(({ label, text }) => (
+        <span key={label} className="block">
+          {label}: {text}
         </span>
       ))}
     </>

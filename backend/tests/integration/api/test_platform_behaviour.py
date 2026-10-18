@@ -8,6 +8,7 @@ from davos.api.app_factory import create_app
 from davos.composition.application_container import ApplicationContainer
 from davos.platform.settings.app_environment import AppEnvironment
 from davos.platform.settings.app_settings import AppSettings
+from tests.fakes.standard_config import example_settings
 from tests.integration.api.conftest import CLIENT_IP, ORIGIN
 
 pytestmark = pytest.mark.integration
@@ -102,13 +103,16 @@ async def test_openapi_is_versioned_and_documents_the_error_free_routes(api: htt
 
 async def test_docs_are_not_exposed_in_production(container: ApplicationContainer) -> None:
     strong = "s" * 40
-    settings = AppSettings(
-        _env_file=None,
+    settings = example_settings(
         app_env=AppEnvironment.PRODUCTION,
+        cookie_secure=True,
         otp_hmac_secret=strong,
         session_csrf_secret=strong + "1",
         booking_webhook_secret=strong + "2",
         cors_allowed_origins=["https://davoskarting.ir"],
+        public_base_url="https://davoskarting.ir",
+        sms_provider="kavenegar",
+        kavenegar_api_key="kavenegar-key",
     )
     transport = httpx.ASGITransport(app=create_app(settings, container), client=(CLIENT_IP, 1))
     async with httpx.AsyncClient(transport=transport, base_url="https://testserver") as client:
@@ -122,4 +126,4 @@ async def test_production_app_refuses_to_start_with_placeholder_secrets(containe
     from davos.platform.settings.insecure_configuration_error import InsecureConfigurationError
 
     with pytest.raises(InsecureConfigurationError):
-        create_app(AppSettings(_env_file=None, app_env=AppEnvironment.PRODUCTION), container)
+        create_app(example_settings(app_env=AppEnvironment.PRODUCTION), container)

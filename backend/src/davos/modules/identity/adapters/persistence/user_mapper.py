@@ -14,4 +14,6 @@ class UserMapper:
             mobile=MobileNumber(model.mobile),
             status=UserStatus(model.status),
             created_at=model.created_at,
+            full_name=model.full_name,
+            marketing_opt_in=model.marketing_opt_in,
         )

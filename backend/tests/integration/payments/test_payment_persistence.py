@@ -31,7 +31,7 @@ async def test_full_flow_is_persisted_and_the_outbox_receives_one_success_event(
 ) -> None:
     started = await container.start_payment().execute(StartPaymentCommand("order-1", ME))
     result = await container.handle_payment_callback().execute(
-        PaymentCallbackCommand(authority=gateway.authority, status_param="OK", customer_id=ME)
+        PaymentCallbackCommand(authority=gateway.authority, succeeded=True, customer_id=ME)
     )
     assert result.status is PaymentStatus.PAID
 
@@ -54,7 +54,7 @@ async def test_concurrent_callbacks_verify_once_and_record_one_success(
     async def callback() -> PaymentStatus:
         return (
             await container.handle_payment_callback().execute(
-                PaymentCallbackCommand(authority=gateway.authority, status_param="OK", customer_id=ME)
+                PaymentCallbackCommand(authority=gateway.authority, succeeded=True, customer_id=ME)
             )
         ).status
 
@@ -126,7 +126,7 @@ async def test_reconciliation_finds_unknown_payments_in_the_database(
     gateway.verify_results = [GatewayTimeoutError(), VerificationResult(VerificationOutcome.VERIFIED, reference_id="9")]
     await container.start_payment().execute(StartPaymentCommand("order-1", ME))
     first = await container.handle_payment_callback().execute(
-        PaymentCallbackCommand(authority=gateway.authority, status_param="OK", customer_id=ME)
+        PaymentCallbackCommand(authority=gateway.authority, succeeded=True, customer_id=ME)
     )
     assert first.status is PaymentStatus.UNKNOWN
 
@@ -143,6 +143,6 @@ async def test_a_customer_cannot_read_or_verify_someone_elses_payment(
     await container.start_payment().execute(StartPaymentCommand("order-1", ME))
     with pytest.raises(PaymentNotFoundError):
         await container.handle_payment_callback().execute(
-            PaymentCallbackCommand(authority=gateway.authority, status_param="OK", customer_id=uuid.uuid4())
+            PaymentCallbackCommand(authority=gateway.authority, succeeded=True, customer_id=uuid.uuid4())
         )
     assert gateway.verifications == []

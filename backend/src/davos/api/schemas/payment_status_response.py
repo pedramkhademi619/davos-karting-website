@@ -9,3 +9,4 @@ class PaymentStatusResponse(BaseModel):
     amount_irr: int | None = None
     amount_toman: int | None = None
     reference_id: str | None = None
+    reservation_id: uuid.UUID | None = None

@@ -23,6 +23,18 @@ async def test_request_otp_sends_an_sms_and_never_returns_the_code(
     assert sms_gateway.sent[-1].to_local_mobile == "09123456789"
 
 
+async def test_in_local_development_the_code_is_shown_because_no_sms_is_sent(
+    api: httpx.AsyncClient,
+    container: ApplicationContainer,
+    sms_gateway: RecordingSmsGateway,
+    test_settings: AppSettings,
+) -> None:
+    container.settings = test_settings.model_copy(update={"dev_sms_echo_enabled": True})
+    response = await api.post("/api/v1/auth/otp/request", json={"mobile": "۰۹۱۲۳۴۵۶۷۸۹"})
+    assert response.status_code == 200
+    assert response.json()["dev_code"] == sms_gateway.sent[-1].parameters["code"]
+
+
 async def test_invalid_mobile_uses_the_uniform_error_format(api: httpx.AsyncClient) -> None:
     response = await api.post("/api/v1/auth/otp/request", json={"mobile": "12345678901"})
     body = response.json()

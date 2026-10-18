@@ -21,7 +21,7 @@ type Message = {
 const GREETING: Message = {
   id: "greeting",
   role: "assistant",
-  text: "سلام! من دستیار داوس هستم. درباره رزرو نوبت و اطلاعات مجموعه از من بپرسید. فقط از اطلاعات تاییدشده همین سایت جواب می‌دهم.",
+  text: "سلام! من دستیار داووس هستم. درباره رزرو نوبت و اطلاعات مجموعه از من بپرسید. فقط از اطلاعات تاییدشده همین سایت جواب می‌دهم.",
 };
 const GENERIC_ERROR = "دستیار الان در دسترس نیست. کمی بعد دوباره امتحان کنید یا از صفحه «تماس با ما» استفاده کنید.";
 const TIMEOUT_MS = 45_000;
@@ -116,7 +116,7 @@ export function AssistantPanel({ id, open, onClose, onNavigate }: AssistantPanel
     <section
       id={id}
       role="dialog"
-      aria-label="دستیار هوشمند داوس"
+      aria-label="دستیار هوشمند داووس"
       hidden={!open}
       onKeyDown={(event) => event.key === "Escape" && onClose()}
       className="rise fixed bottom-[5.5rem] right-3 z-40 flex h-[min(34rem,calc(100svh-7rem))] w-[calc(100vw-1.5rem)] max-w-[24rem] flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_30px_80px_-20px_rgb(17_17_20/0.35)] sm:right-6"
@@ -125,7 +125,7 @@ export function AssistantPanel({ id, open, onClose, onNavigate }: AssistantPanel
         <div>
           <p className="flex items-center gap-2 font-black">
             <span aria-hidden="true" className="h-[3px] w-5 rounded-full bg-accent" />
-            دستیار هوشمند داوس
+            دستیار هوشمند داووس
           </p>
           <p className="mt-0.5 text-xs text-fg-subtle">پاسخ از روی اطلاعات منتشرشده سایت</p>
         </div>
@@ -145,7 +145,7 @@ export function AssistantPanel({ id, open, onClose, onNavigate }: AssistantPanel
             <p
               dir="auto"
               className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[0.95rem] leading-7 ${
-                message.role === "user" ? "rounded-ss-md bg-ink text-white" : "rounded-se-md bg-surface-2 text-fg"
+                message.role === "user" ? "rounded-ss-md bg-accent text-ink" : "rounded-se-md bg-surface-2 text-fg"
               }`}
             >
               {message.text}

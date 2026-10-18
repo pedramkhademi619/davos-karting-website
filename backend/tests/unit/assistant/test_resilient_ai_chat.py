@@ -15,7 +15,7 @@ from davos.modules.assistant.domain.value_objects.token_usage import TokenUsage
 from davos.platform.resilience.circuit_breaker import CircuitBreaker
 from tests.fakes.scripted_ai_chat import ScriptedAiChat
 
-REQUEST = ChatCompletionRequest(messages=(ChatMessage(ChatRole.USER, "hi"),), max_output_tokens=10)
+REQUEST = ChatCompletionRequest(messages=(ChatMessage(ChatRole.USER, "hi"),), max_output_tokens=10, temperature=0.1)
 
 
 def breaker(threshold: int = 2) -> CircuitBreaker:
@@ -26,7 +26,7 @@ def breaker(threshold: int = 2) -> CircuitBreaker:
 
 async def test_repeated_provider_failures_open_the_circuit_and_stop_calling_the_provider() -> None:
     inner = ScriptedAiChat(AiProviderTimeoutError())
-    chat = ResilientAiChat(inner, breaker=breaker(2), max_concurrency=4)
+    chat = ResilientAiChat(inner, breaker=breaker(2), max_concurrency=4, acquire_timeout_seconds=0.5)
     for _ in range(2):
         with pytest.raises(AiProviderTimeoutError):
             await chat.complete(REQUEST)
@@ -37,7 +37,7 @@ async def test_repeated_provider_failures_open_the_circuit_and_stop_calling_the_
 
 async def test_missing_configuration_does_not_open_the_circuit() -> None:
     inner = ScriptedAiChat(AiNotConfiguredError())
-    chat = ResilientAiChat(inner, breaker=breaker(1), max_concurrency=4)
+    chat = ResilientAiChat(inner, breaker=breaker(1), max_concurrency=4, acquire_timeout_seconds=0.5)
     for _ in range(3):
         with pytest.raises(AiNotConfiguredError):
             await chat.complete(REQUEST)

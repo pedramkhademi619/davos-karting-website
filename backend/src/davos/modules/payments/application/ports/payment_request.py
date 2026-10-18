@@ -10,3 +10,4 @@ class PaymentRequest:
     amount: Money
     description: str
     callback_url: str
+    gateway_order_id: int  # numeric and unique per attempt (Mellat requires a long integer order id)

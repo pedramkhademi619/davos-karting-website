@@ -1,47 +1,100 @@
 import { ButtonLink } from "@/components/button-link";
-import { TrackMap } from "@/components/track-map";
+import { NeonTrack } from "@/components/home/neon-track";
+import { CalendarIcon, ShieldIcon, TicketIcon } from "@/components/icons";
+import { StartLights } from "@/components/start-lights";
 import { site } from "@/content/site";
+import { fa } from "@/lib/format";
 import { stagger } from "@/lib/stagger";
+import type { BookingInfo } from "@/lib/types";
 
-export function Hero() {
+const trust = [
+  { icon: ShieldIcon, text: "درگاه رسمی بانک ملت" },
+  { icon: TicketIcon, text: "بلیت و کد پیامکی" },
+  { icon: CalendarIcon, text: "جای خالی زنده" },
+] as const;
+
+/**
+ * Home hero on full-strength carbon fibre with a light sweeping over it: the headline in polished metal, and the real
+ * Davos circuit drawn in neon with two karts lapping, under smoked-glass live readouts from the admin settings.
+ */
+export function Hero({ info }: { info: BookingInfo | null }) {
+  const readouts = info
+    ? [
+        { label: "خودرو در هر سانس", value: fa(info.single_capacity + info.double_capacity), unit: "دستگاه" },
+        { label: "شروع سانس‌ها", value: fa(info.first_session), unit: `هر ${fa(info.interval_minutes)} دقیقه` },
+        { label: "از قیمت", value: fa(Math.round(info.normal_single_toman / 1000)), unit: "هزار تومان" },
+      ]
+    : [
+        { label: "خودروها", value: "۲", unit: "نوع" },
+        { label: "سانس‌ها", value: "هر روز", unit: "از عصر" },
+        { label: "رزرو", value: "آنلاین", unit: "یا تلفنی" },
+      ];
+
   return (
-    <section className="relative isolate overflow-hidden">
-      <div className="hero-bg" aria-hidden="true" />
-      <div className="grain" aria-hidden="true" />
+    <section className="carbon-weave relative isolate overflow-hidden">
+      <div className="sheen" aria-hidden="true" />
+      <div className="vignette" aria-hidden="true" />
 
-      <div className="container-page grid items-center gap-12 py-14 lg:min-h-[calc(100svh-86px)] lg:grid-cols-12 lg:gap-10 lg:py-16">
-        <div className="lg:col-span-5">
-          <p
-            className="rise inline-flex items-center gap-3 rounded-full border border-line-strong bg-surface px-4 py-1.5 text-sm text-fg-muted shadow-sm"
-            style={stagger(0)}
-          >
+      <div className="container-page grid items-center gap-10 pb-12 pt-8 md:pt-12 lg:min-h-[calc(100svh-76px)] lg:grid-cols-12 lg:gap-8 lg:py-16">
+        <div className="relative z-10 min-w-0 lg:col-span-6">
+          <p className="rise glass inline-flex items-center gap-3 rounded-full px-4 py-1.5 text-sm font-bold text-on-carbon-muted" style={stagger(0)}>
             <span className="pulse-dot" aria-hidden="true" />
-            رزرو تلفنی نوبت
+            {info?.online_booking_enabled === false ? "رزرو تلفنی نوبت" : "رزرو آنلاین سانس فعال است"}
           </p>
 
-          <h1 className="rise mt-8 text-[clamp(2.75rem,6vw,5.25rem)] font-black leading-[1.2]" style={stagger(1)}>
-            <span className="block">سرعت را</span>
+          <h1 className="rise mt-7 text-[clamp(3.1rem,13vw,6.6rem)] font-black leading-[1.02] md:mt-9" style={stagger(1)}>
+            <span className="chrome-text block">سرعت را</span>
             <span className="block">
-              <span className="marker">جدی</span> بگیرید
+              <span className="glow-text">جدی</span> <span className="chrome-text">بگیرید.</span>
             </span>
           </h1>
 
-          <p className="rise mt-8 max-w-md text-lg text-fg-muted md:text-xl" style={stagger(2)}>
-            کارتینگ داوس؛ جایی برای رانندگی، رقابت و لذت سرعت. برای رزرو نوبت تماس بگیرید و پشت فرمان بنشینید.
+          <p className="rise mt-6 max-w-lg text-[1.05rem] leading-8 text-on-carbon-muted md:mt-8 md:text-xl md:leading-9" style={stagger(2)}>
+            پیست کارتینگ داووس؛ جایی برای رانندگی، رقابت و لذت سرعت. بگویید چه کسانی می‌آیند، سانس را از روی جدول استارت بردارید و پشت
+            فرمان بنشینید.
           </p>
 
-          <div className="rise mt-10 flex flex-wrap items-center gap-4" style={stagger(3)}>
-            <ButtonLink href={site.contact.phone.href} size="lg">
+          <div className="rise mt-8 flex flex-col gap-3 sm:flex-row sm:items-center md:mt-10" style={stagger(3)}>
+            <ButtonLink href={site.booking.href} size="lg" className="w-full sm:w-auto">
               {site.booking.callToAction}
             </ButtonLink>
-            <ButtonLink href="/faq" variant="ghost" size="lg" arrow={false}>
-              سوالات متداول
+            <ButtonLink href={site.contact.phone.href} variant="ghost-light" size="lg" arrow={false} className="w-full sm:w-auto">
+              {site.booking.phoneCallToAction}
             </ButtonLink>
           </div>
+
+          <ul className="rise mt-8 flex flex-wrap gap-x-5 gap-y-2.5 text-sm font-bold text-on-carbon-muted" style={stagger(4)}>
+            {trust.map(({ icon: IconComponent, text }) => (
+              <li key={text} className="flex items-center gap-2">
+                <IconComponent className="h-[1.1rem] w-[1.1rem] text-accent" />
+                {text}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="rise lg:col-span-7" style={stagger(2)}>
-          <TrackMap />
+        <div className="rise relative min-w-0 lg:col-span-6" style={stagger(2)}>
+          <div className="relative">
+            {/* Floodlight glow under the track. */}
+            <div aria-hidden="true" className="absolute inset-[8%] -z-10 rounded-full bg-accent/15 blur-3xl" />
+            <div className="glass float-y mb-3 w-fit rounded-2xl px-3 py-2 sm:px-4 sm:py-3">
+              <StartLights />
+            </div>
+            <NeonTrack className="h-auto w-full drop-shadow-[0_30px_60px_rgb(0_0_0/0.8)]" />
+            <span className="race-number glass absolute bottom-2 end-0 hidden rounded-full sm:inline-block px-3 py-1 text-[0.6rem] tracking-[0.3em] text-on-carbon-muted sm:text-[0.65rem]" dir="ltr">
+              DAVOS · LIVE
+            </span>
+          </div>
+
+          <dl className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+            {readouts.map((item) => (
+              <div key={item.label} className="glass rounded-2xl p-3 sm:p-4">
+                <dt className="text-[0.68rem] font-bold text-on-carbon-muted sm:text-xs">{item.label}</dt>
+                <dd className="mt-1.5 text-xl font-black leading-none text-on-carbon sm:text-3xl">{item.value}</dd>
+                <dd className="mt-1.5 text-[0.66rem] text-on-carbon-muted sm:text-xs">{item.unit}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </div>
 

@@ -2,6 +2,20 @@
 
 Nothing below is claimed as delivered.
 
+## Launch-ready work (2026-09-25): what is and is not verified
+
+* **Verified locally**: online booking on the booking subdomain end to end in a browser (SMS-code sign-in with the code from
+  the development log, seat map, hold, ticket with countdown, release, profile save), host routing and redirects between the
+  two hosts, the CSP nonce, the edge cache, 40 simultaneous holds on one session never overselling (and the backend tests for
+  every payment race), page and API throughput (docs/DEPLOYMENT.md).
+* **Not verified against the real services**: Bank Mellat (no terminal credentials yet; the flow is covered by tests with a
+  scripted gateway), Kavenegar (development uses the recording gateway), the production TLS/DNS setup for two hosts.
+* **Admin panel UI**: every screen type-checks and the admin API has integration tests, but the screens were not clicked
+  through with a signed-in account here (the owner creates the first account via `ADMIN_BOOTSTRAP_*`).
+* **Counter app is separate**: `D:\Davos\davoos-karting-booking` does not talk to the website. Karts sold at the counter must be
+  entered in the admin panel ("ثبت فروش حضوری") or the website can sell them again.
+* **Refunds**: a paid online reservation cancelled by staff is not refunded automatically; refund from the bank's panel.
+
 ## Not implemented (in scope of the original brief)
 
 * **Web application** beyond three marketing pages and the assistant chat: customer dashboard, admin panel at `/admin`, login,
@@ -53,9 +67,9 @@ Nothing below is claimed as delivered.
     simplified redraw. Nothing is surveyed: do not read dimensions off it. To update it, replace `TRACK_POINTS`/`TRACK_WIDTHS`
     in `frontend/src/content/track.ts` (the tracing scripts were throwaway and are not in the repository).
   * **Deliberately absent**: a contact form (there is no ticket endpoint, and a form that does nothing is worse than none) and
-    scroll-reveal animations (CSS scroll-driven animations stalled rendering in the embedded browser and were removed).
-  * `NEXT_PUBLIC_BOOKING_URL` (fed from `BOOKING_BASE_URL` by compose) is still frozen into the bundle at build time but **unused**
-    while booking is by phone; its default `https://booking.davoskarting.ir` is a placeholder. Fonts (Vazirmatn, Unbounded) are downloaded from Google during `next build` and self-hosted afterwards, so the
+    scroll-reveal animations (CSS scroll-driven animations stalled rendering in the embedded browser; removed twice now).
+  * `NEXT_PUBLIC_BOOKING_URL` and `NEXT_PUBLIC_SITE_URL` (fed from `BOOKING_BASE_URL` and `PUBLIC_BASE_URL` by compose) are
+    frozen into the web app at build time: after changing either, rebuild the frontend image. Fonts (Vazirmatn, Unbounded) are downloaded from Google during `next build` and self-hosted afterwards, so the
     image build needs network access. `frontend/AGENTS.md` warns that this Next.js version has breaking changes; read
     `node_modules/next/dist/docs/` before writing frontend code.
 * **Admin authentication** (Argon2id, TOTP MFA, roles/permissions), audit log, admin dashboards/reports/exports.
@@ -73,8 +87,7 @@ Nothing below is claimed as delivered.
 ## Implemented but not verified externally
 
 * **Zarinpal**: adapter follows the documented contract; no merchant id, so no live sandbox call was made.
-* **MinIO**: compose uses `quay.io/minio/minio:RELEASE.2024-10-13T13-34-11Z` (Docker Hub no longer hosts MinIO images). It starts
-  and reports healthy, but nothing in the backend uses object storage yet (`ObjectStoragePort` is not implemented).
+* **Object storage**: none. The compose file once had a MinIO service that nothing used; it was removed on 2026-10-04 because its image is no longer published (Docker Hub and quay.io both refuse it). Add an S3-compatible service together with the code that needs it.
 * **AI provider**: exercised by the automated tests only through fakes and recorded response shapes. By hand, on 2026-09-21, about
   35 questions went to a real gateway (GapGPT, `gemma-3-27b-it`), and later an 18-question set was run several times. Most answers
   were right, but **the runs varied**: while the wording was being tuned most had one to three riding-eligibility mistakes (a

@@ -13,12 +13,26 @@ from tests.integration.api.conftest import SignedInCustomer, sign_in
 
 pytestmark = pytest.mark.integration
 
+FORM = {"Content-Type": "application/x-www-form-urlencoded"}
+
 
 async def start(api: httpx.AsyncClient, customer: SignedInCustomer, order: str = "order-1"):
     return await api.post("/api/v1/payments", json={"order_ref": order}, headers=customer.headers)
 
 
-async def test_full_sandbox_style_flow_through_the_api(
+async def bank_posts_back(
+    api: httpx.AsyncClient, *, ref_id: str, order_id: int, res_code: str = "0", sale_reference: str = "98765"
+) -> httpx.Response:
+    """What Bank Mellat's page posts to the callback (a cross-site form: the session cookie does not come along)."""
+    api.cookies.clear()
+    form = (
+        f"RefId={ref_id}&ResCode={res_code}&SaleOrderId={order_id}&SaleReferenceId={sale_reference}"
+        "&CardHolderPan=603799******1234&CardHolderInfo=abc&FinalAmount=250000"
+    )
+    return await api.post("/api/v1/payments/mellat/callback", content=form, headers=FORM)
+
+
+async def test_full_flow_through_the_api(
     api: httpx.AsyncClient, sign_in_as, quotes: FixedOrderQuotes, gateway: ScriptedPaymentGateway
 ) -> None:
     customer = await sign_in_as()
@@ -26,12 +40,15 @@ async def test_full_sandbox_style_flow_through_the_api(
 
     started = await start(api, customer)
     assert started.status_code == 200
-    assert started.json()["redirect_url"].endswith(gateway.authority)
+    payment_id = started.json()["payment_id"]
+    order_id = gateway.requests[0].gateway_order_id
 
-    back = await api.get("/api/v1/payments/callback", params={"Authority": gateway.authority, "Status": "OK"})
-    assert back.json()["status"] == "paid"
+    back = await bank_posts_back(api, ref_id=gateway.authority, order_id=order_id)
+    assert back.status_code == 303 and back.headers["location"].endswith(f"/payment/result?payment={payment_id}")
+    assert gateway.verifications[0].provider_reference == "98765" and len(gateway.settlements) == 1
 
-    detail = (await api.get(f"/api/v1/payments/{started.json()['payment_id']}")).json()
+    api.cookies.set("davos_session", customer.cookie)
+    detail = (await api.get(f"/api/v1/payments/{payment_id}")).json()
     assert (detail["status"], detail["amount_irr"], detail["amount_toman"], detail["reference_id"]) == (
         "paid",
         250_000,
@@ -65,37 +82,44 @@ async def test_refreshing_the_callback_does_not_pay_twice(
     customer = await sign_in_as()
     quotes.add("order-1", uuid.UUID(customer.user_id), 250_000)
     await start(api, customer)
+    order_id = gateway.requests[0].gateway_order_id
     for _ in range(3):
-        response = await api.get("/api/v1/payments/callback", params={"Authority": gateway.authority, "Status": "OK"})
-        assert response.json()["status"] == "paid"
-    assert len(gateway.verifications) == 1
+        response = await bank_posts_back(api, ref_id=gateway.authority, order_id=order_id)
+        assert response.status_code == 303 and "error" not in response.headers["location"]
+    assert len(gateway.verifications) == 1 and len(gateway.settlements) == 1
 
 
-async def test_another_customer_cannot_verify_or_view_the_payment(
+async def test_a_callback_cannot_be_aimed_at_another_attempt(
     api: httpx.AsyncClient, sign_in_as, quotes: FixedOrderQuotes, gateway: ScriptedPaymentGateway
 ) -> None:
     owner = await sign_in_as("09123456789")
     quotes.add("order-1", uuid.UUID(owner.user_id), 250_000)
     payment_id = (await start(api, owner)).json()["payment_id"]
-    api.cookies.clear()
+    order_id = gateway.requests[0].gateway_order_id
 
-    await sign_in_as("09129999999")
-    assert (
-        await api.get("/api/v1/payments/callback", params={"Authority": gateway.authority, "Status": "OK"})
-    ).status_code == 404
-    assert (await api.get(f"/api/v1/payments/{payment_id}")).status_code == 404
-    assert (await api.get("/api/v1/payments/not-a-uuid")).status_code == 404
+    wrong_order = await bank_posts_back(api, ref_id=gateway.authority, order_id=order_id + 1)
+    unknown_ref = await bank_posts_back(api, ref_id="NOPE", order_id=order_id)
+    garbage = await api.post("/api/v1/payments/mellat/callback", content="RefId=&SaleOrderId=x", headers=FORM)
+    for response in (wrong_order, unknown_ref, garbage):
+        assert response.status_code == 303 and response.headers["location"].endswith("/payment/result?error=1")
     assert gateway.verifications == []
 
+    await sign_in_as("09129999999")
+    assert (await api.get(f"/api/v1/payments/{payment_id}")).status_code == 404
+    assert (await api.get("/api/v1/payments/not-a-uuid")).status_code == 404
 
-async def test_a_cancelled_payment_reports_failed_without_asking_the_provider(
+
+async def test_a_cancelled_payment_fails_without_asking_the_bank(
     api: httpx.AsyncClient, sign_in_as, quotes: FixedOrderQuotes, gateway: ScriptedPaymentGateway
 ) -> None:
     customer = await sign_in_as()
     quotes.add("order-1", uuid.UUID(customer.user_id), 250_000)
-    await start(api, customer)
-    response = await api.get("/api/v1/payments/callback", params={"Authority": gateway.authority, "Status": "NOK"})
-    assert response.json()["status"] == "failed" and gateway.verifications == []
+    payment_id = (await start(api, customer)).json()["payment_id"]
+    order_id = gateway.requests[0].gateway_order_id
+    response = await bank_posts_back(api, ref_id=gateway.authority, order_id=order_id, res_code="17")
+    assert response.status_code == 303 and gateway.verifications == []
+    api.cookies.set("davos_session", customer.cookie)
+    assert (await api.get(f"/api/v1/payments/{payment_id}")).json()["status"] == "failed"
 
 
 async def test_payments_are_hidden_while_the_feature_flag_is_off(
@@ -118,6 +142,6 @@ async def test_payments_are_hidden_while_the_feature_flag_is_off(
     async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
         customer = await sign_in(client, sms_gateway)
         response = await client.post("/api/v1/payments", json={"order_ref": "order-1"}, headers=customer.headers)
-        callback = await client.get("/api/v1/payments/callback", params={"Authority": "A1", "Status": "OK"})
+        callback = await client.post("/api/v1/payments/mellat/callback", content="RefId=A1", headers=FORM)
     assert response.status_code == 404 and response.json()["code"] == "payments_disabled"
     assert callback.status_code == 404

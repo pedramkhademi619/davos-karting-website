@@ -25,7 +25,7 @@ class ResilientAiChat(AIChatPort):
         *,
         breaker: CircuitBreaker,
         max_concurrency: int,
-        acquire_timeout_seconds: float = 0.5,
+        acquire_timeout_seconds: float,
     ) -> None:
         self._inner = inner
         self._breaker = breaker

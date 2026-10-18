@@ -10,6 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from davos.api.schemas.error_detail import ErrorDetail
 from davos.api.schemas.error_response import ErrorResponse
+from davos.modules.administration.domain.errors.admin_login_failed_error import AdminLoginFailedError
 from davos.modules.booking.domain.errors.invalid_webhook_signature_error import InvalidWebhookSignatureError
 from davos.modules.identity.domain.errors.otp_delivery_failed_error import OtpDeliveryFailedError
 from davos.modules.identity.domain.errors.otp_verification_failed_error import OtpVerificationFailedError
@@ -27,6 +28,7 @@ logger = logging.getLogger(__name__)
 _STATUS_BY_ERROR: tuple[tuple[type[DomainError], int], ...] = (
     (OtpVerificationFailedError, 401),
     (InvalidWebhookSignatureError, 401),
+    (AdminLoginFailedError, 401),
     (PayloadTooLargeError, 413),
     (OtpDeliveryFailedError, 503),
     (RateLimitedError, 429),

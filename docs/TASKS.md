@@ -16,7 +16,7 @@ mypy --strict clean, 5 import contracts kept.
 - [x] **1.4 Persistence.** SQLAlchemy 2 async, six Alembic migrations, constraints, real-PostgreSQL test infrastructure,
   drift and reversibility tests.
 - [~] **1.5 Docker.** Multi-stage non-root images, compose topology with private data network, migration job, health checks,
-  resource limits, pinned images. Verified: image build, `migrate` -> `api`/`worker`/`scheduler` healthy, readiness, non-root, `minio` healthy.
+  resource limits, pinned images. Verified: image build, `migrate` -> `api`/`worker`/`scheduler` healthy, readiness, non-root.
   No `monitoring` profile.
 - [~] **1.6 Design system / frontend foundation.** Done 2026-09-21: light premium theme with WCAG-checked tokens, RTL, Vazirmatn +
   Unbounded, shared components, home/FAQ/contact/404 pages, track map traced from a satellite image. Not done: Dana font (licence),

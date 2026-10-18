@@ -3,7 +3,9 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class OtpPolicy:
-    code_length: int = 6
-    ttl_seconds: int = 120
-    max_attempts: int = 3
-    resend_cooldown_seconds: int = 60
+    """How one-time codes behave. Values come from the settings (OTP_*), built in the composition root."""
+
+    code_length: int
+    ttl_seconds: int
+    max_attempts: int
+    resend_cooldown_seconds: int

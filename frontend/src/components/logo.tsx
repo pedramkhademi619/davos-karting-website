@@ -14,13 +14,19 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo() {
+/** Wordmark; `tone="light"` is for carbon panels. */
+export function Logo({ tone = "dark" }: { tone?: "dark" | "light" }) {
   return (
     <span className="inline-flex items-center gap-3">
-      <LogoMark className="h-10 w-10 shrink-0" />
+      <LogoMark className="h-9 w-9 shrink-0 drop-shadow-[0_0_14px_rgb(255_196_0/0.35)] md:h-10 md:w-10" />
       <span className="flex flex-col gap-1.5 leading-none">
-        <span className="text-[1.1rem] font-black">{site.name}</span>
-        <span dir="ltr" className="hidden font-display text-[0.6rem] font-medium uppercase tracking-[0.34em] text-fg-muted sm:block">
+        <span className={`text-[1.05rem] font-black md:text-[1.1rem] ${tone === "light" ? "text-on-carbon" : "text-fg"}`}>{site.name}</span>
+        <span
+          dir="ltr"
+          className={`hidden font-display text-[0.6rem] font-medium uppercase tracking-[0.34em] sm:block ${
+            tone === "light" ? "text-on-carbon-muted" : "text-fg-muted"
+          }`}
+        >
           {site.nameLatin}
         </span>
       </span>

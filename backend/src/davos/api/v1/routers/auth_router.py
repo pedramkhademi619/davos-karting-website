@@ -22,7 +22,7 @@ from davos.modules.identity.domain.errors.session_not_found_error import Session
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/otp/request", summary="Send a one-time code by SMS")
+@router.post("/otp/request", summary="Send a one-time code by SMS", response_model_exclude_none=True)
 async def request_otp(
     body: RequestOtpRequest,
     ip: str = Depends(client_ip),
@@ -30,7 +30,9 @@ async def request_otp(
 ) -> RequestOtpResponse:
     result = await container.request_otp().execute(RequestOtpCommand(raw_mobile=body.mobile, client_ip=ip))
     return RequestOtpResponse(
-        expires_in_seconds=result.expires_in_seconds, resend_after_seconds=result.resend_after_seconds
+        expires_in_seconds=result.expires_in_seconds,
+        resend_after_seconds=result.resend_after_seconds,
+        dev_code=container.dev_otp_code(body.mobile),
     )
 
 

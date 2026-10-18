@@ -1,0 +1,1017 @@
+{
+ "summary": {
+  "date": "2026-10-01 11:28 UTC",
+  "commit": "9184088+dirty",
+  "rules_version": "96bf316fc6d7e1b9",
+  "persona_sha": "770ff29135c7",
+  "knowledge_sha": "5f1bfb6b6ebd",
+  "judge_model": "",
+  "spent_usd": "0.0149",
+  "aborted": "",
+  "model": "gemma-3-27b-it",
+  "label": "held_out_b_after-negative-rule",
+  "cases": 12,
+  "repeats": 3,
+  "runs": 36,
+  "pass_rate": 0.3055555555555556,
+  "pass_rate_ci95": [
+   0.1800445151699979,
+   0.4685627298178997
+  ],
+  "pass_rate_without_provider_failures": 0.3055555555555556,
+  "pass_all_repeats": 0.25,
+  "by_category": {
+   "held_out_unknown_b": [
+    11,
+    36
+   ]
+  },
+  "outcomes": {
+   "answered": 27,
+   "insufficient_information": 9
+  },
+  "model_answered_share": 1.0,
+  "repair_share": 0.0,
+  "provider_failures": 0,
+  "mean_prompt_tokens": 3459.6111111111113,
+  "mean_completion_tokens": 32.861111111111114,
+  "cached_prompt_share": 0.0,
+  "usd_per_1000_questions": 0.41447524999999996,
+  "latency_p50_s": 2.2901944999998705,
+  "latency_p95_s": 3.745445799999743
+ },
+ "runs": [
+  {
+   "id": "heldoutb-01",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "صندلی ماشین بچه برای نوزاد دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "متاسفم، نداریم. کودک زیر ۴ سال به هیچ عنوان نمی‌تونه سوار هیچ خودرویی بشه، نه به عنوان راننده و نه روی صندلی عقب.",
+   "latency_s": 3.35,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 44,
+     "cost_usd": 0.000420778,
+     "latency_s": 3.353002800000013,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-02",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "بلیط یا کارت هدیه میفروشید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "no",
+   "answer": "متاسفانه نه، فعلاً بلیط یا کارت هدیه نداریم. می‌تونید از صفحه «تماس با ما» در سایت، درخواست خودتون رو مطرح کنید.",
+   "latency_s": 3.01,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 44,
+     "cost_usd": 0.000420421,
+     "latency_s": 3.012125699999615,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-03",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "میتونم لباس تیم خودمون رو بپوشم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.57,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.00041274,
+     "latency_s": 1.5701345999996192,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-04",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "روزهای برفی یا بارونی هم کار میکنید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفانه در روزهای برفی یا بارونی پیست تعطیل هست. ایمنی مهم‌تر از همه چیزه و رانندگی توی این شرایط خطرناکه.",
+   "latency_s": 2.65,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 41,
+     "cost_usd": 0.000420178,
+     "latency_s": 2.646567199999936,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-05",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "شماره حساب برای کارت به کارت دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "ما شماره حساب برای کارت به کارت نداریم. پرداخت فقط از طریق درگاه بانک ملت در صفحه «رزرو سانس» سایت امکان‌پذیره.",
+   "latency_s": 1.96,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 36,
+     "cost_usd": 0.00041894,
+     "latency_s": 1.9607081000003745,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-06",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "میشه رکورد دور خودم رو ببینم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفم، امکانش نیست! ما سیستمی برای ثبت و نمایش رکوردهای دور نداریم.",
+   "latency_s": 1.88,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 28,
+     "cost_usd": 0.000417459,
+     "latency_s": 1.8780441999997493,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-07",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "سن مجاز برای همراه چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "۴ تا ۱۵ سال. این سن برای نشستن روی صندلی عقب خودرو دونفره است.",
+   "latency_s": 1.47,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3456,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 25,
+     "cost_usd": 0.000416264,
+     "latency_s": 1.4682619999998678,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-08",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "آب معدنی یا نوشیدنی خنک میفروشید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.03,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.00041274,
+     "latency_s": 1.028537199999846,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-09",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "حداقل تعداد نفرات برای گروه چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "حداقل تعداد نفرات برای گروه مهم نیست، مهم اینه که چندتا بچه ۴ تا ۱۵ ساله دارید یا نه. چون ممکنه لازم باشه سانس‌ها رو تقسیم کنیم.",
+   "latency_s": 2.29,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 42,
+     "cost_usd": 0.00042014,
+     "latency_s": 2.2894921000001887,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-10",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "میتونم به جای خودم یکی دیگه رو بفرستم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفم، امکانش نیست! رزرو اسمی است و فقط کسی که با مشخصات خودش رزرو کرده می‌تونه سوار بشه. این برای حفظ ایمنی و جلوگیری از سوءاستفاده‌ست.",
+   "latency_s": 2.79,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 54,
+     "cost_usd": 0.000422659,
+     "latency_s": 2.7901676999999836,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-11",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "دستگاه خودپرداز نزدیکتونه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.61,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000412621,
+     "latency_s": 1.6133528999998816,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-12",
+   "category": "held_out_unknown_b",
+   "repeat": 1,
+   "question": "آیا کارت ملی لازمه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "نه، نیازی به کارت ملی نیست. برای رانندگی با خودرو تک‌نفره، فقط باید سن و قدتون با شرایطی که گفتم مطابقت داشته باشه. برای خودرو دونفره هم راننده باید گواهینامه داشته باشه.",
+   "latency_s": 3.41,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 63,
+     "cost_usd": 0.000423983,
+     "latency_s": 3.411846499999683,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-01",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "صندلی ماشین بچه برای نوزاد دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "متاسفم، نداریم. کودک زیر ۴ سال به هیچ عنوان نمی‌تونه سوار هیچ خودرویی بشه، نه به عنوان راننده و نه روی صندلی عقب.",
+   "latency_s": 3.75,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 44,
+     "cost_usd": 0.000420778,
+     "latency_s": 3.7447222999999212,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-02",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "بلیط یا کارت هدیه میفروشید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "no",
+   "answer": "متاسفانه نه، فعلاً بلیط یا کارت هدیه نداریم. می‌تونید از صفحه «تماس با ما» درخواستتون رو مطرح کنید.",
+   "latency_s": 3.58,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3459,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 40,
+     "cost_usd": 0.000419621,
+     "latency_s": 3.5798045999999886,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-03",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "میتونم لباس تیم خودمون رو بپوشم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.56,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3464,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000413216,
+     "latency_s": 1.557416099999955,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-04",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "روزهای برفی یا بارونی هم کار میکنید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفانه در روزهای برفی یا بارونی پیست تعطیل هست. ایمنی مهم‌تر از هر چیزیه و رانندگی توی این شرایط خطرناکه.",
+   "latency_s": 2.93,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 41,
+     "cost_usd": 0.000420297,
+     "latency_s": 2.9253505000001496,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-05",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "شماره حساب برای کارت به کارت دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "ما شماره حساب برای کارت به کارت نداریم. پرداخت فقط از طریق درگاه بانک ملت در صفحه «رزرو سانس» سایت امکان‌پذیره.",
+   "latency_s": 1.95,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3456,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 36,
+     "cost_usd": 0.000418464,
+     "latency_s": 1.9515965999999025,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-06",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "میشه رکورد دور خودم رو ببینم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفم، امکانش نیست! ما سیستمی برای ثبت و نمایش رکوردهای دور نداریم.",
+   "latency_s": 1.54,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 28,
+     "cost_usd": 0.000416983,
+     "latency_s": 1.5408581000001504,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-07",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "سن مجاز برای همراه چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "۴ تا ۱۵ سال. این سن برای نشستن روی صندلی عقب خودرو دونفره است. البته اگر کودک زیر ۴ سال باشه، اصلاً نمی‌تونه سوار هیچ خودرویی بشه.",
+   "latency_s": 2.92,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3456,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 48,
+     "cost_usd": 0.000420864,
+     "latency_s": 2.919603199999983,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-08",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "آب معدنی یا نوشیدنی خنک میفروشید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.27,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3464,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000413216,
+     "latency_s": 1.266161799999736,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-09",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "حداقل تعداد نفرات برای گروه چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "حداقل تعداد نفرات برای گروه مهم نیست، مهم اینه که چندتا بچه ۴ تا ۱۵ ساله دارید یا نه. چون ممکنه لازم باشه سانس‌ها رو تقسیم کنیم.",
+   "latency_s": 2.88,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 42,
+     "cost_usd": 0.000420378,
+     "latency_s": 2.882430000000113,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-10",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "میتونم به جای خودم یکی دیگه رو بفرستم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفم، امکانش نیست! رزرو اسمی است و فقط کسی که با مشخصات خودش رزرو کرده می‌تونه سوار بشه. این برای حفظ امنیت و جلوگیری از مشکلات احتمالیه.",
+   "latency_s": 2.92,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 49,
+     "cost_usd": 0.000421897,
+     "latency_s": 2.921313900000314,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-11",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "دستگاه خودپرداز نزدیکتونه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.83,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3457,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000412383,
+     "latency_s": 1.8303670000000238,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-12",
+   "category": "held_out_unknown_b",
+   "repeat": 2,
+   "question": "آیا کارت ملی لازمه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "نه، نیازی به کارت ملی نیست. برای رانندگی با خودرو تک‌نفره، فقط باید شرایط سنی و قد رو داشته باشید. برای خودرو دونفره هم راننده باید گواهینامه داشته باشه.",
+   "latency_s": 3.06,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3455,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 53,
+     "cost_usd": 0.000421745,
+     "latency_s": 3.0595478000000185,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-01",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "صندلی ماشین بچه برای نوزاد دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "متاسفم، نداریم. کودک زیر ۴ سال به هیچ عنوان نمی‌تونه سوار هیچ خودرویی بشه، نه به عنوان راننده و نه روی صندلی عقب.",
+   "latency_s": 1.49,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3455,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 43,
+     "cost_usd": 0.00028328,
+     "latency_s": 1.4894952999998168,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-02",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "بلیط یا کارت هدیه میفروشید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفانه نه، فعلاً بلیط یا کارت هدیه نداریم.",
+   "latency_s": 1.62,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 21,
+     "cost_usd": 0.000416178,
+     "latency_s": 1.6194320999998126,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-03",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "میتونم لباس تیم خودمون رو بپوشم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 1.24,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3462,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000412978,
+     "latency_s": 1.2408402000000933,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-04",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "روزهای برفی یا بارونی هم کار میکنید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفانه در روزهای برفی یا بارونی پیست تعطیل است. ایمنی مهم‌تر از هر چیزیه!",
+   "latency_s": 3.2,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 31,
+     "cost_usd": 0.000418059,
+     "latency_s": 3.204323999999815,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-05",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "شماره حساب برای کارت به کارت دارید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "ما شماره حساب برای کارت به کارت نداریم. پرداخت فقط از طریق درگاه بانک ملت در صفحه «رزرو سانس» سایت امکان‌پذیره.",
+   "latency_s": 1.87,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 36,
+     "cost_usd": 0.000418702,
+     "latency_s": 1.8725914999999986,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-06",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "میشه رکورد دور خودم رو ببینم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفم، امکانش نیست. هیچ اطلاعاتی درباره رکورد دورها توی این متن‌ها نیست.",
+   "latency_s": 2.82,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 27,
+     "cost_usd": 0.000416902,
+     "latency_s": 2.8237601000000723,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-07",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "سن مجاز برای همراه چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "unclear",
+   "answer": "۴ تا ۱۵ سال! این سن برای نشستن روی صندلی عقب خودرو دونفره است، به شرطی که یه بزرگسال گواهینامه‌دار هم راننده باشه. البته اگه سنش زیر ۴ سال باشه، اصلاً نمی‌تونه سوار هیچ خودرویی بشه.",
+   "latency_s": 3.85,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3453,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 68,
+     "cost_usd": 0.000424507,
+     "latency_s": 3.8459774000002653,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-08",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "آب معدنی یا نوشیدنی خنک میفروشید؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 3.31,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3463,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.000413097,
+     "latency_s": 3.3141427000000476,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-09",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "حداقل تعداد نفرات برای گروه چنده؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "حداقل تعداد نفرات برای گروه مهم نیست، مهم اینه که چندتا بچه ۴ تا ۱۵ ساله دارید یا نه. چون ممکنه لازم باشه سانس‌ها رو تقسیم کنیم.",
+   "latency_s": 2.06,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 42,
+     "cost_usd": 0.00042014,
+     "latency_s": 2.0576043000000936,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-10",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "میتونم به جای خودم یکی دیگه رو بفرستم؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "متاسفم، امکانش نیست! رزرو اسمی است و فقط کسی که با مشخصات خودش رزرو کرده می‌تونه سوار بشه. این برای حفظ امنیت و جلوگیری از مشکلات احتمالیه.",
+   "latency_s": 2.61,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3461,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 49,
+     "cost_usd": 0.000421659,
+     "latency_s": 2.609856900000068,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-11",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "دستگاه خودپرداز نزدیکتونه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "insufficient_information",
+   "passed": true,
+   "reason": "ok",
+   "verdict": "unclear",
+   "answer": "برای این پرسش اطلاعات تاییدشده‌ای در سایت ندارم و نمی‌خواهم حدس بزنم. لطفا سوال خود را از بخش «تماس با ما» بپرسید.",
+   "latency_s": 0.95,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3460,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 5,
+     "cost_usd": 0.00041274,
+     "latency_s": 0.948911599999974,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  },
+  {
+   "id": "heldoutb-12",
+   "category": "held_out_unknown_b",
+   "repeat": 3,
+   "question": "آیا کارت ملی لازمه؟",
+   "history": [],
+   "kind": "defer",
+   "outcome": "answered",
+   "passed": false,
+   "reason": "answered without deferring to the venue",
+   "verdict": "no",
+   "answer": "نه، نیازی به کارت ملی نیست. برای رانندگی با خودرو تک‌نفره، فقط باید سن و قدتون با شرایطی که گفتم مطابقت داشته باشه. برای خودرو دونفره هم راننده باید گواهینامه داشته باشه.",
+   "latency_s": 2.62,
+   "calls": [
+    {
+     "model": "google/gemma-3-27b-it",
+     "prompt_tokens": 3458,
+     "cached_prompt_tokens": 0,
+     "completion_tokens": 63,
+     "cost_usd": 0.000424102,
+     "latency_s": 2.618388600000344,
+     "failed": false,
+     "error": ""
+    }
+   ],
+   "judge": null
+  }
+ ]
+}

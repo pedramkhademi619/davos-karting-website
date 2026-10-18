@@ -22,7 +22,9 @@ BASE = "https://ai.example.test/v1"
 URL = f"{BASE}/chat/completions"
 SECRET_KEY = "sk-test-SUPERSECRET123456"
 REQUEST = ChatCompletionRequest(
-    messages=(ChatMessage(ChatRole.SYSTEM, "rules"), ChatMessage(ChatRole.USER, "سلام")), max_output_tokens=200
+    messages=(ChatMessage(ChatRole.SYSTEM, "rules"), ChatMessage(ChatRole.USER, "سلام")),
+    max_output_tokens=200,
+    temperature=0.1,
 )
 
 
@@ -76,6 +78,15 @@ async def test_token_parameter_name_and_temperature_are_configurable(client: htt
     await make_adapter(client, token_limit_param="max_completion_tokens", send_temperature=False).complete(REQUEST)
     body = json.loads(route.calls.last.request.content)
     assert body["max_completion_tokens"] == 200 and "max_tokens" not in body and "temperature" not in body
+
+
+@respx.mock
+async def test_a_reasoning_model_can_be_given_a_larger_output_floor(client: httpx.AsyncClient) -> None:
+    route = respx.post(URL).mock(return_value=ok())
+    await make_adapter(client, min_output_tokens=2000).complete(REQUEST)
+    assert json.loads(route.calls.last.request.content)["max_tokens"] == 2000
+    await make_adapter(client, min_output_tokens=50).complete(REQUEST)
+    assert json.loads(route.calls.last.request.content)["max_tokens"] == 200  # a floor, never a cut
 
 
 @respx.mock
@@ -143,3 +154,25 @@ async def test_secrets_prompts_and_provider_bodies_never_appear_in_logs_or_error
         await adapter.complete(REQUEST)
     haystack = caplog.text + str(info.value) + repr(adapter)
     assert SECRET_KEY not in haystack and "سلام" not in haystack
+
+
+@respx.mock
+async def test_cached_prompt_tokens_and_reported_cost_are_read(client: httpx.AsyncClient) -> None:
+    usage = {
+        "prompt_tokens": 3100,
+        "completion_tokens": 60,
+        "prompt_tokens_details": {"cached_tokens": 3060},
+        "cost": 0.00012,
+    }
+    respx.post(URL).mock(return_value=ok(usage=usage))
+    completion = await make_adapter(client).complete(REQUEST)
+    assert completion.usage.cached_prompt_tokens == 3060
+    assert completion.cost_usd == pytest.approx(0.00012)
+
+
+@respx.mock
+async def test_missing_cache_details_and_cost_mean_zero_and_unknown(client: httpx.AsyncClient) -> None:
+    respx.post(URL).mock(return_value=ok(usage={"prompt_tokens": 90, "completion_tokens": 12, "cost": True}))
+    completion = await make_adapter(client).complete(REQUEST)
+    assert completion.usage.cached_prompt_tokens == 0
+    assert completion.cost_usd is None

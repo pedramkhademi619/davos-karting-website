@@ -7,4 +7,4 @@ from davos.modules.assistant.domain.value_objects.chat_message import ChatMessag
 class ChatCompletionRequest:
     messages: tuple[ChatMessage, ...]
     max_output_tokens: int
-    temperature: float = 0.1
+    temperature: float  # sent only when the adapter is configured to send one (AI_SEND_TEMPERATURE)

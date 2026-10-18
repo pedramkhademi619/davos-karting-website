@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from davos.modules.assistant.adapters.persistence.knowledge_entry_model import KnowledgeEntryModel
+from davos.modules.assistant.adapters.persistence.knowledge_search_columns import knowledge_search_columns
 from davos.modules.assistant.application.ports.knowledge_index_port import KnowledgeIndexPort
 from davos.modules.assistant.domain.entities.knowledge_entry import KnowledgeEntry
 from davos.modules.assistant.domain.enums.knowledge_source_type import KnowledgeSourceType
@@ -17,7 +18,6 @@ class SqlAlchemyKnowledgeIndex(KnowledgeIndexPort):
         self._normalizer = normalizer
 
     async def upsert(self, entry: KnowledgeEntry) -> None:
-        title_norm = self._normalizer.normalize(entry.title)
         values = {
             "id": entry.entry_id,
             "source_type": entry.source_type.value,
@@ -25,9 +25,8 @@ class SqlAlchemyKnowledgeIndex(KnowledgeIndexPort):
             "title": entry.title,
             "body": entry.body,
             "url": entry.url,
-            "title_norm": title_norm,
-            "search_text": f"{title_norm} {self._normalizer.normalize(entry.body)}",
             "updated_at": entry.updated_at,
+            **knowledge_search_columns(entry, self._normalizer),
         }
         statement = insert(KnowledgeEntryModel).values(**values)
         statement = statement.on_conflict_do_update(
@@ -53,3 +52,7 @@ class SqlAlchemyKnowledgeIndex(KnowledgeIndexPort):
         async with self._session_factory() as session:
             rows = (await session.execute(statement)).all()
         return [(KnowledgeSourceType(source_type), source_ref) for source_type, source_ref in rows]
+
+    async def count(self) -> int:
+        async with self._session_factory() as session:
+            return int((await session.execute(select(func.count()).select_from(KnowledgeEntryModel))).scalar_one())

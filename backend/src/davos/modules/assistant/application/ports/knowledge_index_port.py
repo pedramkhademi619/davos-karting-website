@@ -16,3 +16,7 @@ class KnowledgeIndexPort(ABC):
     @abstractmethod
     async def refs_with_prefix(self, prefix: str) -> list[tuple[KnowledgeSourceType, str]]:
         """(type, source_ref) of every entry whose ref starts with ``prefix``, so a sync can remove what is unwanted."""
+
+    @abstractmethod
+    async def count(self) -> int:
+        """How many entries exist, whoever published them."""

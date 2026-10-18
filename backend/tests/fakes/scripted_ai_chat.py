@@ -7,18 +7,28 @@ from davos.modules.assistant.domain.value_objects.token_usage import TokenUsage
 
 
 class ScriptedAiChat(AIChatPort):
-    """Returns a canned reply (or raises a canned error) and records every request it receives."""
+    """Returns a canned reply (or raises a canned error) and records every request it receives.
 
-    def __init__(self, reply: str | BaseException = "", usage: TokenUsage | None = None) -> None:
+    ``then`` lists the replies for the following calls, in order; after the last one ``reply`` is used again.
+    """
+
+    def __init__(
+        self,
+        reply: str | BaseException = "",
+        usage: TokenUsage | None = None,
+        then: list[str | BaseException] | None = None,
+    ) -> None:
         self.reply = reply
         self.usage = usage or TokenUsage(prompt_tokens=120, completion_tokens=30)
         self.requests: list[ChatCompletionRequest] = []
+        self._queue = [reply, *(then or [])] if then else []
 
     async def complete(self, request: ChatCompletionRequest) -> ChatCompletion:
         self.requests.append(request)
-        if isinstance(self.reply, BaseException):
-            raise self.reply
-        return ChatCompletion(text=self.reply, usage=self.usage, model="fake-model")
+        reply = self._queue.pop(0) if self._queue else self.reply
+        if isinstance(reply, BaseException):
+            raise reply
+        return ChatCompletion(text=reply, usage=self.usage, model="fake-model")
 
     @property
     def calls(self) -> int:

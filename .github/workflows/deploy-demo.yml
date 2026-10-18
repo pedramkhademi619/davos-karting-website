@@ -1,0 +1,94 @@
+name: deploy-demo
+
+# Puts the branch on the client demo server (https://test.davoskarting.ir) after every push. The images are built here, on
+# the runner (the demo server has 1 GB of RAM and cannot build the web app), shipped over SSH and swapped in with compose.
+# One-time setup is in deploy/demo/README.md (a deploy key as the DEPLOY_SSH_KEY secret).
+on:
+  push:
+    branches: [feature/semantic-cache]
+    paths-ignore:
+      - "docs/**"
+      - "admin_app/**"
+      - "**.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never two deploys at once, and never cancel one halfway (a half-loaded image set would leave the demo mixed).
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: false
+
+env:
+  DEMO_HOST: 185.141.107.140
+  DEMO_URL: https://test.davoskarting.ir
+  DEMO_DIR: /var/www/davos-karting-website
+  DAVOS_VERSION: demo
+  # The server's public SSH host key (not a secret): the connection is refused if the server presents any other.
+  DEMO_HOST_KEY: "185.141.107.140 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAt4p+xITDwfwQ9Jdeq7A4BGgkjYU7/k8XqqJzBCRHCP"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH access
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          test -n "$DEPLOY_SSH_KEY" || { echo "DEPLOY_SSH_KEY is not set: see deploy/demo/README.md"; exit 1; }
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/demo_key
+          chmod 600 ~/.ssh/demo_key
+          printf '%s\n' "$DEMO_HOST_KEY" > ~/.ssh/known_hosts
+          printf 'Host demo\n  HostName %s\n  User root\n  IdentityFile ~/.ssh/demo_key\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n  ServerAliveInterval 20\n' "$DEMO_HOST" > ~/.ssh/config
+          ssh demo 'echo connected to $(hostname)'
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the API/worker image
+        run: docker build -t davos-backend:$DAVOS_VERSION -t davos-api:$DAVOS_VERSION ./backend
+
+      - name: Build the web image
+        run: |
+          get() { grep "^$1=" .env.example | cut -d= -f2-; }
+          docker build -t davos-frontend:latest \
+            --build-arg NEXT_PUBLIC_SITE_URL="$DEMO_URL" \
+            --build-arg NEXT_PUBLIC_BOOKING_URL= \
+            --build-arg NEXT_PUBLIC_ADMIN_URL= \
+            --build-arg NEXT_PUBLIC_CONTACT_PHONE="$(get CONTACT_PHONE)" \
+            --build-arg NEXT_PUBLIC_VENUE_LATITUDE="$(get VENUE_LATITUDE)" \
+            --build-arg NEXT_PUBLIC_VENUE_LONGITUDE="$(get VENUE_LONGITUDE)" \
+            ./frontend
+
+      - name: Send the code and the images to the server
+        run: |
+          rsync -az --delete -e ssh \
+            --exclude='.git' --exclude='.env' --exclude='node_modules' --exclude='.next' --exclude='load-tests' \
+            --exclude='admin_app' --exclude='__pycache__' --exclude='.venv' --exclude='backend/models' \
+            --exclude='docker-compose.local.yml' --exclude='backups' \
+            ./ demo:"$DEMO_DIR"/
+          docker save davos-backend:$DAVOS_VERSION davos-api:$DAVOS_VERSION davos-frontend:latest | gzip -1 | ssh demo 'gunzip | docker load'
+
+      - name: Swap the services (migrations run first)
+        run: |
+          ssh demo "cd $DEMO_DIR && docker-compose -f docker-compose.yml -f deploy/demo/docker-compose.demo.yml up -d --no-build && docker image prune -f >/dev/null"
+
+      - name: Wait for the API and smoke-test the public site
+        run: |
+          for i in $(seq 1 36); do
+            status=$(ssh demo "docker inspect -f '{{.State.Health.Status}}' davos-api-1" 2>/dev/null || true)
+            [ "$status" = healthy ] && break
+            sleep 5
+          done
+          echo "api health: $status"
+          [ "$status" = healthy ]
+          sleep 15
+          for path in / /booking /faq /contact /api/v1/health/live; do
+            code=$(curl -s -o /dev/null -m 30 -w '%{http_code}' -A 'Mozilla/5.0 (deploy-check)' "$DEMO_URL$path")
+            echo "$path -> $code"
+            [ "$code" = 200 ]
+          done

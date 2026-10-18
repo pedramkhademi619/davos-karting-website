@@ -24,6 +24,9 @@ class InMemoryKnowledgeIndex(KnowledgeIndexPort):
     async def refs_with_prefix(self, prefix: str) -> list[tuple[KnowledgeSourceType, str]]:
         return [key for key in self.entries if key[1].startswith(prefix)]
 
+    async def count(self) -> int:
+        return len(self.entries)
+
     @property
     def refs(self) -> set[str]:
         return {ref for _, ref in self.entries}

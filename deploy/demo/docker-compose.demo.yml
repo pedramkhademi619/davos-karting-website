@@ -1,0 +1,33 @@
+# The client demo on a small server: use INSTEAD of docker-compose.prod.yml (it keeps APP_ENV=development from .env so the
+# sign-in code is shown on the page), and never together with docker-compose.override.yml (that one publishes the
+# database and the API ports):
+#   docker-compose -f docker-compose.yml -f deploy/demo/docker-compose.demo.yml up -d
+# The web proxy listens only on 127.0.0.1:8090; the server's own nginx terminates HTTPS and forwards to it. The database
+# is the official pgvector image (the repo's own Dockerfile compiles pgvector inside Alpine, slow on a 1-core server).
+services:
+  reverse-proxy:
+    ports: !override
+      - "127.0.0.1:${HTTP_PORT}:8080"
+  postgres:
+    build: !reset null
+    image: pgvector/pgvector:pg16
+  frontend:
+    build:
+      dockerfile: ../deploy/demo/frontend.Dockerfile
+  # NO real bank: the page where the demo's "payment" happens (see demo_bank.py). The API talks to it over the private network;
+  # the visitor's browser reaches it only through the server's nginx at /demo-bank/pay and /demo-bank/finish.
+  demobank:
+    image: python:3.12.7-slim-bookworm
+    command: ["python", "/app/demo_bank.py"]
+    working_dir: /app
+    volumes:
+      - ./deploy/demo:/app:ro
+    ports:
+      - "127.0.0.1:9099:9099"
+    networks: [edge, backend]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 48m
+    restart: unless-stopped

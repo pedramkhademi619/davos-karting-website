@@ -18,9 +18,13 @@ class PaymentAttemptMapper:
             created_at=model.created_at,
             updated_at=model.updated_at,
             expires_at=model.expires_at,
+            gateway=model.gateway,
+            gateway_order_id=model.gateway_order_id,
             authority=model.authority,
+            provider_reference=model.provider_reference,
             reference_id=model.reference_id,
             failure_reason=model.failure_reason,
+            settled_at=model.settled_at,
         )
 
     @staticmethod
@@ -30,11 +34,21 @@ class PaymentAttemptMapper:
             order_ref=payment.order_ref,
             customer_id=payment.customer_id,
             amount_irr=payment.amount.irr,
-            status=payment.status.value,
-            authority=payment.authority,
-            reference_id=payment.reference_id,
-            failure_reason=payment.failure_reason,
+            gateway=payment.gateway,
+            gateway_order_id=payment.gateway_order_id,
             created_at=payment.created_at,
-            updated_at=payment.updated_at,
             expires_at=payment.expires_at,
+            **PaymentAttemptMapper.mutable_values(payment),
         )
+
+    @staticmethod
+    def mutable_values(payment: PaymentAttempt) -> dict[str, object]:
+        return {
+            "status": payment.status.value,
+            "authority": payment.authority,
+            "provider_reference": payment.provider_reference,
+            "reference_id": payment.reference_id,
+            "failure_reason": payment.failure_reason,
+            "updated_at": payment.updated_at,
+            "settled_at": payment.settled_at,
+        }

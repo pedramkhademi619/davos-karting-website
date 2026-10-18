@@ -22,3 +22,6 @@ class SandboxOrderQuotePort(OrderQuotePort):
         if not _SANDBOX_ORDER.fullmatch(order_ref):
             return None
         return OrderQuote(amount=Money(_SANDBOX_AMOUNT_IRR), description="Sandbox test payment")
+
+    async def accepts_payment(self, order_ref: str, customer_id: uuid.UUID, amount: Money) -> bool:
+        return bool(_SANDBOX_ORDER.fullmatch(order_ref)) and amount == Money(_SANDBOX_AMOUNT_IRR)

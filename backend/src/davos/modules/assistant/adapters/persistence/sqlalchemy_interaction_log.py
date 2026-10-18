@@ -7,6 +7,7 @@ from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from davos.modules.assistant.adapters.persistence.assistant_interaction_model import AssistantInteractionModel
+from davos.modules.assistant.application.ports.feedback_recorded import FeedbackRecorded
 from davos.modules.assistant.application.ports.interaction_log_port import InteractionLogPort
 from davos.modules.assistant.domain.entities.assistant_interaction import AssistantInteraction
 
@@ -30,18 +31,21 @@ class SqlAlchemyInteractionLog(InteractionLogPort):
                     user_id=interaction.user_id,
                     question_text=interaction.question_text,
                     answer_text=interaction.answer_text,
+                    cache_entry_id=interaction.cache_entry_id,
+                    served_from_cache=interaction.served_from_cache,
                 )
             )
 
-    async def record_feedback(self, interaction_id: uuid.UUID, *, helpful: bool) -> bool:
+    async def record_feedback(self, interaction_id: uuid.UUID, *, helpful: bool) -> FeedbackRecorded | None:
         async with self._session_factory() as session, session.begin():
             result = await session.execute(
                 update(AssistantInteractionModel)
                 .where(AssistantInteractionModel.id == interaction_id)
                 .values(helpful=helpful)
-                .returning(AssistantInteractionModel.id)
+                .returning(AssistantInteractionModel.cache_entry_id)
             )
-            return result.scalar_one_or_none() is not None
+            row = result.one_or_none()
+            return None if row is None else FeedbackRecorded(cache_entry_id=row[0])
 
     async def count_in_conversation(self, conversation_id: uuid.UUID) -> int:
         async with self._session_factory() as session:

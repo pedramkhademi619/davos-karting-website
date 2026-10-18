@@ -1,13 +1,17 @@
-/** Slow typographic ticker. Purely decorative, so it is hidden from assistive technology. */
+/** Fast typographic ticker on carbon, like trackside advertising boards. Purely decorative. */
 export function Marquee({ words }: { words: readonly string[] }) {
   const row = (
     <ul className="flex shrink-0 items-center">
       {words.map((word, index) => (
         <li key={word} className="flex items-center">
-          <span className={`px-8 text-5xl font-black md:px-12 md:text-7xl ${index % 2 === 0 ? "text-fg" : "text-line-strong"}`}>
+          <span
+            className={`px-8 text-5xl font-black md:px-12 md:text-7xl ${
+              index % 2 === 0 ? "text-on-carbon" : "text-transparent [-webkit-text-stroke:1.5px_rgb(255_255_255/0.45)]"
+            }`}
+          >
             {word}
           </span>
-          <span className="h-3 w-3 rotate-45 bg-accent" />
+          <span className="checker-bw h-5 w-5 rounded-sm" />
         </li>
       ))}
     </ul>
@@ -15,7 +19,7 @@ export function Marquee({ words }: { words: readonly string[] }) {
 
   // dir="ltr" keeps the scroll maths simple; each Persian word still renders right-to-left inside its own span.
   return (
-    <div className="marquee border-y border-line bg-surface py-7 md:py-9" dir="ltr" aria-hidden="true">
+    <div className="marquee carbon-flat py-7 md:py-9" dir="ltr" aria-hidden="true">
       <div className="marquee-track">
         {row}
         {row}

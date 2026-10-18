@@ -22,4 +22,6 @@ class AssistantInteraction:
     user_id: uuid.UUID | None = None
     question_text: str | None = None
     answer_text: str | None = None
+    cache_entry_id: uuid.UUID | None = None  # the stored answer this reply came from, or was saved as
+    served_from_cache: bool = False
     helpful: bool | None = field(default=None, compare=False)

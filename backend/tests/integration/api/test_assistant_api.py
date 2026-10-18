@@ -69,7 +69,9 @@ async def test_a_plain_question_about_working_hours_is_answered_from_the_publish
     response = await api.post("/api/v1/assistant/ask", json={"question": "ساعت کاری شما چیه؟"})
     body = response.json()
     assert response.status_code == 200
-    assert body["outcome"] == "quick_answer" and body["answer"] == text
+    assert body["outcome"] == "quick_answer" and body["answer"].startswith(text)
+    # The shifts in force (admin-panel settings) follow the owner's text.
+    assert "شیفت صبح: از ساعت ۱۰:۰۰" in body["answer"] and "شیفت عصر" in body["answer"]
     assert body["sources"] == [{"title": "ساعت کاری", "url": "/contact"}] and ai_chat.calls == 0
 
 
