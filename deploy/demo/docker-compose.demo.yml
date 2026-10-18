@@ -1,3 +1,4 @@
+# Deployed by .github/workflows/deploy-demo.yml on every push to feature/semantic-cache (see deploy/demo/README.md).
 # The client demo on a small server: use INSTEAD of docker-compose.prod.yml (it keeps APP_ENV=development from .env so the
 # sign-in code is shown on the page), and never together with docker-compose.override.yml (that one publishes the
 # database and the API ports):
