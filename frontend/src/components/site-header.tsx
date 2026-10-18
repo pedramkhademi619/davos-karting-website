@@ -8,7 +8,7 @@ import { navigation, site } from "@/content/site";
 import { hrefFor } from "@/lib/urls";
 
 const desktopLink =
-  "relative rounded-full px-4 py-2 text-[0.95rem] font-bold text-fg-muted transition-colors hover:text-fg " +
+  "relative block rounded-full px-4 py-2 text-[0.95rem] font-bold text-fg-muted transition-colors hover:text-fg " +
   "aria-[current=page]:bg-white/[0.08] aria-[current=page]:text-fg aria-[current=page]:shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]";
 
 /** `onBookingHost`: rendered on the booking subdomain, so main-site links become absolute (see lib/urls.ts). */
@@ -23,7 +23,7 @@ export function SiteHeader({ onBookingHost = false }: { onBookingHost?: boolean 
         </Link>
 
         <nav aria-label="منوی اصلی" className="hidden lg:block">
-          <NavLinks items={items} className="flex items-center gap-0 rounded-full border border-white/[0.08] bg-white/[0.03]" linkClassName={desktopLink} />
+          <NavLinks items={items} className="flex items-center rounded-full border border-white/[0.08] bg-white/[0.03]" linkClassName={desktopLink} />
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
