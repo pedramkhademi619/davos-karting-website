@@ -113,7 +113,7 @@ export function LapTracker({ progress, sectors, compact = false }: { progress: n
           {kart && (
             <g transform={`translate(${kart.x} ${kart.y})`}>
               <circle r="22" fill="rgb(255 196 0 / 0.25)" />
-              <g transform={`rotate(${kart.angle}) scale(1.25)`}>
+              <g transform={`rotate(${kart.angle}) scale(1.9)`}>
                 <KartShape colour="#ffc400" />
               </g>
             </g>

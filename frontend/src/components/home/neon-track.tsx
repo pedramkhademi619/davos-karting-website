@@ -20,16 +20,19 @@ function Kart({ colour, duration, begin }: { colour: string; duration: number; b
   return (
     <g className="kart">
       {[0.24, 0.16, 0.08].map((lag, i) => (
-        <circle key={lag} r={6 - i * 1.6} fill={colour} opacity={0.18 + i * 0.12}>
+        <circle key={lag} r={9 - i * 2.4} fill={colour} opacity={0.18 + i * 0.12}>
           {lap(lag)}
         </circle>
       ))}
-      <circle r="14" fill={colour} opacity="0.3" filter="url(#neon-blur)">
+      <circle r="22" fill={colour} opacity="0.3" filter="url(#neon-blur)">
         {lap(0)}
       </circle>
       <g>
         {lap(0)}
-        <KartShape colour={colour} />
+        {/* The circuit is drawn about 600 units wide, so a kart needs ~2x to read as a kart and not a dot. */}
+        <g transform="scale(2.1)">
+          <KartShape colour={colour} />
+        </g>
       </g>
     </g>
   );
