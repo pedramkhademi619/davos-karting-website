@@ -321,7 +321,7 @@ export function BookingWizard() {
       {pendingHold && !reservation && (
         <Alert tone="warning" className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <span>
-            رزرو {pendingHold.code} ({fa(pendingHold.time)} {pendingHold.weekday}) هنوز پرداخت نشده و خودروهایش برای شما نگه داشته شده است.
+            بلیت شماره {fa(pendingHold.ticket_number)} ({fa(pendingHold.time)} {pendingHold.weekday}) هنوز پرداخت نشده و خودروهایش برای شما نگه داشته شده است.
           </span>
           <button type="button" className={buttonClasses("primary", "sm")} onClick={() => setReservation(pendingHold)}>
             ادامه پرداخت
@@ -705,7 +705,7 @@ function HeldView(props: {
         doubles={reservation.double_count}
         total={reservation.amount_toman}
         name={reservation.contact_name || props.name}
-        code={reservation.code}
+        ticket={reservation.ticket_number}
         footer={
           <div className="flex items-center gap-4">
             <div

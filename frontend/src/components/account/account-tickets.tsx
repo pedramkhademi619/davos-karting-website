@@ -60,7 +60,7 @@ export function AccountTickets({
 
   const needle = toLatinDigits(query).trim().toLowerCase();
   const shown = tickets.filter(
-    (t) => matches(t, filter) && (!needle || String(t.ticket_number).includes(needle) || t.code.toLowerCase().includes(needle)),
+    (t) => matches(t, filter) && (!needle || String(t.ticket_number).includes(needle)),
   );
 
   return (
@@ -86,7 +86,7 @@ export function AccountTickets({
           <SearchIcon className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-fg-subtle" />
           <input
             className="field pr-12"
-            placeholder="شماره بلیت یا کد رزرو"
+            placeholder="شماره بلیت"
             aria-label="جستجوی بلیت"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -238,7 +238,6 @@ export function TicketCard({
 
       {open && (
         <dl className={`grid gap-x-8 gap-y-3 border-t px-6 py-5 text-sm sm:grid-cols-2 ${live ? "border-carbon-line" : "border-line"}`}>
-          <Detail label="کد رزرو" value={ticket.code} ltr muted={muted} />
           <Detail label="نام روی بلیت" value={ticket.contact_name || "—"} muted={muted} />
           <Detail label="ثبت رزرو" value={dateTime(ticket.created_at)} muted={muted} />
           {ticket.confirmed_at && <Detail label="تایید قطعی" value={dateTime(ticket.confirmed_at)} muted={muted} />}

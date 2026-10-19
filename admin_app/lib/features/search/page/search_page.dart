@@ -23,7 +23,7 @@ class SearchPage extends GetView<TicketSearchController> {
             child: SearchBox(
               controller: controller.text,
               autofocus: true,
-              hint: "شماره بلیت، موبایل، نام یا کد رزرو",
+              hint: "شماره بلیت، موبایل یا نام",
               onChanged: controller.onChanged,
               onSearch: (_) => controller.search(),
             ),

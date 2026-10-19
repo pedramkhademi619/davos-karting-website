@@ -78,7 +78,6 @@ export function printTicket(ticket: Reservation): void {
     "بلیت داووس کارتینگ",
     [
       ["شماره بلیت", fa(ticket.ticket_number)],
-      ["کد رزرو", ticket.code],
       ["روز و ساعت", `${ticket.weekday} ${jalali(ticket.date_jalali)}، ساعت ${fa(ticket.time)}`],
       ["خودرو", karts(ticket.single_count, ticket.double_count)],
       ["نام", ticket.contact_name || "—"],

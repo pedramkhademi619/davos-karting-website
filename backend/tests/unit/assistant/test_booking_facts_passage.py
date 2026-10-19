@@ -50,7 +50,7 @@ def test_the_passage_is_marked_as_computed() -> None:
 
 def test_the_booking_wizard_is_explained_step_by_step() -> None:
     text = live.wizard(booking_facts())
-    for step in ("۱) خدمه", "۲) روز", "۳) سانس", "۴) پایان"):
+    for step in ("۱) نفرات", "۲) روز", "۳) ساعت", "۴) پرداخت"):
         assert step in text
     assert "لانچ کنترل" in text and "پشت بزرگسال" in text and "davoskarting.ir" in text
 

@@ -12,8 +12,8 @@ type RacePassProps = {
   doubles: number;
   total: number;
   name: string;
-  /** The reservation code once the karts are held; until then the pass is a preview. */
-  code?: string;
+  /** The ticket number (from 100) once the karts are held; until then the pass is a preview. */
+  ticket?: number;
   footer?: ReactNode;
 };
 
@@ -21,7 +21,7 @@ type RacePassProps = {
  * The booking as a holographic race pass. The foil follows the pointer on a computer and the phone's tilt on Android
  * (iOS asks permission for motion, so there it just shimmers on its own).
  */
-export function RacePass({ dayLabel, time, singles, doubles, total, name, code, footer }: RacePassProps) {
+export function RacePass({ dayLabel, time, singles, doubles, total, name, ticket, footer }: RacePassProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,8 +67,8 @@ export function RacePass({ dayLabel, time, singles, doubles, total, name, code, 
               </p>
             </div>
           </div>
-          <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.65rem] font-black ${code ? "bg-go text-ink" : "bg-white/10 text-on-carbon-muted"}`}>
-            {code ? "نگه داشته شد" : "پیش‌نمایش"}
+          <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.65rem] font-black ${ticket ? "bg-go text-ink" : "bg-white/10 text-on-carbon-muted"}`}>
+            {ticket ? "نگه داشته شد" : "پیش‌نمایش"}
           </span>
         </div>
 
@@ -101,8 +101,11 @@ export function RacePass({ dayLabel, time, singles, doubles, total, name, code, 
         )}
 
         <div className="relative mt-5 flex items-center justify-between gap-3">
-          <span className="race-number text-lg font-black tracking-[0.18em]" dir="ltr">
-            {code ?? "• • • • • •"}
+          <span className="flex items-baseline gap-2">
+            <span className="text-xs font-bold text-on-carbon-muted">شماره بلیت</span>
+            <span className="race-number text-3xl font-black tracking-wider" dir="ltr">
+              {ticket ? fa(ticket) : "•••"}
+            </span>
           </span>
           <span aria-hidden="true" className="barcode h-8 w-28" />
         </div>
