@@ -37,6 +37,7 @@ from davos.modules.accounting.adapters.persistence.sqlalchemy_fixed_asset_reposi
 )
 from davos.modules.accounting.adapters.persistence.sqlalchemy_journal_repository import SqlAlchemyJournalRepository
 from davos.modules.accounting.adapters.persistence.sqlalchemy_ledger_query import SqlAlchemyLedgerQuery
+from davos.modules.accounting.adapters.persistence.sqlalchemy_staff_repository import SqlAlchemyStaffRepository
 from davos.modules.accounting.adapters.persistence.sqlalchemy_vendor_repository import SqlAlchemyVendorRepository
 from davos.modules.accounting.application.services.ledger_posting_service import LedgerPostingService
 from davos.modules.accounting.application.use_cases.accounting_reports_use_case import AccountingReportsUseCase
@@ -49,6 +50,7 @@ from davos.modules.accounting.application.use_cases.fiscal_year_use_case import 
 from davos.modules.accounting.application.use_cases.fixed_asset_use_case import FixedAssetUseCase
 from davos.modules.accounting.application.use_cases.journal_use_case import JournalUseCase
 from davos.modules.accounting.application.use_cases.sales_posting_use_case import SalesPostingUseCase
+from davos.modules.accounting.application.use_cases.staff_use_case import StaffUseCase
 from davos.modules.accounting.application.use_cases.vendor_use_case import VendorUseCase
 from davos.modules.administration.adapters.persistence.sqlalchemy_admin_session_repository import (
     SqlAlchemyAdminSessionRepository,
@@ -701,6 +703,16 @@ class ApplicationContainer:
             vendors=SqlAlchemyVendorRepository(uow),
             accounts=SqlAlchemyAccountRepository(uow),
             ledger=SqlAlchemyLedgerQuery(uow),
+            clock=self.clock,
+        )
+
+    def staff(self) -> StaffUseCase:
+        uow = self.new_unit_of_work()
+        return StaffUseCase(
+            uow=uow,
+            staff=SqlAlchemyStaffRepository(uow),
+            accounts=SqlAlchemyAccountRepository(uow),
+            bookkeeping=self.bookkeeping(),
             clock=self.clock,
         )
 

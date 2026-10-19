@@ -22,6 +22,8 @@ from davos.api.schemas.accounting_payment_request import AccountingPaymentReques
 from davos.api.schemas.accounting_presenter import AccountingPresenter
 from davos.api.schemas.accounting_reverse_request import AccountingReverseRequest
 from davos.api.schemas.accounting_settings_request import AccountingSettingsRequest
+from davos.api.schemas.accounting_staff_pay_request import AccountingStaffPayRequest
+from davos.api.schemas.accounting_staff_request import AccountingStaffRequest
 from davos.api.schemas.accounting_transfer_request import AccountingTransferRequest
 from davos.api.schemas.accounting_vendor_request import AccountingVendorRequest
 from davos.composition.accounting_events import AccountingEvents
@@ -34,7 +36,9 @@ from davos.modules.accounting.domain.enums.revenue_recognition import RevenueRec
 from davos.modules.accounting.domain.errors.account_not_found_error import AccountNotFoundError
 from davos.modules.accounting.domain.errors.asset_not_found_error import AssetNotFoundError
 from davos.modules.accounting.domain.errors.entry_not_found_error import EntryNotFoundError
+from davos.modules.accounting.domain.errors.staff_not_found_error import StaffNotFoundError
 from davos.modules.accounting.domain.errors.vendor_not_found_error import VendorNotFoundError
+from davos.modules.accounting.domain.services.fiscal_calendar import FiscalCalendar
 from davos.modules.accounting.domain.services.tehran_calendar import TehranCalendar
 from davos.modules.accounting.domain.value_objects.accounting_settings import AccountingSettings
 from davos.modules.accounting.domain.value_objects.journal_line import JournalLine
@@ -576,3 +580,111 @@ async def cash_position(
     container: ApplicationContainer = Depends(get_container),
 ) -> list[Json]:
     return [_P.statement_line(line) for line in await container.accounting_reports().cash_position(as_of)]
+
+
+# ---- staff and payroll -----------------------------------------------------------------------------------------
+
+
+def _staff_json(member: Any, month_key: str, salary_paid: int = 0, bonus_paid: int = 0) -> Json:
+    return {
+        "id": str(member.id),
+        "name": member.name,
+        "title": member.title,
+        "mobile": member.mobile,
+        "monthly_salary_irr": member.monthly_salary_irr,
+        "note": member.note,
+        "active": member.active,
+        "month_key": month_key,
+        "salary_paid_irr": salary_paid,
+        "bonus_paid_irr": bonus_paid,
+        "remaining_irr": max(0, member.monthly_salary_irr - salary_paid),
+    }
+
+
+def _payment_json(p: Any) -> Json:
+    return {
+        "id": str(p.payment_id),
+        "kind": p.kind,
+        "amount_irr": p.amount_irr,
+        "month_key": p.month_key,
+        "date": p.paid_on.isoformat(),
+        "note": p.note,
+        "created_by": p.created_by,
+    }
+
+
+@router.get("/staff", summary="Staff with what each was paid in one Jalali month")
+async def staff_list(
+    month: Annotated[str | None, Query(pattern=r"^\d{4}-\d{2}$")] = None,
+    _: AuthenticatedAdminRequest = Depends(_ALLOWED),
+    container: ApplicationContainer = Depends(get_container),
+) -> list[Json]:
+    year, mon = FiscalCalendar.month_of(TehranCalendar.today(container.clock.now()))
+    key = month or FiscalCalendar.month_key(year, mon)
+    return [
+        _staff_json(m.member, m.month_key, m.salary_paid_irr, m.bonus_paid_irr)
+        for m in await container.staff().month(key)
+    ]
+
+
+@router.post("/staff", status_code=201, summary="Add a staff member")
+async def staff_create(
+    body: AccountingStaffRequest,
+    _: AuthenticatedAdminRequest = Depends(_ALLOWED),
+    container: ApplicationContainer = Depends(get_container),
+) -> Json:
+    member = await container.staff().create(
+        name=body.name,
+        title=body.title,
+        mobile=body.mobile,
+        monthly_salary_irr=_irr(body.monthly_salary_toman),
+        note=body.note,
+    )
+    return _staff_json(member, "")
+
+
+@router.put("/staff/{staff_id}", summary="Edit a staff member (or stop employing them with active=false)")
+async def staff_update(
+    staff_id: str,
+    body: AccountingStaffRequest,
+    _: AuthenticatedAdminRequest = Depends(_ALLOWED),
+    container: ApplicationContainer = Depends(get_container),
+) -> Json:
+    member = await container.staff().update(
+        _uuid(staff_id, StaffNotFoundError),
+        name=body.name,
+        title=body.title,
+        mobile=body.mobile,
+        monthly_salary_irr=_irr(body.monthly_salary_toman),
+        note=body.note,
+        active=body.active,
+    )
+    return _staff_json(member, "")
+
+
+@router.get("/staff/{staff_id}/payments", summary="The latest payments to one staff member")
+async def staff_payments(
+    staff_id: str,
+    _: AuthenticatedAdminRequest = Depends(_ALLOWED),
+    container: ApplicationContainer = Depends(get_container),
+) -> list[Json]:
+    return [_payment_json(p) for p in await container.staff().history(_uuid(staff_id, StaffNotFoundError))]
+
+
+@router.post("/staff/{staff_id}/pay", status_code=201, summary="Pay a staff member (booked as a payroll expense)")
+async def staff_pay(
+    staff_id: str,
+    body: AccountingStaffPayRequest,
+    auth: AuthenticatedAdminRequest = Depends(_ALLOWED),
+    container: ApplicationContainer = Depends(get_container),
+) -> Json:
+    payment = await container.staff().pay(
+        _uuid(staff_id, StaffNotFoundError),
+        kind=body.kind,
+        amount_irr=_irr(body.amount_toman),
+        day=body.date,
+        paid_from_account_id=_uuid(body.paid_from_account_id, AccountNotFoundError),
+        note=body.note,
+        created_by=auth.admin.username,
+    )
+    return _payment_json(payment)

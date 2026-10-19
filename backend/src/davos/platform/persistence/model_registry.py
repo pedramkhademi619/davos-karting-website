@@ -26,6 +26,7 @@ _MODEL_MODULES = (
     "davos.modules.accounting.adapters.persistence.counter_model",
     "davos.modules.accounting.adapters.persistence.accounting_settings_model",
     "davos.modules.accounting.adapters.persistence.vendor_model",
+    "davos.modules.accounting.adapters.persistence.staff_model",
     "davos.modules.accounting.adapters.persistence.fixed_asset_model",
     "davos.modules.accounting.adapters.persistence.depreciation_run_model",
     "davos.modules.accounting.adapters.persistence.budget_model",

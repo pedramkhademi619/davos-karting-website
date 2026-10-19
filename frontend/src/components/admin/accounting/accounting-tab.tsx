@@ -9,6 +9,7 @@ import { DayBookView } from "@/components/admin/accounting/day-book-view";
 import { EntrySheet, type EntryKind } from "@/components/admin/accounting/entry-sheet";
 import { OverviewView } from "@/components/admin/accounting/overview-view";
 import { ReportView } from "@/components/admin/accounting/report-view";
+import { StaffView } from "@/components/admin/accounting/staff-view";
 import { useAccountingData } from "@/components/admin/accounting/use-accounting-data";
 import { buttonClasses } from "@/components/button-link";
 import { PlusIcon } from "@/components/icons";
@@ -19,6 +20,7 @@ const SECTIONS = [
   { id: "overview", label: "خلاصه" },
   { id: "daybook", label: "دفتر روزانه" },
   { id: "cash", label: "صندوق" },
+  { id: "staff", label: "کارکنان و حقوق" },
   { id: "report", label: "گزارش ماهانه" },
   { id: "categories", label: "دسته‌ها" },
 ] as const;
@@ -95,6 +97,7 @@ export function AccountingTab() {
             {section === "overview" && <OverviewView onPayRefunds={(owed) => setSheet({ kind: "refund", amountToman: Math.floor(owed / 10), refundsOwedIrr: owed })} />}
             {section === "daybook" && <DayBookView accounts={accounts} version={version} onChanged={changed} />}
             {section === "cash" && <CashView onChanged={changed} />}
+            {section === "staff" && <StaffView accounts={accounts} onChanged={changed} />}
             {section === "report" && <ReportView />}
             {section === "categories" && <CategoriesView accounts={accounts} onChanged={changed} />}
           </div>
