@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass
 from datetime import date
 
 from davos.modules.accounting.application.ports.account_repository import AccountRepository
 from davos.modules.accounting.application.ports.staff_repository import StaffRepository
 from davos.modules.accounting.application.use_cases.bookkeeping_use_case import BookkeepingUseCase
+from davos.modules.accounting.application.use_cases.staff_month import StaffMonth
 from davos.modules.accounting.domain.entities.staff_member import StaffMember
 from davos.modules.accounting.domain.entities.staff_payment import PAYMENT_KINDS, StaffPayment
 from davos.modules.accounting.domain.enums.account_type import AccountType
@@ -17,20 +17,6 @@ from davos.shared_kernel.application.unit_of_work import UnitOfWork
 from davos.shared_kernel.domain.errors.validation_error import ValidationError
 
 PAYROLL_CATEGORY_CODE = "5201"  # "حقوق و بیمه پرسنل" in the default chart
-
-
-@dataclass(frozen=True)
-class StaffMonth:
-    """A staff member and what was paid for a month: salary and advances count against the salary, a bonus does not."""
-
-    member: StaffMember
-    month_key: str
-    salary_paid_irr: int  # salary + advance
-    bonus_paid_irr: int
-
-    @property
-    def remaining_irr(self) -> int:
-        return max(0, self.member.monthly_salary_irr - self.salary_paid_irr)
 
 
 class StaffUseCase:

@@ -4,7 +4,8 @@ import uuid
 
 from sqlalchemy import select, update
 
-from davos.modules.accounting.adapters.persistence.staff_model import StaffMemberModel, StaffPaymentModel
+from davos.modules.accounting.adapters.persistence.staff_member_model import StaffMemberModel
+from davos.modules.accounting.adapters.persistence.staff_payment_model import StaffPaymentModel
 from davos.modules.accounting.application.ports.staff_repository import StaffRepository
 from davos.modules.accounting.domain.entities.staff_member import StaffMember
 from davos.modules.accounting.domain.entities.staff_payment import StaffPayment

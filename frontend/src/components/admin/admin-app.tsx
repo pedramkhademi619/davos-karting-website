@@ -149,7 +149,8 @@ function AdminLogin({ onSignedIn }: { onSignedIn: (me: AdminMe) => void }) {
       <SpeedLines />
       <form onSubmit={submit} className="relative w-full max-w-sm rounded-[2rem] bg-carbon-2/90 p-8 ring-1 ring-white/10 backdrop-blur">
         <Logo tone="light" />
-        <h1 className="mt-8 text-2xl font-black">ورود به پنل مدیریت</h1>
+        <h1 className="mt-8 text-2xl font-black">سلام، خوش آمدید</h1>
+        <p className="mt-2 text-sm text-on-carbon-muted">برای دیدن حال پیست وارد شوید.</p>
         <div className="mt-6 space-y-4">
           <div>
             <label htmlFor="admin-username" className="label text-on-carbon-muted">

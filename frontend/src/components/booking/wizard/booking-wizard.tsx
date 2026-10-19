@@ -265,6 +265,7 @@ export function BookingWizard() {
           <Skeleton className="h-32 rounded-3xl" />
           <Skeleton className="h-32 rounded-3xl" />
         </div>
+        <p aria-hidden="true" className="pt-2 text-center text-sm font-bold text-on-carbon-muted">موتورها دارند گرم می‌شوند…</p>
       </div>
     );
   }
@@ -419,6 +420,7 @@ export function BookingWizard() {
                         {Array.from({ length: 9 }, (_, i) => (
                           <Skeleton key={i} className="h-24 rounded-2xl" />
                         ))}
+                        <p aria-hidden="true" className="col-span-full pt-1 text-center text-sm text-on-carbon-muted">دارم جای خالی سانس‌ها را می‌شمارم…</p>
                       </div>
                     )}
                     {day && day.is_closed && <Alert tone="info">این روز رزرو آنلاین ندارد؛ روز دیگری را انتخاب کنید.</Alert>}

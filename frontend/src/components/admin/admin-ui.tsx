@@ -53,7 +53,7 @@ export function Table({ head, children, empty }: { head: string[]; children: Rea
         </thead>
         <tbody className="divide-y divide-line">{children}</tbody>
       </table>
-      {empty && <p className="p-8 text-center text-fg-muted">موردی پیدا نشد.</p>}
+      {empty && <p className="p-8 text-center text-fg-muted">اینجا هنوز چیزی نیست.</p>}
     </div>
   );
 }

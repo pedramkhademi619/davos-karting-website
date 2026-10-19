@@ -25,12 +25,20 @@ def _command(**overrides: object) -> IndexKnowledgeEntryCommand:
     return IndexKnowledgeEntryCommand(**{**values, **overrides})  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("url", ["https://evil.example", "//evil.example", "faq", "javascript:alert(1)", ""])
+@pytest.mark.parametrize("url", ["https://evil.example", "//evil.example", "faq", "javascript:alert(1)"])
 def test_only_internal_paths_are_allowed_as_source_links(url: str) -> None:
     with pytest.raises(InvalidKnowledgeEntryError):
         KnowledgeEntry.create(
             source_type=KnowledgeSourceType.FAQ, source_ref="x", title="t", body="b", url=url, now=NOW
         )
+
+
+@pytest.mark.parametrize("url", ["", "   "])
+def test_no_link_means_no_particular_page(url: str) -> None:
+    entry = KnowledgeEntry.create(
+        source_type=KnowledgeSourceType.FAQ, source_ref="x", title="t", body="b", url=url, now=NOW
+    )
+    assert entry.url == "/"
 
 
 @pytest.mark.parametrize(("title", "body"), [("", "b"), ("t", ""), ("  ", "b"), ("t", "x" * 4001)])

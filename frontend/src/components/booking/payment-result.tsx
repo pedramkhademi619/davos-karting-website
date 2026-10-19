@@ -106,7 +106,7 @@ export function PaymentResult() {
             <CheckIcon className="h-10 w-10" />
           </span>
           <h1 className="mt-6 text-3xl font-black md:text-4xl">رزرو شما قطعی شد!</h1>
-          <p className="mt-3 text-on-carbon-muted">شماره بلیت برایتان پیامک می‌شود. همین شماره را در پیست اعلام کنید.</p>
+          <p className="mt-3 text-on-carbon-muted">منتظرتان هستیم! شماره بلیت برایتان پیامک می‌شود؛ همین شماره را در پیست اعلام کنید و اگر می‌شود ۱۵ دقیقه زودتر بیایید تا بی‌عجله آماده شوید.</p>
         </div>
         {r && (
           <div className="ticket mt-8 bg-white/[0.06] p-6 ring-1 ring-white/10">
@@ -114,6 +114,7 @@ export function PaymentResult() {
             <p className="race-number mt-2 text-center text-4xl font-black tracking-wider text-accent" dir="ltr">
               {r.ticket_number}
             </p>
+            <CopyNumber value={String(r.ticket_number)} />
             <dl className="mt-6 grid grid-cols-2 gap-4 text-center">
               <Fact label="روز" value={`${r.weekday} ${jalali(r.date_jalali)}`} />
               <Fact label="ساعت" value={fa(r.time)} />
@@ -224,5 +225,24 @@ function Actions({ primary, secondary }: { primary: { href: string; label: strin
       {link(primary.href, primary.label, buttonClasses("primary", "md"))}
       {link(secondary.href, secondary.label, buttonClasses("ghost-light", "md"))}
     </div>
+  );
+}
+
+/** "کپی شماره" that confirms itself for a moment: one less thing to remember on the way to the track. */
+function CopyNumber({ value }: { value: string }) {
+  const [done, setDone] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(value);
+      setDone(true);
+      window.setTimeout(() => setDone(false), 1800);
+    } catch {
+      // no clipboard (old browser, insecure page): the number is on screen anyway
+    }
+  }
+  return (
+    <button type="button" onClick={() => void copy()} className="mx-auto mt-3 block rounded-full px-4 py-1.5 text-xs font-bold text-on-carbon-muted ring-1 ring-white/15 transition-colors hover:text-accent">
+      {done ? "کپی شد ✓" : "کپی شماره‌ی بلیت"}
+    </button>
   );
 }

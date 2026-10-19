@@ -10,14 +10,16 @@ import { errorMessage } from "@/lib/api";
 import { fa, number, toman } from "@/lib/format";
 import type { Dashboard } from "@/lib/types";
 import { PageSkeleton } from "@/components/ui/skeleton";
+import { greeting } from "@/lib/greeting";
 
 type Target = "reservations" | "payments" | "sms" | "settings";
 
 export function DashboardTab({ onOpen }: { onOpen: (tab: Target) => void }) {
-  const { call } = useAdmin();
+  const { call, me } = useAdmin();
   const [data, setData] = useState<Dashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  const first = me.display_name?.split(" ")[0] ?? "";
 
   useEffect(() => {
     let cancelled = false;
@@ -36,8 +38,8 @@ export function DashboardTab({ onOpen }: { onOpen: (tab: Target) => void }) {
   return (
     <div>
       <TabHeader
-        title="داشبورد"
-        lead="نمای کلی امروز و فردا. رزروهای حضوری را هم در «رزروها و سانس‌ها» ثبت کنید تا آنلاین فروخته نشوند."
+        title={`${greeting()}${first ? `، ${first}` : ""}`}
+        lead={data ? todaySentence(data) : "دارم حال پیست را می‌گیرم…"}
         actions={
           <button type="button" onClick={() => setVersion((v) => v + 1)} className={buttonClasses("ghost", "sm")}>
             <RefreshIcon className="h-4 w-4" />
@@ -85,4 +87,16 @@ export function DashboardTab({ onOpen }: { onOpen: (tab: Target) => void }) {
       )}
     </div>
   );
+}
+
+/** One warm sentence about today and tomorrow, instead of a label that says what the page is. */
+function todaySentence(d: Dashboard): string {
+  const today =
+    d.today_confirmed === 0
+      ? "امروز هنوز رزروی نداریم؛ روزی آرام است."
+      : `امروز ${fa(d.today_confirmed)} رزرو داریم، ${fa(d.today_karts)} خودرو و ${fa(d.today_people)} نفر` +
+        (d.today_attended > 0 ? `؛ ${fa(d.today_attended)} نفرشان همین حالا آمده‌اند.` : ".");
+  const tomorrow = d.tomorrow_confirmed > 0 ? ` فردا هم ${fa(d.tomorrow_confirmed)} رزرو در انتظارمان است.` : "";
+  const held = d.held_now > 0 ? ` ${fa(d.held_now)} نفر هم الان دارند پرداخت می‌کنند.` : "";
+  return today + tomorrow + held;
 }
