@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from pathlib import Path
 
 import httpx
 from redis.asyncio import Redis
@@ -91,6 +92,7 @@ from davos.modules.assistant.application.services.curated_answer_service import 
 from davos.modules.assistant.application.services.prompt_builder import PromptBuilder
 from davos.modules.assistant.application.services.question_equivalence_verifier import QuestionEquivalenceVerifier
 from davos.modules.assistant.application.services.semantic_answer_cache import SemanticAnswerCache
+from davos.modules.assistant.application.use_cases.admin_guide_use_case import AdminGuideUseCase
 from davos.modules.assistant.application.use_cases.ask_assistant_use_case import AskAssistantUseCase
 from davos.modules.assistant.application.use_cases.assistant_review_use_case import AssistantReviewUseCase
 from davos.modules.assistant.application.use_cases.index_knowledge_entry_use_case import IndexKnowledgeEntryUseCase
@@ -704,6 +706,14 @@ class ApplicationContainer:
             accounts=SqlAlchemyAccountRepository(uow),
             ledger=SqlAlchemyLedgerQuery(uow),
             clock=self.clock,
+        )
+
+    def admin_guide(self) -> AdminGuideUseCase:
+        """The panel's own helper for staff, apart from the customer assistant (own prompt, no knowledge, no cache)."""
+        persona = self.settings.assistant_persona_file
+        guide = (Path(persona).parent if persona else Path("prompts")) / "admin_guide.txt"
+        return AdminGuideUseCase(
+            chat=self.ai_chat, guide_file=str(guide), max_output_tokens=self.settings.ai_max_output_tokens
         )
 
     def staff(self) -> StaffUseCase:

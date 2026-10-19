@@ -3,6 +3,7 @@ import { AccountingTab } from "@/components/admin/accounting/accounting-tab";
 import { AssistantTab } from "@/components/admin/assistant-tab";
 import { CustomersTab } from "@/components/admin/customers-tab";
 import { DashboardTab } from "@/components/admin/dashboard-tab";
+import { GuideTab } from "@/components/admin/guide-tab";
 import { PaymentsTab } from "@/components/admin/payments-tab";
 import { ReservationsTab } from "@/components/admin/reservations-tab";
 import { SettingsTab } from "@/components/admin/settings-tab";
@@ -11,13 +12,13 @@ import { SystemStatusTab } from "@/components/admin/system-status-tab";
 import { UsersTab } from "@/components/admin/users-tab";
 import { BookIcon, CalendarIcon, CardIcon, ChatIcon, GaugeIcon, PulseIcon, SettingsIcon, SmsIcon, UserIcon, UsersIcon } from "@/components/icons";
 
-export type SectionKey = "dashboard" | "reservations" | "customers" | "payments" | "sms" | "assistant" | "settings" | "accounting" | "system" | "users";
+export type SectionKey = "dashboard" | "reservations" | "customers" | "payments" | "sms" | "assistant" | "settings" | "accounting" | "system" | "users" | "guide";
 
 export type Section = {
   key: SectionKey;
   label: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
-  /** The permission needed to open it (the same key the API checks), or "owner" for sections only the owner may use. */
+  /** The permission needed to open it (the same key the API checks), "owner" for the owner only, or "any" for every signed-in staff member. */
   permission: string;
   Component: ComponentType<{ onOpen: (key: SectionKey) => void }>;
 };
@@ -37,8 +38,10 @@ export const SECTIONS: Section[] = [
   { key: "accounting", label: "حسابداری", icon: BookIcon, permission: "accounting", Component: AccountingTab },
   { key: "system", label: "وضعیت سرویس‌ها", icon: PulseIcon, permission: "system", Component: SystemStatusTab },
   { key: "users", label: "کاربران پنل", icon: UsersIcon, permission: "owner", Component: UsersTab },
+  { key: "guide", label: "راهنمای پنل", icon: ChatIcon, permission: "any", Component: GuideTab },
 ];
 
 export function sectionAllowed(section: Section, can: (permission: string) => boolean, isOwner: boolean): boolean {
+  if (section.permission === "any") return true;
   return section.permission === "owner" ? isOwner : can(section.permission);
 }
