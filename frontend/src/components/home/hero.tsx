@@ -21,7 +21,7 @@ export function Hero({ info }: { info: BookingInfo | null }) {
   const readouts = info
     ? [
         { label: "خودرو در هر سانس", value: fa(info.single_capacity + info.double_capacity), unit: "دستگاه" },
-        { label: "شروع سانس‌ها", value: fa(info.first_session), unit: `هر ${fa(info.interval_minutes)} دقیقه` },
+        { label: "شروع سانس‌ها", value: fa(info.morning_shift_enabled ? info.morning_first_session : info.first_session), unit: `هر ${fa(info.interval_minutes)} دقیقه` },
         { label: "از قیمت", value: fa(Math.round(info.normal_single_toman / 1000)), unit: "هزار تومان" },
       ]
     : [

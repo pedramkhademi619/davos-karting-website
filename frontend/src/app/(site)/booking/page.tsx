@@ -16,10 +16,10 @@ export default function BookingPage() {
         eyebrow="رزرو آنلاین"
         title={
           <>
-            یک دور تا <span className="glow-text">پشت فرمان</span>
+            رزرو <span className="glow-text">سانس</span>
           </>
         }
-        lead="بگویید چه کسانی می‌آیند؛ خودروها، روز و سانس مناسب را با هم پیدا می‌کنیم. هر مرحله یک سکتور است."
+        lead="چهار قدم کوتاه: چند نفرید، کدام روز، چه ساعتی، و پرداخت. حدود یک دقیقه."
         compact
       />
 

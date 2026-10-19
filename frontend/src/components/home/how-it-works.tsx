@@ -14,7 +14,7 @@ export function HowItWorks() {
           <SectionHeading
             eyebrow="رزرو آنلاین"
             title="یک دور تا پشت فرمان"
-            lead="رزرو مثل یک دور پیست است: چهار سکتور، بدون تماس و بدون انتظار."
+            lead="چهار قدم کوتاه، بدون تماس و بدون انتظار؛ حدود یک دقیقه."
             onCarbon
           />
           <ButtonLink href={site.booking.href} size="lg">

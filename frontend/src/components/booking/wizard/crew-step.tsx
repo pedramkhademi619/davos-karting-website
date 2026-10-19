@@ -2,16 +2,16 @@
 
 import type { ReactNode } from "react";
 import { MinusIcon, PlusIcon } from "@/components/icons";
-import { fa } from "@/lib/format";
+import { fa, toman } from "@/lib/format";
 import { dayRange, type Crew, type JuniorWindow, type KartPlan } from "@/components/booking/wizard/crew";
 
 type Group = { key: keyof Crew; title: string; hint: string; badge: string; colour: string };
 
 const GROUPS: Group[] = [
-  { key: "licensed", title: "بزرگسال با گواهینامه", hint: "۱۸ سال به بالا؛ تک‌نفره یا راننده‌ی دونفره", badge: "18+", colour: "#ffc400" },
-  { key: "adult", title: "بالای ۱۶ سال", hint: "بدون گواهینامه یا ۱۶–۱۷ ساله؛ تک‌نفره", badge: "16+", colour: "#ff6a3d" },
-  { key: "teen", title: "نوجوان ۱۱ تا ۱۴ سال", hint: "با قد بیشتر از ۱۴۰ سانتی‌متر", badge: "11–14", colour: "#4e92ff" },
-  { key: "kid", title: "کودک ۴ تا ۱۵ سال", hint: "روی صندلی عقب دونفره، پشت یک بزرگسال", badge: "4–15", colour: "#1ee07a" },
+  { key: "licensed", title: "بزرگسال با گواهینامه", hint: "۱۸ سال به بالا؛ خودش می‌راند (تک‌نفره یا راننده‌ی دونفره)", badge: "18+", colour: "#ffc400" },
+  { key: "adult", title: "۱۶ سال به بالا، بدون گواهینامه", hint: "خودش با خودروی تک‌نفره می‌راند", badge: "16+", colour: "#ff6a3d" },
+  { key: "teen", title: "نوجوانی که خودش می‌راند (۱۱ تا ۱۴)", hint: "قد بیشتر از ۱۴۰ سانتی‌متر", badge: "11–14", colour: "#4e92ff" },
+  { key: "kid", title: "سرنشین ۴ تا ۱۵ سال", hint: "رانندگی نمی‌کند؛ پشت یک بزرگسال گواهینامه‌دار می‌نشیند", badge: "4–15", colour: "#1ee07a" },
 ];
 
 /** A helmet, tinted per group: the crew is drawn as a row of helmets. */
@@ -40,6 +40,8 @@ type CrewStepProps = {
   onManualSingles: (value: number) => void;
   onManualDoubles: (value: number) => void;
   maxKarts: number;
+  /** What the suggested karts cost on an ordinary day (Toman), so the price is known from the first step; 0 = unknown. */
+  fromPrice: number;
 };
 
 /** Step 1: who is coming. The kart mix follows from the riding rules and is shown live as a little grid of karts. */
@@ -112,7 +114,7 @@ export function CrewStep(props: CrewStepProps) {
         </fieldset>
       )}
 
-      <KartGarage plan={plan} />
+      <KartGarage plan={plan} fromPrice={props.fromPrice} />
 
       <button type="button" onClick={() => props.onManual(true)} className="text-sm font-bold text-fg-muted underline underline-offset-4 hover:text-fg">
         خودم تعداد خودروها را انتخاب می‌کنم
@@ -147,7 +149,7 @@ function TeenChoice({ checked, onSelect, title, text }: { checked: boolean; onSe
 }
 
 /** The karts the crew needs, drawn in the garage: one bay per kart, a passenger seat on the doubles. */
-function KartGarage({ plan }: { plan: KartPlan }) {
+function KartGarage({ plan, fromPrice = 0 }: { plan: KartPlan; fromPrice?: number }) {
   const bays = [...Array(plan.singles).fill("single"), ...Array(plan.doubles).fill("double")] as ("single" | "double")[];
   return (
     <div className={`rounded-3xl border p-4 transition-colors ${plan.ok ? "border-accent/40 bg-accent/[0.06]" : "border-signal/40 bg-signal/[0.08]"}`} aria-live="polite">
@@ -162,6 +164,11 @@ function KartGarage({ plan }: { plan: KartPlan }) {
         )}
       </div>
       {!plan.ok && <p className="mt-2 text-sm leading-7 text-fg-muted">{plan.reason}</p>}
+      {plan.ok && fromPrice > 0 && (
+        <p className="mt-2 text-sm text-fg-muted">
+          از <span className="font-black text-fg">{toman(fromPrice)}</span> برای کل گروه؛ قیمت دقیق هر روز را در قدم بعد می‌بینید.
+        </p>
+      )}
       {bays.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2" aria-hidden="true">
           {bays.map((kind, index) => (

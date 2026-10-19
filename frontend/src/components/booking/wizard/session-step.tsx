@@ -66,11 +66,32 @@ export function SessionStep({ cutoffPassed, sessions, selected, onSelect, single
       <p className="text-sm text-fg-muted" aria-live="polite">
         {message}
       </p>
+      <nav aria-label="پرش به بخشی از روز" className="sticky top-[4.25rem] z-10 -mx-1 flex gap-2 overflow-x-auto bg-[#0b0c0f]/85 px-1 py-2 backdrop-blur">
+        {PERIODS.map((period) => {
+          const inPeriod = sessions.filter((s) => sessionMinutes(s.time) >= period.from && sessionMinutes(s.time) < period.to);
+          if (inPeriod.length === 0) return null;
+          const open = inPeriod.filter((s) => fitFor(s, singles, doubles, junior).fits).length;
+          return (
+            <a
+              key={period.title}
+              href={`#period-${period.from}`}
+              onClick={(event) => {
+                event.preventDefault();
+                document.getElementById(`period-${period.from}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold ring-1 transition-colors ${open > 0 ? "ring-white/20 hover:ring-accent" : "text-fg-subtle ring-white/10"}`}
+            >
+              {period.title}
+              <span className="ms-1.5 text-xs text-fg-muted">{open > 0 ? `${fa(open)} خالی` : "پر"}</span>
+            </a>
+          );
+        })}
+      </nav>
       {PERIODS.map((period) => {
         const inPeriod = sessions.filter((s) => sessionMinutes(s.time) >= period.from && sessionMinutes(s.time) < period.to);
         if (inPeriod.length === 0) return null;
         return (
-          <section key={period.title} aria-label={`سانس‌های ${period.title}`}>
+          <section key={period.title} id={`period-${period.from}`} aria-label={`سانس‌های ${period.title}`} className="scroll-mt-32">
             <h3 className="mb-3 flex items-center gap-3 text-sm font-black text-fg-muted">
               {period.title}
               <span aria-hidden="true" className="h-px flex-1 bg-white/10" />

@@ -36,9 +36,6 @@ export function TeamRadio({ message }: { message: string }) {
         ))}
       </span>
       <p className="min-w-0 text-[0.92rem] leading-7">
-        <span className="race-number me-2 text-[0.62rem] tracking-[0.2em] text-accent" dir="ltr">
-          RADIO
-        </span>
         {shown.slice(0, typed)}
         {typed < shown.length && <span className="ms-0.5 inline-block h-4 w-[2px] translate-y-0.5 bg-accent" />}
       </p>

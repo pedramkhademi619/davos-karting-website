@@ -58,7 +58,7 @@ export function DayStep({ days, selected, onSelect, singles, doubles, junior, ju
               </span>
               {day.is_holiday && (
                 <span className={`rounded-full px-2 py-0.5 text-[0.62rem] font-black ${active ? "bg-ink text-accent" : "bg-signal text-white"}`}>
-                  تعطیل
+                  نرخ تعطیل
                 </span>
               )}
             </span>

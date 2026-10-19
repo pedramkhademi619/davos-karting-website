@@ -92,7 +92,7 @@ export function FixSheet({ fix, passengers, need, teenRule, everyone, onSeatTeen
             onClick={onEditCrew}
             className={buttonClasses(teen && passengers?.ok ? "ghost-light" : "primary", "md", "w-full")}
           >
-            ویرایش خدمه
+            تغییر نفرات
           </button>
           <button type="button" onClick={onClose} className="block w-full py-2 text-center text-sm font-bold text-on-carbon-muted underline underline-offset-4 hover:text-on-carbon">
             {fix.reason === "teen-day" ? "روز دیگری انتخاب می‌کنم" : "سانس دیگری انتخاب می‌کنم"}

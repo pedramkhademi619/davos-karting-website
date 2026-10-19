@@ -25,16 +25,17 @@ import { SPLIT_HOSTS, hrefFor } from "@/lib/urls";
 import type { BookingCalendar, BookingInfo, DayAvailability, Me, Reservation, StartPayment } from "@/lib/types";
 import { useCustomer } from "@/lib/use-customer";
 import { Skeleton } from "@/components/ui/skeleton";
+import { JALALI_MONTHS } from "@/lib/jalali";
 
 const REFRESH_MS = 20_000; // seat counts are refreshed while the customer is choosing
 const STEPS = ["crew", "day", "session", "finish"] as const;
 type Step = (typeof STEPS)[number];
 
 const TITLES: Record<Step, { title: string; sector: string }> = {
-  crew: { title: "چه کسانی پشت فرمان می‌نشینند؟", sector: "خدمه" },
+  crew: { title: "چند نفرید؟", sector: "نفرات" },
   day: { title: "کدام روز به پیست می‌آیید؟", sector: "روز" },
-  session: { title: "سانس را از روی جدول استارت انتخاب کنید", sector: "سانس" },
-  finish: { title: "پاس شما آماده است", sector: "پایان" },
+  session: { title: "چه ساعتی؟", sector: "ساعت" },
+  finish: { title: "یک قدم تا قطعی شدن", sector: "پرداخت" },
 };
 
 /**
@@ -272,6 +273,10 @@ export function BookingWizard() {
   if (!calendar.online_booking_enabled || calendar.days.length === 0) return <BookingClosed calendar={calendar} />;
 
   const selectedDay = calendar.days.find((d) => d.date === date) ?? null;
+  // The cheapest bookable day for the suggested karts: shown on the first step so nobody has to guess the price.
+  const fromPrice = calendar.days.length
+    ? Math.min(...calendar.days.map((d) => plan.singles * d.single_price_toman + plan.doubles * d.double_price_toman))
+    : 0;
   const dayLabel = selectedDay ? `${selectedDay.weekday} ${jalali(selectedDay.date_jalali)}` : "";
   const total = selectedDay ? plan.singles * selectedDay.single_price_toman + plan.doubles * selectedDay.double_price_toman : 0;
   const stepIndex = STEPS.indexOf(step);
@@ -298,18 +303,18 @@ export function BookingWizard() {
   const lapMs = STEPS.reduce((sum, key) => sum + (sectors[key] ?? 0), 0);
 
   const radio = reservation
-    ? `باکس، باکس! خودروها مال شماست. ${fa(calendar.hold_minutes)} دقیقه برای پرداخت وقت داری.`
+    ? `خودروها برای شما نگه داشته شد. ${fa(calendar.hold_minutes)} دقیقه وقت داری پرداخت کنی.`
     : step === "crew"
-      ? "سلام راننده! بگو کی‌ها میان پیست؛ خودروها رو خودم برات می‌چینم."
+      ? "سلام! بگو چند نفرید و چند سالشونه؛ خودم حساب می‌کنم چند تا خودرو لازمه."
       : step === "day"
         ? plan.ok
-          ? `گاراژ آماده‌ست: ${karts(plan.singles, plan.doubles)}. حالا کدوم روز؟`
+          ? `${karts(plan.singles, plan.doubles)} لازم دارید. کدوم روز میاید؟`
           : "اول ترکیب گروه رو درست کن."
         : step === "session"
-          ? "خونه‌های زرد روی جدول استارت، جای خودروهای شماست. یه سانس انتخاب کن."
+          ? "هر سانس ۱۰ دقیقه‌ست. هر ساعتی که برای کل گروه جا داشته باشه رو می‌تونی بزنی."
           : customer.status === "signed-in"
-            ? "همه‌چی آماده‌ست. دکمه رو نگه دار تا چراغ‌ها خاموش شن!"
-            : "یه قدم مونده: با شماره موبایلت وارد شو.";
+            ? "همه‌چی آماده‌ست. برای ثبت، دکمه‌ی زرد پایین رو چند ثانیه نگه دار."
+            : "فقط مونده ورود با شماره موبایل و پرداخت؛ بعدش بلیت برات پیامک میشه.";
 
   return (
     <div id="wizard-top" className="scroll-mt-20">
@@ -351,8 +356,8 @@ export function BookingWizard() {
           ) : (
             <section aria-labelledby="wizard-step-title" key={step} className="wizard-step">
               <div className="flex items-center justify-between gap-3">
-                <p className="race-number text-xs font-bold tracking-[0.25em] text-fg-subtle" dir="ltr">
-                  {stepIndex < 3 ? `SECTOR ${stepIndex + 1}` : "FINAL"} · {stepIndex + 1}/{STEPS.length}
+                <p className="text-sm font-bold text-fg-subtle">
+                  قدم {fa(stepIndex + 1)} از {fa(STEPS.length)}
                 </p>
                 {stepIndex > 0 && (
                   <button
@@ -377,6 +382,7 @@ export function BookingWizard() {
                   singles={plan.singles}
                   doubles={plan.doubles}
                   teens={manual ? null : crew.teen > 0 ? (teensDrive ? "خودشان می‌رانند" : "پشت بزرگسال") : null}
+                  day={step === "session" && selectedDay ? `${selectedDay.weekday} ${dayAndMonth(selectedDay.date_jalali)} · ${toman(total)} تومان` : null}
                   onEdit={() => go("crew")}
                 />
               )}
@@ -397,6 +403,7 @@ export function BookingWizard() {
                     onManualSingles={(v) => setManualSingles(Math.max(0, v))}
                     onManualDoubles={(v) => setManualDoubles(Math.max(0, v))}
                     maxKarts={maxKarts}
+                    fromPrice={fromPrice}
                   />
                 )}
                 {step === "day" && (
@@ -523,16 +530,17 @@ export function BookingWizard() {
 }
 
 /** The crew in one line at the top of the day and session steps, with a one-tap way back to change it. */
-function CrewChip({ people, singles, doubles, teens, onEdit }: { people: number; singles: number; doubles: number; teens: string | null; onEdit: () => void }) {
+function CrewChip({ people, singles, doubles, teens, day = null, onEdit }: { people: number; singles: number; doubles: number; teens: string | null; day?: string | null; onEdit: () => void }) {
   return (
     <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-2.5">
       <p className="min-w-0 text-sm leading-6">
         <span className="font-black">{fa(people)} نفر</span>
         <span className="text-fg-muted"> · {karts(singles, doubles)}</span>
         {teens && <span className="text-fg-muted"> · نوجوان‌ها {teens}</span>}
+        {day && <span className="block font-bold text-accent">{day}</span>}
       </p>
       <button type="button" onClick={onEdit} className="shrink-0 rounded-full border border-white/15 px-3 py-1 text-xs font-bold text-accent transition hover:border-accent">
-        ویرایش خدمه
+        تغییر نفرات
       </button>
     </div>
   );
@@ -761,4 +769,10 @@ function BookingClosed({ calendar }: { calendar: BookingCalendar }) {
       </p>
     </div>
   );
+}
+
+/** "1405/07/28" -> "۲۸ مهر": how people say a date. */
+function dayAndMonth(dateJalali: string): string {
+  const [, month, day] = dateJalali.split("/").map(Number);
+  return `${fa(day)} ${JALALI_MONTHS[month - 1] ?? ""}`;
 }

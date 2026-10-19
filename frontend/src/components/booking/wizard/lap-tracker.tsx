@@ -121,7 +121,7 @@ export function LapTracker({ progress, sectors, compact = false }: { progress: n
         </svg>
       </div>
       <ol className={`grid grid-cols-4 gap-1.5 ${compact ? "flex-1" : "mt-4"}`} aria-label="زمان هر مرحله">
-        {sectors.map((sector, index) => {
+        {sectors.map((sector) => {
           const done = sector.ms !== null;
           const tone = done ? sectorTone(sector.ms!) : undefined;
           return (
@@ -131,11 +131,8 @@ export function LapTracker({ progress, sectors, compact = false }: { progress: n
                 style={{ background: tone ?? "rgb(255 255 255 / 0.1)", boxShadow: tone ? `0 0 12px ${tone}` : undefined }}
               />
               <span className="mt-1.5 flex items-baseline justify-between gap-1 text-[0.68rem] leading-tight sm:text-xs">
-                <span className="race-number font-bold text-on-carbon-muted" dir="ltr">
-                  {index < 3 ? `S${index + 1}` : "FIN"}
-                </span>
-                <span className="truncate font-bold" style={{ color: tone ?? "rgb(255 255 255 / 0.35)" }}>
-                  {done ? seconds(sector.ms!) : sector.label}
+                <span className="truncate font-bold" style={{ color: tone ?? "rgb(255 255 255 / 0.45)" }}>
+                  {done ? `✓ ${sector.label}` : sector.label}
                 </span>
               </span>
             </li>

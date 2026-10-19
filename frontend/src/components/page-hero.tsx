@@ -17,7 +17,7 @@ export function PageHero({ eyebrow, title, lead, children, compact = false }: Pa
   return (
     <section className="carbon relative isolate overflow-hidden">
       <SpeedLines />
-      <div className={`container-page relative ${compact ? "py-10 md:py-16" : "py-14 md:py-24"}`}>
+      <div className={`container-page relative ${compact ? "py-6 md:py-14" : "py-14 md:py-24"}`}>
         <div className="rise" style={stagger(0)}>
           <SectionHeading as="h1" eyebrow={eyebrow} title={title} lead={lead} onCarbon />
         </div>
