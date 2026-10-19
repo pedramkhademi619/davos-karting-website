@@ -8,7 +8,7 @@ import { CrewStep } from "@/components/booking/wizard/crew-step";
 import { DayStep } from "@/components/booking/wizard/day-step";
 import { DEFAULT_JUNIOR_WINDOW, EMPTY_CREW, juniorRule, planKarts, type Crew, type JuniorWindow } from "@/components/booking/wizard/crew";
 import { FixSheet, type Fix } from "@/components/booking/wizard/fix-sheet";
-import { LapTracker, seconds, sectorTone, type Sector } from "@/components/booking/wizard/lap-tracker";
+import { LapTracker, type Sector } from "@/components/booking/wizard/lap-tracker";
 import { LaunchButton } from "@/components/booking/wizard/launch-button";
 import { RacePass } from "@/components/booking/wizard/race-pass";
 import { SessionStep } from "@/components/booking/wizard/session-step";
@@ -509,14 +509,7 @@ export function BookingWizard() {
         <aside className="hidden lg:col-span-5 lg:block">
           <div className="sticky top-28 space-y-5">
             <div className="carbon rounded-[1.75rem] border border-white/10 p-5">
-              <p className="mb-3 flex items-center justify-between text-sm font-black">
-                <span>دور رزرو شما</span>
-                {lapMs > 0 && (
-                  <span className="race-number text-xs" style={{ color: sectorTone(lapMs / 4) }} dir="ltr">
-                    {seconds(lapMs)}s
-                  </span>
-                )}
-              </p>
+              <p className="mb-3 text-sm font-black">مراحل رزرو شما</p>
               <LapTracker progress={progress} sectors={sectorList} />
             </div>
             {!reservation && (
@@ -681,21 +674,11 @@ function HeldView(props: {
     <section aria-labelledby="held-title" className="wizard-step space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="race-number text-xs font-bold tracking-[0.25em] text-go" dir="ltr">
-            CHEQUERED FLAG
-          </p>
-          <h2 id="held-title" className="mt-2 text-[clamp(1.6rem,5vw,2.4rem)] font-black leading-tight">
+          <h2 id="held-title" className="text-[clamp(1.6rem,5vw,2.4rem)] font-black leading-tight">
             خودروها برای شما نگه داشته شد
           </h2>
+          <p className="mt-2 text-sm text-fg-muted">فقط مونده پرداخت؛ بعدش بلیتتان قطعی می‌شود.</p>
         </div>
-        {props.lapMs > 0 && (
-          <div className="glass rounded-2xl px-4 py-2 text-center">
-            <p className="text-[0.7rem] font-bold text-fg-muted">زمان دور رزرو شما</p>
-            <p className="race-number text-2xl font-black" style={{ color: sectorTone(props.lapMs / 4) }} dir="ltr">
-              {seconds(props.lapMs)}s
-            </p>
-          </div>
-        )}
       </div>
       <TeamRadio message={props.radio} />
       <RacePass
