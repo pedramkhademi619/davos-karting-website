@@ -128,3 +128,20 @@ def test_the_admin_body_round_trips_and_older_clients_get_the_defaults() -> None
     ):
         payload.pop(key)
     assert ScheduleSettingsBody(**payload).to_domain() == ScheduleSettings()
+
+
+def test_a_session_belongs_to_the_morning_or_the_evening_shift_and_the_key_says_which() -> None:
+    from datetime import date as _date
+
+    from davos.modules.reservations.domain.services.session_calendar import SessionCalendar as _Calendar
+
+    calendar = _Calendar(ScheduleSettings())  # morning from 10:00, evening from 15:00 until 01:00
+    day = _date(2026, 10, 19)
+    assert calendar.shift_of(time(10, 0)) == "morning" and calendar.shift_of(time(13, 50)) == "morning"
+    assert calendar.shift_of(time(15, 0)) == "evening" and calendar.shift_of(time(0, 40)) == "evening"
+    assert calendar.shift_key(day, time(10, 0)) == "2026-10-19-morning"
+    assert (
+        calendar.shift_key(day, time(0, 40)) == "2026-10-19-evening"
+    )  # after midnight: the evening that began that day
+    no_morning = _Calendar(ScheduleSettings(morning_shift_enabled=False))
+    assert no_morning.shift_of(time(10, 0)) == "evening"

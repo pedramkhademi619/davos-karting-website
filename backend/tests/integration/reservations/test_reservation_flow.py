@@ -352,3 +352,33 @@ async def come_back(container: ApplicationContainer, gateway: ScriptedPaymentGat
             provider_reference="445566",
         )
     )
+
+
+async def test_ticket_numbers_start_again_at_100_in_every_day_and_shift_whatever_the_order_of_booking(
+    reservations: ApplicationContainer,
+) -> None:
+    async def book(day: date, at: time) -> int:
+        command = StaffReservationCommand(
+            day=day,
+            session_time=at,
+            single_count=1,
+            double_count=0,
+            contact_name="حضوری",
+            contact_mobile="",
+            note="",
+            amount_irr=0,
+        )
+        return (await reservations.create_staff_reservation().execute(command)).ticket_number
+
+    tomorrow, after = date(2026, 1, 4), date(2026, 1, 5)
+    # the day after tomorrow is booked first: it must not push tomorrow's numbers up
+    assert [await book(after, SIX_PM), await book(after, SIX_PM)] == [100, 101]
+    assert [await book(tomorrow, SIX_PM), await book(tomorrow, time(19, 0)), await book(tomorrow, SIX_PM)] == [
+        100,
+        101,
+        102,
+    ]
+    # the morning shift of the same day has its own count; so does the evening of another day
+    assert await book(tomorrow, time(11, 0)) == 100
+    assert await book(after, time(11, 0)) == 100
+    assert await book(after, SIX_PM) == 102

@@ -37,6 +37,18 @@ class SessionCalendar:
     def _grid(self, start: int, end: int) -> list[time]:
         return [time((m // 60) % 24, m % 60) for m in range(start, end, self._settings.interval_minutes)]
 
+    def shift_of(self, value: time) -> str:
+        """ "morning" for a session of the morning shift (before the evening shift starts, from 06:00), else "evening"
+        (which includes the sessions after midnight, as they belong to the evening that began the day before)."""
+        s = self._settings
+        if s.morning_shift_enabled and value.hour >= BUSINESS_DAY_ROLLOVER_HOUR and value < s.shift_start:
+            return "morning"
+        return "evening"
+
+    def shift_key(self, day: date, value: time) -> str:
+        """One key per business day and shift ("2026-10-19-evening"): ticket numbers start again at 100 in each."""
+        return f"{day.isoformat()}-{self.shift_of(value)}"
+
     def is_session_time(self, value: time) -> bool:
         return value in set(self.session_times())
 

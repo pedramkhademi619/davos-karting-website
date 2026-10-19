@@ -13,9 +13,10 @@ from davos.modules.reservations.domain.value_objects.session_load import Session
 
 class ReservationRepository(ABC):
     @abstractmethod
-    async def next_ticket_number(self) -> int:
-        """A fresh, race-free ticket number from the database sequence (starts at 100). Pulled before the entity
-        is constructed, the same pattern as the payments module's gateway order id."""
+    async def next_ticket_number(self, shift_key: str) -> int:
+        """The next ticket number of a shift: 100 for its first ticket, then 101, 102... race-free, and starting again
+        at 100 in every shift (``shift_key`` = business day + shift of the session). Pulled before the entity is built,
+        the same pattern as the payments module's gateway order id."""
 
     @abstractmethod
     async def add(self, reservation: Reservation) -> None: ...

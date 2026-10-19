@@ -4,11 +4,12 @@ import uuid
 from datetime import date, datetime, time
 
 from sqlalchemy import String, and_, cast, func, or_, select, text, update
+from sqlalchemy.dialects.postgresql import insert
 
 from davos.modules.reservations.adapters.persistence.reservation_mapper import ReservationMapper
-from davos.modules.reservations.adapters.persistence.reservation_model import (
-    TICKET_NUMBER_SEQUENCE,
-    ReservationModel,
+from davos.modules.reservations.adapters.persistence.reservation_model import ReservationModel
+from davos.modules.reservations.adapters.persistence.reservation_ticket_counter_model import (
+    ReservationTicketCounterModel,
 )
 from davos.modules.reservations.application.ports.reservation_page import ReservationPage
 from davos.modules.reservations.application.ports.reservation_query import ReservationQuery
@@ -26,13 +27,25 @@ def _occupying(now: datetime):  # type: ignore[no-untyped-def]
     return or_(R.status.in_(("confirmed", "attended")), and_(R.status == "held", R.hold_expires_at > now))
 
 
+FIRST_TICKET_NUMBER = 100  # every shift's first ticket
+
+
 class SqlAlchemyReservationRepository(ReservationRepository):
     def __init__(self, uow: SqlAlchemyUnitOfWork) -> None:
         self._uow = uow
 
-    async def next_ticket_number(self) -> int:
-        result = await self._uow.session.execute(select(TICKET_NUMBER_SEQUENCE.next_value()))
-        return int(result.scalar_one())
+    async def next_ticket_number(self, shift_key: str) -> int:
+        """100 for the first ticket of a shift, then 101, 102... The upsert is one atomic statement per ticket."""
+        statement = (
+            insert(ReservationTicketCounterModel)
+            .values(shift_key=shift_key, last_value=FIRST_TICKET_NUMBER)
+            .on_conflict_do_update(
+                index_elements=[ReservationTicketCounterModel.shift_key],
+                set_={"last_value": ReservationTicketCounterModel.last_value + 1},
+            )
+            .returning(ReservationTicketCounterModel.last_value)
+        )
+        return int((await self._uow.session.execute(statement)).scalar_one())
 
     async def add(self, reservation: Reservation) -> None:
         self._uow.session.add(ReservationMapper.to_model(reservation))

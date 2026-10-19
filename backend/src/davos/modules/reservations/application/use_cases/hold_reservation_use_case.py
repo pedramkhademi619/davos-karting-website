@@ -70,9 +70,11 @@ class HoldReservationUseCase:
             load = await self._reservations.session_load(command.day, command.session_time, now)
             SeatAllocator(settings).check(load, command.single_count, command.double_count)
 
+            shift_key = calendar.shift_key(command.day, command.session_time)
             reservation = Reservation.hold(
                 code=self._codes.new_code(),
-                ticket_number=await self._reservations.next_ticket_number(),
+                ticket_number=await self._reservations.next_ticket_number(shift_key),
+                shift_key=shift_key,
                 customer_id=command.customer_id,
                 business_date=command.day,
                 session_time=command.session_time,

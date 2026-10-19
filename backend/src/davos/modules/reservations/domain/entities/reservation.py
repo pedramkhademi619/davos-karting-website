@@ -52,10 +52,12 @@ class Reservation(AggregateRoot[uuid.UUID]):
         note: str = "",
         cancel_reason: str = "",
         payment_method: CounterPaymentMethod = CounterPaymentMethod.NONE,
+        shift_key: str | None = None,
     ) -> None:
         super().__init__(reservation_id)
         self.code = code
         self.ticket_number = ticket_number
+        self.shift_key = shift_key  # business day + shift the ticket number counts within; None on old rows
         self.customer_id = customer_id
         self.business_date = business_date
         self.session_time = session_time
@@ -94,6 +96,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
         contact_mobile: str,
         now: datetime,
         hold_minutes: int,
+        shift_key: str | None = None,
     ) -> Reservation:
         cls._check_counts(single_count, double_count)
         if amount.irr <= 0:
@@ -102,6 +105,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
             reservation_id=uuid.uuid4(),
             code=code,
             ticket_number=ticket_number,
+            shift_key=shift_key,
             customer_id=customer_id,
             business_date=business_date,
             session_time=session_time,
@@ -135,6 +139,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
         note: str,
         now: datetime,
         payment_method: CounterPaymentMethod = CounterPaymentMethod.NONE,
+        shift_key: str | None = None,
     ) -> Reservation:
         """Seats sold or promised at the counter, entered so the website does not sell them again."""
         cls._check_counts(single_count, double_count)
@@ -142,6 +147,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
             reservation_id=uuid.uuid4(),
             code=code,
             ticket_number=ticket_number,
+            shift_key=shift_key,
             customer_id=None,
             business_date=business_date,
             session_time=session_time,
