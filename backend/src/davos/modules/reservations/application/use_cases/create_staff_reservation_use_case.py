@@ -18,9 +18,9 @@ from davos.shared_kernel.domain.money import Money
 class CreateStaffReservationUseCase:
     """Staff enter karts sold at the counter so the website cannot sell the same seats (no payment, no SMS).
 
-    Not held to the owner's demand-shaping rules (the daily cap, the online-booking cutoff): those exist to leave
-    room for the counter. The fuel-break minute is the one rule staff cannot override either -- the karts are
-    physically being refuelled then.
+    Not held to the owner's demand-shaping rules (the daily cap, the shift-start closing of online booking): those
+    exist to leave room for the counter. The fuel-break minute is the one rule staff cannot override either -- the
+    karts are physically being refuelled then.
     """
 
     def __init__(

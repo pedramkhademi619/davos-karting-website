@@ -14,7 +14,7 @@ export function RidingRules({ info }: { info: BookingInfo | null }) {
             title="شرایط سوار شدن، خیلی ساده"
             lead="ایمنی اول است. اگر مطمئن نیستید، از دستیار هوشمند پایین صفحه بپرسید؛ سن، قد، روز و ساعت را برایتان دقیق چک می‌کند."
           />
-          <ButtonLink href="/faq" variant="ghost">
+          <ButtonLink href="/rules" variant="ghost">
             جزئیات کامل
           </ButtonLink>
         </div>

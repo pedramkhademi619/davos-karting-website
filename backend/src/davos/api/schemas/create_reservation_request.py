@@ -11,3 +11,5 @@ class CreateReservationRequest(BaseModel):
     single_count: int = Field(ge=0, le=50)
     double_count: int = Field(ge=0, le=50)
     contact_name: str = Field(default="", max_length=80)
+    # The customer ticked "the ages are right, I have read the rules" (age, weather and refund rules): required to book.
+    accepted_terms: bool = False

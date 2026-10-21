@@ -5,7 +5,6 @@ import { FaqPreview } from "@/components/home/faq-preview";
 import { Hero } from "@/components/home/hero";
 import { HowItWorks } from "@/components/home/how-it-works";
 import { RidingRules } from "@/components/home/riding-rules";
-import { TrackSection } from "@/components/home/track-section";
 import { JsonLd } from "@/components/json-ld";
 import { Marquee } from "@/components/marquee";
 import { buildFaq } from "@/content/faq";
@@ -55,7 +54,6 @@ export default async function HomePage() {
       <Marquee words={marqueeWords} />
       <Experience />
       <HowItWorks />
-      <TrackSection />
       <RidingRules info={info} />
       <FaqPreview items={buildFaq(info)} />
       <ContactPreview info={info} />

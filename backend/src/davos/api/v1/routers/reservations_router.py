@@ -21,6 +21,7 @@ from davos.composition.application_container import ApplicationContainer
 from davos.modules.payments.application.use_cases.start_payment_command import StartPaymentCommand
 from davos.modules.reservations.application.use_cases.hold_reservation_command import HoldReservationCommand
 from davos.modules.reservations.domain.errors.reservation_not_found_error import ReservationNotFoundError
+from davos.shared_kernel.domain.errors.validation_error import ValidationError
 
 router = APIRouter(prefix="/reservations", tags=["reservations"])
 
@@ -47,9 +48,7 @@ async def calendar(container: ApplicationContainer = Depends(get_container)) -> 
 @router.get("/info", summary="Kart counts, prices, session times and booking days (all set in the admin panel)")
 async def info(container: ApplicationContainer = Depends(get_container)) -> BookingInfoResponse:
     settings = await container.schedule_settings().get()
-    return BookingInfoResponse.of(
-        settings, payments_enabled=container.settings.payments_enabled, now=container.clock.now()
-    )
+    return BookingInfoResponse.of(settings, payments_enabled=container.settings.payments_enabled)
 
 
 @router.get("/availability", summary="Every session of one day with the karts still free")
@@ -65,6 +64,10 @@ async def create_reservation(
     auth: AuthenticatedRequest = Depends(require_customer),
     container: ApplicationContainer = Depends(get_container),
 ) -> ReservationResponse:
+    if not body.accepted_terms:
+        raise ValidationError(
+            "برای رزرو باید تأیید کنید که سن‌ها را درست وارد کرده‌اید و قوانین را خوانده‌اید.", code="terms_not_accepted"
+        )
     profile = await container.customer_profile().get(auth.user_id)
     name = body.contact_name.strip() or profile.full_name
     reservation = await container.hold_reservation().execute(
@@ -76,6 +79,7 @@ async def create_reservation(
             double_count=body.double_count,
             contact_name=name,
             contact_mobile=profile.mobile.local,
+            terms_accepted=True,
         )
     )
     return ReservationResponse.of(reservation)

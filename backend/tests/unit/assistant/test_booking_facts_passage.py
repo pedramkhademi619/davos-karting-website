@@ -28,13 +28,11 @@ def test_booking_rules_follow_the_settings() -> None:
     assert "فعلاً بسته" in closed and "همان روز هم" in closed and "بدون رزرو" not in closed
 
 
-def test_the_grid_and_the_daily_cutoff_are_stated_and_the_phone_is_not() -> None:
+def test_the_grid_and_the_shift_start_closing_are_stated_and_the_phone_is_not() -> None:
     assert "از ساعت ۱۵:۰۰" in live.shifts(booking_facts()) and "هر ۱۰ دقیقه یک سانس" in live.shifts(booking_facts())
     text = live.booking(booking_facts())
-    assert "هر روز فقط تا ساعت ۱۵:۰۰ باز است" in text and "حضوری به پیست مراجعه کند" in text
+    assert "تا قبل از شروع شیفتش باز است" in text and "شیفت‌های بعدی و روزهای بعد" in text
     assert "تلفن" not in text and not any(ch.isdigit() and ch in "0123456789" for ch in text)
-    open_all_day = live.booking(booking_facts(online_booking_cutoff=None))
-    assert "ساعتِ رزرو کردن" not in open_all_day
 
 
 def test_a_closed_booking_sends_customers_to_the_venue_not_to_a_phone_number() -> None:

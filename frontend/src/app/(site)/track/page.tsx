@@ -1,7 +1,16 @@
+import type { Metadata } from "next";
+import { ButtonLink } from "@/components/button-link";
 import { FlagIcon, PinIcon, ShieldIcon } from "@/components/icons";
-import { MapLink } from "@/components/map-link";
-import { SectionHeading } from "@/components/section-heading";
 import { TrackMapLazy } from "@/components/home/track-map-lazy";
+import { MapLink } from "@/components/map-link";
+import { PageHero } from "@/components/page-hero";
+import { site } from "@/content/site";
+
+export const metadata: Metadata = {
+  title: "پیست",
+  description: "نقشه‌ی پیست کارتینگ داووس از نمای بالا، پیچ به پیچ، و مسیریابی تا پیست.",
+  alternates: { canonical: "/track" },
+};
 
 const features = [
   { icon: FlagIcon, title: "خط شروع و پایان", text: "کنار سکوی تماشاگران؛ هر دور از همان‌جا شمرده می‌شود." },
@@ -9,36 +18,36 @@ const features = [
   { icon: PinIcon, title: "مسیریابی", text: "موقعیت دقیق پیست را روی نقشه ببینید." },
 ] as const;
 
-export function TrackSection() {
+export default function TrackPage() {
   return (
-    <section className="container-page py-24 md:py-32">
-      <div className="grid items-center gap-14 lg:grid-cols-12">
-        <div className="lg:col-span-4">
-          <SectionHeading
-            eyebrow="پیست"
-            title="پیچ به پیچ، از نمای بالا"
-            lead="نقشه پیست داووس از روی تصویر هوایی؛ دو کارت کوچک روی نقشه مسیر را دور می‌زنند."
-          />
-          <ul className="mt-10 space-y-6">
+    <>
+      <PageHero eyebrow="پیست" title="پیچ به پیچ، از نمای بالا" lead="نقشه پیست داووس از روی تصویر هوایی؛ دو کارت کوچک روی نقشه مسیر را دور می‌زنند." />
+
+      <section className="container-page py-16 md:py-24">
+        <div className="grid items-start gap-12 lg:grid-cols-12">
+          <ul className="space-y-6 lg:col-span-4">
             {features.map(({ icon: IconComponent, title, text }) => (
               <li key={title} className="flex gap-4">
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent text-ink">
                   <IconComponent className="h-6 w-6" />
                 </span>
                 <div>
-                  <h3 className="text-lg font-black">{title}</h3>
+                  <h2 className="text-lg font-black">{title}</h2>
                   <p className="text-fg-muted">
                     {text} {title === "مسیریابی" && <MapLink className="font-bold text-fg" />}
                   </p>
                 </div>
               </li>
             ))}
+            <li>
+              <ButtonLink href={site.booking.href}>{site.booking.callToAction}</ButtonLink>
+            </li>
           </ul>
+          <div className="lg:col-span-8">
+            <TrackMapLazy />
+          </div>
         </div>
-        <div className="reveal lg:col-span-8">
-          <TrackMapLazy />
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

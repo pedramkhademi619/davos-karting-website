@@ -53,6 +53,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
         cancel_reason: str = "",
         payment_method: CounterPaymentMethod = CounterPaymentMethod.NONE,
         shift_key: str | None = None,
+        terms_accepted_at: datetime | None = None,
     ) -> None:
         super().__init__(reservation_id)
         self.code = code
@@ -78,6 +79,9 @@ class Reservation(AggregateRoot[uuid.UUID]):
         self.note = note
         self.cancel_reason = cancel_reason
         self.payment_method = payment_method
+        self.terms_accepted_at = (
+            terms_accepted_at  # when the customer pledged the ages are right and the rules are read
+        )
 
     @classmethod
     def hold(
@@ -97,6 +101,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
         now: datetime,
         hold_minutes: int,
         shift_key: str | None = None,
+        terms_accepted_at: datetime | None = None,
     ) -> Reservation:
         cls._check_counts(single_count, double_count)
         if amount.irr <= 0:
@@ -120,6 +125,7 @@ class Reservation(AggregateRoot[uuid.UUID]):
             created_at=now,
             updated_at=now,
             hold_expires_at=now + timedelta(minutes=hold_minutes),
+            terms_accepted_at=terms_accepted_at,
         )
 
     @classmethod

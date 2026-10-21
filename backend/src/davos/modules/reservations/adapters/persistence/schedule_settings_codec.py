@@ -48,9 +48,6 @@ class ScheduleSettingsCodec:
             "daily_booking_limit_mode": settings.daily_booking_limit_mode.value,
             "daily_people_limit": settings.daily_people_limit,
             "daily_ticket_limit": settings.daily_ticket_limit,
-            "online_booking_cutoff": (
-                settings.online_booking_cutoff.strftime("%H:%M") if settings.online_booking_cutoff else None
-            ),
             "junior_weekdays": sorted(settings.junior_weekdays),
             "junior_from": settings.junior_from.strftime("%H:%M"),
             "junior_until": settings.junior_until.strftime("%H:%M"),
@@ -81,10 +78,6 @@ class ScheduleSettingsCodec:
         for key in ("shift_start", "shift_end", "morning_start", "morning_end", "junior_from", "junior_until"):
             if key in data:
                 values[key] = time.fromisoformat(data[key])
-        if "online_booking_cutoff" in data:
-            values["online_booking_cutoff"] = (
-                time.fromisoformat(data["online_booking_cutoff"]) if data["online_booking_cutoff"] else None
-            )
         if "daily_booking_limit_mode" in data:
             values["daily_booking_limit_mode"] = DailyBookingLimitMode(data["daily_booking_limit_mode"])
         for key in ("normal_prices", "holiday_prices"):

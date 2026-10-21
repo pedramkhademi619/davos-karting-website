@@ -8,7 +8,7 @@ from datetime import time
 class BookingFacts:
     """The booking facts in force right now, as the assistant needs them.
 
-    Kart counts, prices, closed days, the session grid, the online-booking cutoff and the hold time are the owner's
+    Kart counts, prices, closed days, the session grid and the hold time are the owner's
     admin-panel settings; the composition root (ScheduleBookingFacts) reads them live. None of them is written in code
     or in a knowledge file, where they would go stale.
     """
@@ -26,7 +26,6 @@ class BookingFacts:
     hold_minutes: int
     first_session: time  # the evening shift
     interval_minutes: int
-    online_booking_cutoff: time | None  # None: online booking stays open all day
     last_session_before: time | None = None  # end of the evening shift (after midnight when not after the start)
     morning_shift: tuple[time, time] | None = None  # (first session, end) when there is a morning shift
     # When under-15s may ride: weekdays (Monday = 0), from (inclusive) and until (exclusive), and whether the window

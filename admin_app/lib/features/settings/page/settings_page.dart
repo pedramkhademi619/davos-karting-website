@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:get/get.dart";
 
+import "package:davos_admin/core/theme/pit.dart";
 import "package:davos_admin/core/utils/fa.dart";
 import "package:davos_admin/core/utils/jalali.dart";
 import "package:davos_admin/features/auth/controller/session_controller.dart";
@@ -293,11 +294,9 @@ class _SettingsFormState extends State<_SettingsForm> {
                 _num("مهلت پرداخت", "hold", suffix: "دقیقه"),
                 _num("حداکثر خودرو در هر رزرو", "max_karts"),
                 _num("حداکثر رزرو در انتظار پرداخت برای هر مشتری", "max_holds"),
-                TimeField(
-                  label: "بسته شدن رزرو آنلاین همان روز",
-                  value: s.onlineBookingCutoff,
-                  clearable: true,
-                  onChanged: (v) => setState(() => s.onlineBookingCutoff = v),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text("هر سانس تا قبل از شروع شیفتش آنلاین رزرو می‌شود؛ شیفت که شروع شد، همان شیفتِ همان روز بسته می‌شود ولی شیفت‌های بعدی و روزهای بعد باز می‌مانند.", style: TextStyle(color: context.pit.mid, fontSize: 12, height: 1.7)),
                 ),
               ],
             ),

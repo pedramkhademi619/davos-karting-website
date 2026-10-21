@@ -35,7 +35,6 @@ class ScheduleSettings {
     required this.dailyBookingLimitMode,
     required this.dailyPeopleLimit,
     required this.dailyTicketLimit,
-    required this.onlineBookingCutoff,
   });
 
   factory ScheduleSettings.fromJson(Json j) => ScheduleSettings(
@@ -70,7 +69,6 @@ class ScheduleSettings {
     dailyBookingLimitMode: j.str("daily_booking_limit_mode", "none"),
     dailyPeopleLimit: j.integerOrNull("daily_people_limit"),
     dailyTicketLimit: j.integerOrNull("daily_ticket_limit"),
-    onlineBookingCutoff: j.strOrNull("online_booking_cutoff"),
   );
 
   bool onlineBookingEnabled;
@@ -114,7 +112,6 @@ class ScheduleSettings {
   int? dailyTicketLimit;
 
   /// "HH:MM" (Tehran) after which online booking for the same day closes, or null.
-  String? onlineBookingCutoff;
 
   Json toJson() => {
     "online_booking_enabled": onlineBookingEnabled,
@@ -148,6 +145,5 @@ class ScheduleSettings {
     "daily_booking_limit_mode": dailyBookingLimitMode,
     "daily_people_limit": dailyBookingLimitMode == "people" || dailyBookingLimitMode == "both" ? dailyPeopleLimit : null,
     "daily_ticket_limit": dailyBookingLimitMode == "tickets" || dailyBookingLimitMode == "both" ? dailyTicketLimit : null,
-    "online_booking_cutoff": onlineBookingCutoff,
   };
 }

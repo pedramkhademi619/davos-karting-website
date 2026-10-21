@@ -50,6 +50,8 @@ export const site = {
 
 export const navigation = [
   { href: "/", label: "خانه" },
+  { href: "/track", label: "پیست" },
+  { href: "/rules", label: "شرایط سوار شدن" },
   { href: "/booking", label: "رزرو سانس" },
   { href: "/faq", label: "سوالات متداول" },
   { href: "/contact", label: "تماس با ما" },
@@ -88,13 +90,13 @@ export const bookingSteps = [
 
 /** Owner's riding rules (not admin settings), summarised for the home page. Kept identical to backend/knowledge. */
 export const ridingRules = [
-  { badge: "16+", title: "تک‌نفره برای همه", text: "از ۱۶ سال به بالا، حتی بدون تجربه رانندگی، بدون شرط قد یا ساعت." },
+  { badge: "15+", title: "تک‌نفره برای همه", text: "از ۱۵ سال به بالا، حتی بدون تجربه رانندگی، بدون شرط قد یا ساعت." },
   {
     badge: "11–14",
     title: "نوجوان‌ها با شرط",
     text: "فقط با قد بیشتر از ۱۴۰ سانتی‌متر و فقط شنبه تا چهارشنبه از ساعت ۱۵ تا ۱۸.",
   },
-  { badge: "18+", title: "راننده دونفره", text: "۱۸ سال به بالا با گواهینامه و توانایی رانندگی؛ پشت سرش کودک ۴ تا ۱۵ ساله." },
+  { badge: "18+", title: "راننده دونفره", text: "۱۸ سال به بالا با گواهینامه و توانایی رانندگی؛ پشت سرش کودک ۴ تا ۱۴ ساله." },
   { badge: "4–10", title: "کوچولوها", text: "کودک زیر ۱۱ سال رانندگی نمی‌کند، ولی از ۴ سالگی روی صندلی عقب دونفره، پشت پدر یا مادرش، هیجان را حس می‌کند." },
 ] as const;
 

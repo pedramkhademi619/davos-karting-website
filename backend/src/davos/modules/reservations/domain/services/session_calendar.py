@@ -7,7 +7,6 @@ from davos.modules.reservations.domain.value_objects.tehran_time import (
     BUSINESS_DAY_ROLLOVER_HOUR,
     TEHRAN,
     business_date,
-    local,
 )
 
 
@@ -70,15 +69,19 @@ class SessionCalendar:
         days = [today + timedelta(days=offset) for offset in offsets]
         return [d for d in days if not self._settings.is_closed(d)]
 
-    def is_online_cutoff_passed(self, now: datetime) -> bool:
-        """Past this time of day (any date), online booking is refused -- the customer must come in person."""
-        cutoff = self._settings.online_booking_cutoff
-        return cutoff is not None and local(now).time() >= cutoff
+    def shift_start(self, day: date, value: time) -> datetime:
+        """When the shift the session belongs to starts on that business day (the morning's or the evening's start)."""
+        s = self._settings
+        return self.starts_at(day, s.morning_start if self.shift_of(value) == "morning" else s.shift_start)
+
+    def is_shift_started(self, day: date, value: time, now: datetime) -> bool:
+        """Online booking of a session closes when its shift starts; later shifts and later days stay open."""
+        return now >= self.shift_start(day, value)
 
     def is_bookable(self, day: date, value: time, now: datetime) -> bool:
         if not self._settings.online_booking_enabled or day not in self.bookable_dates(now):
             return False
-        if not self.is_sellable_time(value) or self.is_online_cutoff_passed(now):
+        if not self.is_sellable_time(value) or self.is_shift_started(day, value, now):
             return False
         earliest = now + timedelta(minutes=self._settings.same_day_lead_minutes)
         return self.starts_at(day, value) >= earliest

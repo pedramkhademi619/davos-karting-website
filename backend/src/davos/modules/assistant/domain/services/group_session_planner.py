@@ -3,7 +3,7 @@ from __future__ import annotations
 
 class GroupSessionPlanner:
     """Fewest sessions for a group, following the owner's rule: every single-seater takes one driver, and a two-seater
-    takes two people only when a 4 to 15 year old sits behind a licensed adult. The kart counts are the admin panel's
+    takes two people only when a 4 to 14 year old sits behind a licensed adult. The kart counts are the admin panel's
     booking settings, so a session holds ``singles + children in the rear`` drivers."""
 
     def __init__(self, *, singles_per_session: int, doubles_per_session: int) -> None:

@@ -9,9 +9,9 @@ type Group = { key: keyof Crew; title: string; hint: string; badge: string; colo
 
 const GROUPS: Group[] = [
   { key: "licensed", title: "بزرگسال با گواهینامه", hint: "۱۸ سال به بالا؛ خودش می‌راند (تک‌نفره یا راننده‌ی دونفره)", badge: "18+", colour: "#ffc400" },
-  { key: "adult", title: "۱۶ سال به بالا، بدون گواهینامه", hint: "خودش با خودروی تک‌نفره می‌راند", badge: "16+", colour: "#ff6a3d" },
+  { key: "adult", title: "۱۵ سال به بالا، بدون گواهینامه", hint: "خودش با خودروی تک‌نفره می‌راند", badge: "15+", colour: "#ff6a3d" },
   { key: "teen", title: "نوجوانی که خودش می‌راند (۱۱ تا ۱۴)", hint: "قد بیشتر از ۱۴۰ سانتی‌متر", badge: "11–14", colour: "#4e92ff" },
-  { key: "kid", title: "سرنشین ۴ تا ۱۵ سال", hint: "رانندگی نمی‌کند؛ پشت یک بزرگسال گواهینامه‌دار می‌نشیند", badge: "4–15", colour: "#1ee07a" },
+  { key: "kid", title: "سرنشین ۴ تا ۱۴ سال", hint: "رانندگی نمی‌کند؛ پشت یک بزرگسال گواهینامه‌دار می‌نشیند", badge: "4–14", colour: "#1ee07a" },
 ];
 
 /** A helmet, tinted per group: the crew is drawn as a row of helmets. */
@@ -54,7 +54,7 @@ export function CrewStep(props: CrewStepProps) {
       <div className="space-y-4">
         <Counter
           title="خودروی تک‌نفره"
-          hint="از ۱۶ سال؛ ۱۱ تا ۱۴ سال با شرط قد و ساعت"
+          hint="از ۱۵ سال؛ ۱۱ تا ۱۴ سال با شرط قد و ساعت"
           value={props.manualSingles}
           onChange={props.onManualSingles}
           max={props.maxKarts}
@@ -62,7 +62,7 @@ export function CrewStep(props: CrewStepProps) {
         />
         <Counter
           title="خودروی دونفره"
-          hint="راننده ۱۸+ با گواهینامه، پشتش کودک ۴ تا ۱۵ سال"
+          hint="راننده ۱۸+ با گواهینامه، پشتش کودک ۴ تا ۱۴ سال"
           value={props.manualDoubles}
           onChange={props.onManualDoubles}
           max={props.maxKarts}

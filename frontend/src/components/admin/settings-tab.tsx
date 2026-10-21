@@ -117,20 +117,7 @@ export function SettingsTab() {
             <NumberField label="رزرو همان روز: حداقل دقیقه قبل از سانس" value={settings.same_day_lead_minutes} onChange={num("same_day_lead_minutes")} />
             <NumberField label="حداکثر رزرو پرداخت‌نشده هر مشتری" value={settings.max_active_holds_per_customer} onChange={num("max_active_holds_per_customer")} />
           </div>
-          <label className="mt-5 flex items-center gap-3 font-bold">
-            <input
-              type="checkbox"
-              className="h-5 w-5 accent-[#0c0d10]"
-              checked={settings.online_booking_cutoff !== null}
-              onChange={(e) => set("online_booking_cutoff", e.target.checked ? "15:00" : null)}
-            />
-            هر روز بعد از ساعت مشخصی رزرو آنلاین بسته و مشتری به حضوری آمدن راهنمایی شود
-          </label>
-          {settings.online_booking_cutoff !== null && (
-            <div className="mt-4 max-w-xs">
-              <TimeField label="رزرو آنلاین تا این ساعت باز است" value={settings.online_booking_cutoff} onChange={(v) => set("online_booking_cutoff", v)} />
-            </div>
-          )}
+          <p className="mt-5 text-sm leading-7 text-fg-muted">هر سانس تا قبل از شروع شیفتش آنلاین رزرو می‌شود؛ شیفت که شروع شد، همان شیفتِ همان روز آنلاین بسته می‌شود ولی شیفت‌های بعدی و روزهای بعد باز می‌مانند.</p>
         </Card>
 
         <Card title="شیفت‌ها و خودروها">

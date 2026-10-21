@@ -48,7 +48,6 @@ class ScheduleSettingsBody(BaseModel):
     daily_booking_limit_mode: Literal["none", "people", "tickets", "both"]
     daily_people_limit: int | None = Field(default=None, ge=1, le=100_000)
     daily_ticket_limit: int | None = Field(default=None, ge=1, le=100_000)
-    online_booking_cutoff: str | None = Field(default=None, pattern=_CLOCK)
     junior_weekdays: list[int] = Field(default_factory=lambda: [0, 1, 2, 5, 6])
     junior_from: str = Field(default="15:00", pattern=_CLOCK)
     junior_until: str = Field(default="18:00", pattern=_CLOCK)
@@ -93,7 +92,6 @@ class ScheduleSettingsBody(BaseModel):
             daily_booking_limit_mode=s.daily_booking_limit_mode.value,
             daily_people_limit=s.daily_people_limit,
             daily_ticket_limit=s.daily_ticket_limit,
-            online_booking_cutoff=s.online_booking_cutoff.strftime("%H:%M") if s.online_booking_cutoff else None,
             junior_weekdays=sorted(s.junior_weekdays),
             junior_from=s.junior_from.strftime("%H:%M"),
             junior_until=s.junior_until.strftime("%H:%M"),
@@ -131,9 +129,6 @@ class ScheduleSettingsBody(BaseModel):
             daily_booking_limit_mode=DailyBookingLimitMode(self.daily_booking_limit_mode),
             daily_people_limit=self.daily_people_limit,
             daily_ticket_limit=self.daily_ticket_limit,
-            online_booking_cutoff=time.fromisoformat(self.online_booking_cutoff)
-            if self.online_booking_cutoff
-            else None,
             junior_weekdays=frozenset(self.junior_weekdays),
             junior_from=time.fromisoformat(self.junior_from),
             junior_until=time.fromisoformat(self.junior_until),

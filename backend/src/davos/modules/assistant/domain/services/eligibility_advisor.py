@@ -63,16 +63,11 @@ class EligibilityAdvisor:
                 f"خودرو دونفره بنشیند، پشت یک بزرگسال {_fa(r.front_seat_min_age)} سال به بالا که گواهینامه دارد.",
                 *self._junior_presence(who, facts),
             ]
-        if age < r.unclear_age:
+        if age < r.free_driving_age:
             return [
                 self._junior(who, facts),
                 f"{who}: اگر نتواند رانندگی کند، می‌تواند روی صندلی عقب خودرو دونفره بنشیند.",
                 *self._junior_presence(who, facts),
-            ]
-        if age == r.unclear_age:
-            return [
-                f"{who}: نتیجه: قطعی نیست؛ برای رانندگی تک‌نفره در این سن شرط روشنی تعیین نشده و باید هنگام رزرو "
-                "با مجموعه هماهنگ شود (نه «بله» بگو و نه «نه»). می‌تواند روی صندلی عقب خودرو دونفره بنشیند."
             ]
         if age < r.front_seat_min_age:
             return [
@@ -250,7 +245,7 @@ class EligibilityAdvisor:
             return []  # without the live kart counts no plan is made up
         rear = sum(1 for a in facts.ages if r.rear_seat_min_age <= a < r.min_driving_age)
         if facts.height_cm is not None and facts.height_cm < r.junior_min_height_cm:
-            rear += sum(1 for a in facts.ages if r.min_driving_age <= a < r.unclear_age)
+            rear += sum(1 for a in facts.ages if r.min_driving_age <= a < r.free_driving_age)
         rear = min(rear, size - 1)
         drivers = size - rear
         plan = GroupSessionPlanner(singles_per_session=singles, doubles_per_session=doubles).layout(

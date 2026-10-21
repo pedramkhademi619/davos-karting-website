@@ -8,10 +8,8 @@ from davos.modules.reservations.domain.entities.reservation import Reservation
 from davos.modules.reservations.domain.enums.daily_booking_limit_mode import DailyBookingLimitMode
 from davos.modules.reservations.domain.errors.fuel_break_session_error import FuelBreakSessionError
 from davos.modules.reservations.domain.errors.online_booking_closed_error import OnlineBookingClosedError
-from davos.modules.reservations.domain.errors.online_booking_cutoff_passed_error import (
-    OnlineBookingCutoffPassedError,
-)
 from davos.modules.reservations.domain.errors.session_not_bookable_error import SessionNotBookableError
+from davos.modules.reservations.domain.errors.shift_already_started_error import ShiftAlreadyStartedError
 from davos.modules.reservations.domain.errors.too_many_active_holds_error import TooManyActiveHoldsError
 from davos.modules.reservations.domain.services.daily_booking_limit import DailyBookingLimit
 from davos.modules.reservations.domain.services.seat_allocator import SeatAllocator
@@ -50,9 +48,8 @@ class HoldReservationUseCase:
             if not settings.online_booking_enabled:
                 raise OnlineBookingClosedError
             calendar = SessionCalendar(settings)
-            if calendar.is_online_cutoff_passed(now):
-                assert settings.online_booking_cutoff is not None  # noqa: S101 - is_online_cutoff_passed confirmed it
-                raise OnlineBookingCutoffPassedError(settings.online_booking_cutoff)
+            if calendar.is_shift_started(command.day, command.session_time, now):
+                raise ShiftAlreadyStartedError
             if calendar.is_blocked(command.session_time):
                 raise FuelBreakSessionError
             if not calendar.is_bookable(command.day, command.session_time, now):
@@ -86,6 +83,7 @@ class HoldReservationUseCase:
                 contact_mobile=command.contact_mobile,
                 now=now,
                 hold_minutes=settings.hold_minutes,
+                terms_accepted_at=now if command.terms_accepted else None,
             )
             await self._reservations.add(reservation)
             await self._uow.commit()

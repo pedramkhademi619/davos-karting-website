@@ -839,19 +839,6 @@
     opacity: 1;
   }
 
-  /* Neon racing line for the track drawings. */
-  .neon-line {
-    fill: none;
-    stroke: var(--color-accent);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: drop-shadow(0 0 6px rgb(255 196 0 / 0.8)) drop-shadow(0 0 18px rgb(255 160 0 / 0.45));
-  }
-  .neon-draw {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 0;
-  }
-
   /* First-visit intro: the start gantry fills the screen, five reds, lights out, and the page is revealed. Pure CSS;
      the server leaves it out once the visitor has seen it this session (cookie davos_intro). */
   .intro {
@@ -923,14 +910,6 @@
   inherits: false;
   initial-value: 0deg;
 }
-@keyframes draw-line {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
 @keyframes intro-lamp {
   0% {
     background: var(--lamp-off);
@@ -991,10 +970,6 @@
   .edge-glow:hover::before,
   .edge-glow:focus-within::before {
     animation: edge-spin 2.4s linear infinite;
-  }
-  .neon-draw {
-    animation: draw-line 2.6s var(--ease-out-expo) both;
-    animation-delay: var(--draw-delay, 0.3s);
   }
   .float-y {
     animation: float-y 6s ease-in-out infinite;

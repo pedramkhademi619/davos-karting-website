@@ -21,8 +21,7 @@ class EligibilityRules:
     """
 
     min_driving_age: int = 11  # under this never drives
-    unclear_age: int = 15  # exactly this age: coordinate with the counter
-    free_driving_age: int = 16  # from this age a single-seater needs no height, day or hour condition
+    free_driving_age: int = 15  # from this age (15 included) a single-seater needs no height, day or hour condition
     junior_min_height_cm: int = 141  # 11 to 14 year olds need MORE than 140 cm
     junior_weekdays: frozenset[int] = SATURDAY_TO_WEDNESDAY
     junior_from: time = time(15, 0)
@@ -30,7 +29,7 @@ class EligibilityRules:
     # True when the admin panel applies the under-15 hours to every under-15, back-seat passengers included.
     junior_everyone: bool = False
     rear_seat_min_age: int = 4
-    rear_seat_max_age: int = 15
+    rear_seat_max_age: int = 14  # 15 and over count as grown-ups: they drive a single-seater, not the back seat
     front_seat_min_age: int = 18  # and a driving licence
     light_pair_max_total_kg: int = 130  # two light women: total strictly BELOW this
     opens_at: time = time(15, 0)  # opening hours, kept identical to backend/knowledge/working-hours.txt

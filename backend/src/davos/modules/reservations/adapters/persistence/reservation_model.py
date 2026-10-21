@@ -70,3 +70,4 @@ class ReservationModel(Base):
     confirmed_late: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     note: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     cancel_reason: Mapped[str] = mapped_column(String(300), nullable=False, server_default="")
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

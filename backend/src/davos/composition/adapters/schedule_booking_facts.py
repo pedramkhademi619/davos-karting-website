@@ -12,7 +12,7 @@ from davos.modules.reservations.domain.value_objects.schedule_settings import Sc
 
 class ScheduleBookingFacts(BookingFactsPort):
     """Hands the assistant the booking settings the owner edits in the admin panel (kart counts, prices, booking days)
-    (session grid, online-booking cutoff, hold time).
+    (session grid, hold time).
 
     Kept for ``cache_seconds`` so a burst of questions reads the settings row once; a change in the admin panel reaches
     the assistant within that time. Lives in the composition layer so the two modules never import each other.
@@ -47,7 +47,6 @@ class ScheduleBookingFacts(BookingFactsPort):
             hold_minutes=s.hold_minutes,
             first_session=s.shift_start,
             interval_minutes=s.interval_minutes,
-            online_booking_cutoff=s.online_booking_cutoff,
             last_session_before=s.shift_end,
             morning_shift=(s.morning_start, s.morning_end) if s.morning_shift_enabled else None,
             junior_weekdays=s.junior_weekdays,

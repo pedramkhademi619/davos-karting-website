@@ -36,6 +36,7 @@ class ReservationMapper:
             note=model.note,
             cancel_reason=model.cancel_reason,
             payment_method=CounterPaymentMethod(model.payment_method),
+            terms_accepted_at=model.terms_accepted_at,
         )
 
     @staticmethod
@@ -58,6 +59,7 @@ class ReservationMapper:
             created_at=reservation.created_at,
             note=reservation.note,
             payment_method=reservation.payment_method.value,
+            terms_accepted_at=reservation.terms_accepted_at,
             **ReservationMapper.mutable_values(reservation),
         )
 

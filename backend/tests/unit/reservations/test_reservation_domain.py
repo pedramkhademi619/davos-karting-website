@@ -93,11 +93,11 @@ def test_a_date_cannot_be_both_opened_and_closed() -> None:
 
 
 def test_same_day_booking_keeps_a_lead_time_before_the_session() -> None:
-    settings = ScheduleSettings(min_days_ahead=0, same_day_lead_minutes=30, online_booking_cutoff=None)
+    settings = ScheduleSettings(min_days_ahead=0, same_day_lead_minutes=30)
     calendar = SessionCalendar(settings)
-    now = datetime(2026, 1, 3, 17, 50, tzinfo=TEHRAN)
-    assert not calendar.is_bookable(SAT, time(18, 10), now)  # less than 30 minutes away
-    assert calendar.is_bookable(SAT, time(18, 20), now)
+    now = datetime(2026, 1, 3, 14, 45, tzinfo=TEHRAN)  # the evening shift has not started yet
+    assert not calendar.is_bookable(SAT, time(15, 10), now)  # less than 30 minutes away
+    assert calendar.is_bookable(SAT, time(15, 20), now)
 
 
 def test_only_real_session_times_are_bookable() -> None:
@@ -123,19 +123,31 @@ def test_blocked_minutes_are_not_admin_editable() -> None:
     assert ScheduleSettings(single_capacity=10).blocked_minutes == frozenset({50})
 
 
-def test_online_booking_closes_for_the_day_at_the_cutoff_whatever_the_date_booked() -> None:
-    settings = ScheduleSettings(min_days_ahead=0, max_days_ahead=7, online_booking_cutoff=time(15, 0))
-    calendar = SessionCalendar(settings)
-    before = datetime(2026, 1, 3, 14, 59, tzinfo=TEHRAN)
+def test_online_booking_of_a_session_closes_when_its_shift_starts() -> None:
+    calendar = SessionCalendar(
+        ScheduleSettings(min_days_ahead=0, max_days_ahead=7)
+    )  # morning from 10:00, evening from 15:00
+    morning_started = datetime(2026, 1, 3, 12, 0, tzinfo=TEHRAN)
+    assert not calendar.is_bookable(SAT, time(11, 0), morning_started)  # that shift has started
+    assert calendar.is_bookable(SAT, time(18, 0), morning_started)  # the evening shift is still ahead
+    assert calendar.is_bookable(SUN, time(11, 0), morning_started)  # and so are the next day's shifts
+    assert calendar.is_shift_started(SAT, time(11, 0), morning_started) and not calendar.is_shift_started(
+        SAT, time(18, 0), morning_started
+    )
+
+    evening_started = datetime(2026, 1, 3, 15, 0, tzinfo=TEHRAN)
+    assert not calendar.is_bookable(SAT, time(18, 0), evening_started)
+    assert not calendar.is_bookable(SAT, time(0, 30), evening_started)  # after midnight still belongs to this evening
+    assert calendar.is_bookable(SUN, time(11, 0), evening_started) and calendar.is_bookable(
+        SUN, time(18, 0), evening_started
+    )
+
+
+def test_with_one_shift_only_that_days_evening_closes_at_its_start() -> None:
+    calendar = SessionCalendar(ScheduleSettings(min_days_ahead=0, max_days_ahead=7, morning_shift_enabled=False))
     after = datetime(2026, 1, 3, 15, 0, tzinfo=TEHRAN)
-    assert not calendar.is_online_cutoff_passed(before) and calendar.is_online_cutoff_passed(after)
-    assert calendar.is_bookable(WED, time(18, 0), before)  # booking a future day, still before the cutoff today
-    assert not calendar.is_bookable(WED, time(18, 0), after)  # same future day, but it is past 15:00 today
-
-
-def test_a_cutoff_of_none_means_online_booking_never_closes_for_the_time_of_day() -> None:
-    calendar = SessionCalendar(ScheduleSettings(online_booking_cutoff=None))
-    assert not calendar.is_online_cutoff_passed(datetime(2026, 1, 3, 23, 59, tzinfo=TEHRAN))
+    assert not calendar.is_bookable(SAT, time(18, 0), after)
+    assert calendar.is_bookable(SUN, time(18, 0), after)  # any later day is open
 
 
 def test_online_booking_can_be_switched_off() -> None:

@@ -1,5 +1,5 @@
 import { ButtonLink } from "@/components/button-link";
-import { NeonTrack } from "@/components/home/neon-track";
+import { TrackMapLazy } from "@/components/home/track-map-lazy";
 import { CalendarIcon, ShieldIcon, TicketIcon } from "@/components/icons";
 import { StartLights } from "@/components/start-lights";
 import { site } from "@/content/site";
@@ -15,7 +15,8 @@ const trust = [
 
 /**
  * Home hero on full-strength carbon fibre with a light sweeping over it: the headline in polished metal, and the real
- * Davos circuit drawn in neon with two karts lapping, under smoked-glass live readouts from the admin settings.
+ * Davos circuit seen from above (the aerial-photo map, two karts lapping), under smoked-glass live readouts from the
+ * admin settings.
  */
 export function Hero({ info }: { info: BookingInfo | null }) {
   const readouts = info
@@ -80,10 +81,7 @@ export function Hero({ info }: { info: BookingInfo | null }) {
             <div className="glass float-y mb-3 w-fit rounded-2xl px-3 py-2 sm:px-4 sm:py-3">
               <StartLights />
             </div>
-            <NeonTrack className="h-auto w-full drop-shadow-[0_30px_60px_rgb(0_0_0/0.8)]" />
-            <span className="race-number glass absolute bottom-2 end-0 hidden rounded-full sm:inline-block px-3 py-1 text-[0.6rem] tracking-[0.3em] text-on-carbon-muted sm:text-[0.65rem]" dir="ltr">
-              DAVOS · LIVE
-            </span>
+            <TrackMapLazy />
           </div>
 
           <dl className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">

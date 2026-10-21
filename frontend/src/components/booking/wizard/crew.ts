@@ -4,7 +4,7 @@
  * "single or double" alone:
  *
  * - licensed: 18+ with a driving licence. Drives a single, or a double with a child behind.
- * - adult: 16+ without a licence (or 16-17). Single only.
+ * - adult: 15+ without a licence (or 15-17). Single only.
  * - teen: 11-14 and taller than 140 cm. Single, but only Saturday to Wednesday in sessions starting 15:00-17:59;
  *   otherwise rides behind a licensed adult.
  * - kid: 4-15 who cannot drive (under 11, 15 years old, or a teen under 140 cm). Back seat of a double only.

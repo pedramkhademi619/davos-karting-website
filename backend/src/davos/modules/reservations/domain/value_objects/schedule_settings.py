@@ -65,9 +65,8 @@ class ScheduleSettings:
     # Minutes of the hour at which no session is ever sold -- a fixed safety/operations rule, not a demand cap, so
     # it is never admin-editable and applies to staff counter entries exactly like online bookings.
     blocked_minutes: frozenset[int] = frozenset({50})
-    # Online booking (any future date) is refused once the time of day passes this, so customers switch to the
-    # counter once the track is actually open; None means online booking never closes for the time of day.
-    online_booking_cutoff: time | None = time(15, 0)
+    # There is no online-booking cutoff setting: a session can be booked online until ITS shift starts (the morning's or
+    # the evening's start), see SessionCalendar.is_shift_started. Later shifts and later days stay open.
     # When under-15s may ride, edited in the admin panel. The owner's rule: 11-14 year olds drive a single-seater only
     # Saturday to Wednesday in sessions starting 15:00-17:59. ``junior_scope`` says whether the window binds only those
     # young drivers or every under-15 (back-seat passengers too). The site's booking wizard and the assistant apply it;

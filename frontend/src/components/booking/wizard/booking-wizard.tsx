@@ -13,6 +13,7 @@ import { LaunchButton } from "@/components/booking/wizard/launch-button";
 import { RacePass } from "@/components/booking/wizard/race-pass";
 import { SessionStep } from "@/components/booking/wizard/session-step";
 import { TeamRadio } from "@/components/booking/wizard/team-radio";
+import { TermsPledge, WeatherNote } from "@/components/booking/wizard/terms-pledge";
 import { buttonClasses } from "@/components/button-link";
 import { ArrowLeftIcon, PhoneIcon, ShieldIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
@@ -60,6 +61,7 @@ export function BookingWizard() {
   const [dayVersion, setDayVersion] = useState(0);
   const [time, setTime] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [pendingHold, setPendingHold] = useState<Reservation | null>(null);
   const [busy, setBusy] = useState<"hold" | "pay" | "release" | null>(null);
@@ -94,7 +96,7 @@ export function BookingWizard() {
     api<BookingCalendar>("/reservations/calendar")
       .then((result) => !cancelled && setCalendar(result))
       .catch((err) => !cancelled && setCalendarError(errorMessage(err)));
-    // The daily cutoff (online booking closes at a fixed hour, every day) is only in the settings summary.
+    // The booking settings summary (kart counts, junior hours, prices) is read apart from the calendar.
     api<BookingInfo>("/reservations/info")
       .then((result) => !cancelled && setInfo(result))
       .catch(() => undefined);
@@ -173,14 +175,14 @@ export function BookingWizard() {
 
   // ---- booking actions (unchanged API flow) --------------------------------------------------------------------------
   async function hold(me: Me) {
-    if (!date || !time || !plan.ok) return;
+    if (!date || !time || !plan.ok || !accepted) return;
     setBusy("hold");
     setError(null);
     try {
       const held = await api<Reservation>("/reservations", {
         method: "POST",
         csrf: me.csrf_token,
-        body: { date, time, single_count: plan.singles, double_count: plan.doubles, contact_name: name.trim() },
+        body: { date, time, single_count: plan.singles, double_count: plan.doubles, contact_name: name.trim(), accepted_terms: true },
       });
       const finishMs = performance.now() - enteredAt.current;
       setSectors((s) => ({ ...s, finish: finishMs }));
@@ -329,8 +331,6 @@ export function BookingWizard() {
         </Alert>
       )}
 
-      {info?.online_booking_cutoff_passed && !reservation && <CutoffNotice cutoff={info.online_booking_cutoff} />}
-
       <div className="grid gap-6 lg:grid-cols-12 lg:gap-10">
         <div className="min-w-0 lg:col-span-7">
           {/* Phones: the lap and the sector times stay in view above the step. */}
@@ -406,6 +406,7 @@ export function BookingWizard() {
                     fromPrice={fromPrice}
                   />
                 )}
+                {step === "day" && <WeatherNote />}
                 {step === "day" && (
                   <DayStep
                     days={calendar.days}
@@ -433,7 +434,6 @@ export function BookingWizard() {
                     {day && day.is_closed && <Alert tone="info">این روز رزرو آنلاین ندارد؛ روز دیگری را انتخاب کنید.</Alert>}
                     {day && !day.is_closed && (
                       <SessionStep
-                        cutoffPassed={info?.online_booking_cutoff_passed ?? false}
                         sessions={day.sessions}
                         selected={time}
                         onSelect={chooseTime}
@@ -460,6 +460,8 @@ export function BookingWizard() {
                     name={name}
                     onName={setName}
                     onLaunch={(me) => hold(me)}
+                    accepted={accepted}
+                    onAccept={setAccepted}
                     busy={busy === "hold"}
                     error={error}
                     holdMinutes={calendar.hold_minutes}
@@ -539,28 +541,6 @@ function CrewChip({ people, singles, doubles, teens, day = null, onEdit }: { peo
   );
 }
 
-/** Shown once the day's online-booking hour has passed: the plan can still be made, and the phone is one tap away. */
-function CutoffNotice({ cutoff }: { cutoff: string | null }) {
-  return (
-    <div className="mb-6 flex flex-col gap-4 rounded-[1.6rem] border border-signal/35 bg-signal/[0.08] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-      <div className="flex items-start gap-3">
-        <span className="start-lamp lamp-static mt-1 shrink-0" aria-hidden="true" />
-        <div>
-          <p className="font-black">پیت‌لین آنلاین امروز بسته شد</p>
-          <p className="mt-1 text-sm leading-7 text-fg-muted">
-            رزرو آنلاین هر روز تا ساعت {cutoff ? fa(cutoff) : "۱۵"} باز است و از نیمه‌شب دوباره باز می‌شود. برنامه را همین حالا بچینید و
-            از نیمه‌شب ثبت کنید، یا تماس بگیرید.
-          </p>
-        </div>
-      </div>
-      <a href={site.contact.phone.href} className={buttonClasses("primary", "md", "shrink-0")}>
-        <PhoneIcon className="h-5 w-5" />
-        تماس برای رزرو
-      </a>
-    </div>
-  );
-}
-
 /** The step's bottom bar: what is chosen so far and the button onwards. Sticks to the bottom of the screen on phones. */
 function StepBar({ summary, detail, action, onNext, disabled }: { summary: string; detail: string; action: string; onNext: () => void; disabled?: boolean }) {
   useEffect(() => {
@@ -590,6 +570,8 @@ type FinishStepProps = {
   name: string;
   onName: (value: string) => void;
   onLaunch: (me: Me) => void;
+  accepted: boolean;
+  onAccept: (accepted: boolean) => void;
   busy: boolean;
   error: string | null;
   holdMinutes: number;
@@ -630,7 +612,9 @@ function FinishStep(props: FinishStepProps) {
       {props.error && <Alert tone="error">{props.error}</Alert>}
       {props.signedInMe ? (
         <>
-          <LaunchButton key={props.launchAttempt} onLaunch={() => props.onLaunch(props.signedInMe!)} busy={props.busy} />
+          <TermsPledge accepted={props.accepted} onChange={props.onAccept} />
+          <LaunchButton key={props.launchAttempt} onLaunch={() => props.onLaunch(props.signedInMe!)} busy={props.busy} disabled={!props.accepted} />
+          {!props.accepted && <p className="text-center text-xs font-bold text-fg-muted">برای ثبت، اول تیک تأیید را بزنید.</p>}
           <p className="text-center text-xs leading-6 text-fg-muted">
             خودروها {fa(props.holdMinutes)} دقیقه برای پرداخت نگه داشته می‌شوند. مبلغ نهایی را سرور حساب می‌کند.
           </p>

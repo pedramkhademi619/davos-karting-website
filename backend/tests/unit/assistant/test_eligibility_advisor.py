@@ -130,7 +130,7 @@ def test_the_rules_match_the_published_knowledge() -> None:
     assert f"زیر {fa(rules.min_driving_age)} سال" in single
     assert f"بیشتر از {fa(rules.junior_min_height_cm - 1)} سانتی‌متر" in single
     assert f"از ساعت {fa(rules.junior_from.hour)} تا {fa(rules.junior_until.hour)}" in single
-    assert f"دقیقاً {fa(rules.unclear_age)} ساله" in single
+    assert f"{fa(rules.free_driving_age)} ساله و بالاتر" in single
     assert f"بین {fa(rules.rear_seat_min_age)} تا {fa(rules.rear_seat_max_age)} سال" in double
     assert f"{fa(rules.front_seat_min_age)} سال یا بیشتر" in double
     assert f"زیر {fa(rules.light_pair_max_total_kg)} کیلوگرم" in double
@@ -180,9 +180,10 @@ def test_an_adult_with_a_child_and_an_unknown_licence_is_asked_for_it() -> None:
     assert "به شرط داشتن گواهینامه" in advise("من ۳۵ سالمه با پسر ۸ سالم دونفره سوار بشیم؟")
 
 
-def test_a_fifteen_year_old_gets_an_undecided_verdict_not_a_yes() -> None:
+def test_a_fifteen_year_old_is_in_the_free_group_with_the_sixteen_year_olds() -> None:
     text = advise("۱۵ سالمه میتونم تک نفره برم؟")
-    assert "نتیجه: قطعی نیست" in text and "نتیجه: بله" not in text
+    assert "تک‌نفره: بله، بدون شرط قد، روز یا ساعت" in text and "قطعی نیست" not in text
+    assert "صندلی عقب دونفره: نه (فقط ۴ تا ۱۴ ساله)" in text
 
 
 @pytest.mark.parametrize(

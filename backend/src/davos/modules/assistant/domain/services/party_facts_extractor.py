@@ -79,7 +79,7 @@ class PartyFactsExtractor:
             mentions_today="امروز" in text,
             mentions_booking="رزرو" in text or "نوبت" in text,
             asks_if_open=bool(_OPEN.search(text)),
-            adults_only="بزرگسال" in text and not any(a < 16 for a in ages) and "بچه" not in text,
+            adults_only="بزرگسال" in text and not any(a < 15 for a in ages) and "بچه" not in text,
         )
 
     @staticmethod

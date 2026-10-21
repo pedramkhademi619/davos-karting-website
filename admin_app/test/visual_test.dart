@@ -105,7 +105,7 @@ Map<String, FakeResponse> _routes() {
       "holiday_double_toman": 720000, "holiday_weekdays": [3, 4], "closed_weekdays": [], "holiday_dates": ["2026-10-20"],
       "closed_dates": [], "open_dates": [], "min_days_ahead": 0, "max_days_ahead": 30, "same_day_lead_minutes": 30,
       "hold_minutes": 10, "max_karts_per_reservation": 10, "max_active_holds_per_customer": 1, "daily_booking_limit_mode": "both",
-      "daily_people_limit": 80, "daily_ticket_limit": 30, "online_booking_cutoff": "15:00",
+      "daily_people_limit": 80, "daily_ticket_limit": 30,
     }),
     "GET $base/system/status": const FakeResponse({
       "overall": "degraded", "checked_at": "2026-10-16T10:00:00Z",

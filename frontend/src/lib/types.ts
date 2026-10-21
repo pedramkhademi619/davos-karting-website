@@ -21,8 +21,6 @@ export type BookingInfo = {
   daily_booking_limit_mode: "none" | "people" | "tickets" | "both";
   daily_people_limit: number | null;
   daily_ticket_limit: number | null;
-  online_booking_cutoff: string | null;
-  online_booking_cutoff_passed: boolean;
   morning_shift_enabled: boolean;
   morning_first_session: string;
   morning_last_session_before: string;
@@ -246,7 +244,6 @@ export type ScheduleSettings = {
   daily_booking_limit_mode: "none" | "people" | "tickets" | "both";
   daily_people_limit: number | null;
   daily_ticket_limit: number | null;
-  online_booking_cutoff: string | null;
 };
 
 export type Customer = {

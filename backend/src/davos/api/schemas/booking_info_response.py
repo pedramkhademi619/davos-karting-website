@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime
-
 from pydantic import BaseModel
 
-from davos.modules.reservations.domain.services.session_calendar import SessionCalendar
 from davos.modules.reservations.domain.value_objects.schedule_settings import ScheduleSettings
 
 # Python weekday numbers (Monday = 0) in the order of the Iranian week, which starts on Saturday.
@@ -42,8 +39,6 @@ class BookingInfoResponse(BaseModel):
     daily_booking_limit_mode: str
     daily_people_limit: int | None
     daily_ticket_limit: int | None
-    online_booking_cutoff: str | None
-    online_booking_cutoff_passed: bool
     # When under-15s may ride (the booking wizard applies it; weekday names as in the calendar).
     junior_weekdays: list[str]
     junior_from: str
@@ -51,7 +46,7 @@ class BookingInfoResponse(BaseModel):
     junior_scope: str
 
     @classmethod
-    def of(cls, s: ScheduleSettings, *, payments_enabled: bool, now: datetime) -> BookingInfoResponse:
+    def of(cls, s: ScheduleSettings, *, payments_enabled: bool) -> BookingInfoResponse:
         return cls(
             online_booking_enabled=s.online_booking_enabled,
             payments_enabled=payments_enabled,
@@ -76,8 +71,6 @@ class BookingInfoResponse(BaseModel):
             daily_booking_limit_mode=s.daily_booking_limit_mode.value,
             daily_people_limit=s.daily_people_limit,
             daily_ticket_limit=s.daily_ticket_limit,
-            online_booking_cutoff=s.online_booking_cutoff.strftime("%H:%M") if s.online_booking_cutoff else None,
-            online_booking_cutoff_passed=SessionCalendar(s).is_online_cutoff_passed(now),
             junior_weekdays=_names(s.junior_weekdays),
             junior_from=s.junior_from.strftime("%H:%M"),
             junior_until=s.junior_until.strftime("%H:%M"),

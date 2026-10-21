@@ -36,8 +36,6 @@ function fitFor(session: SessionAvailability, singles: number, doubles: number, 
 }
 
 type SessionStepProps = {
-  /** Online booking has closed for today (the daily cutoff), so every session reads as closed. */
-  cutoffPassed: boolean;
   sessions: SessionAvailability[];
   selected: string | null;
   onSelect: (time: string) => void;
@@ -53,13 +51,13 @@ type SessionStepProps = {
  * Step 3: the session, drawn as a starting grid. Every kart of the session is a grid box; the crew's karts light up in
  * free boxes. Sessions that cannot take the whole crew stay visible but dimmed, with the reason.
  */
-export function SessionStep({ cutoffPassed, sessions, selected, onSelect, singles, doubles, junior, onBlocked }: SessionStepProps) {
+export function SessionStep({ sessions, selected, onSelect, singles, doubles, junior, onBlocked }: SessionStepProps) {
   const fitting = sessions.filter((s) => fitFor(s, singles, doubles, junior).fits).length;
   const message =
     fitting > 0
       ? `${fa(fitting)} سانس برای کل گروه شما جا دارد.`
-      : cutoffPassed
-        ? "رزرو آنلاین تا نیمه‌شب بسته است؛ جدول را ببینید و از نیمه‌شب ثبت کنید."
+      : sessions.every((s) => !s.bookable)
+        ? "شیفت‌های این روز شروع شده‌اند و رزرو آنلاینشان بسته است؛ روز دیگری را انتخاب کنید یا حضوری مراجعه کنید."
         : "هیچ سانسی در این روز برای کل گروه جا ندارد؛ روز دیگری را امتحان کنید.";
   return (
     <div className="space-y-7">

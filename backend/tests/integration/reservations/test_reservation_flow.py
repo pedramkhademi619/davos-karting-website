@@ -98,6 +98,21 @@ async def test_the_calendar_offers_tomorrow_with_prices_and_every_session(site: 
     assert day["date_jalali"] == "1404/10/14"
 
 
+async def test_a_hold_needs_the_ages_and_rules_pledge_and_keeps_when_it_was_given(
+    site: httpx.AsyncClient, sms_gateway: RecordingSmsGateway, engine: AsyncEngine
+) -> None:
+    customer = await sign_in(site, sms_gateway)
+    body = {"date": "2026-01-04", "time": "18:00", "single_count": 1, "double_count": 0}
+    refused = await site.post("/api/v1/reservations", json=body, headers=customer.headers)
+    assert refused.status_code == 422 and refused.json()["code"] == "terms_not_accepted", refused.text
+
+    accepted = await site.post("/api/v1/reservations", json={**body, "accepted_terms": True}, headers=customer.headers)
+    assert accepted.status_code == 201, accepted.text
+    async with engine.connect() as connection:
+        stamp = (await connection.execute(text("select terms_accepted_at from reservations"))).scalar_one()
+    assert stamp is not None
+
+
 async def test_book_pay_and_get_a_confirmed_ticket_and_an_sms(
     site: httpx.AsyncClient,
     reservations: ApplicationContainer,
@@ -108,7 +123,14 @@ async def test_book_pay_and_get_a_confirmed_ticket_and_an_sms(
     customer = await sign_in(site, sms_gateway)
     created = await site.post(
         "/api/v1/reservations",
-        json={"date": "2026-01-04", "time": "18:00", "single_count": 2, "double_count": 1, "contact_name": "سارا"},
+        json={
+            "date": "2026-01-04",
+            "time": "18:00",
+            "single_count": 2,
+            "double_count": 1,
+            "contact_name": "سارا",
+            "accepted_terms": True,
+        },
         headers=customer.headers,
     )
     assert created.status_code == 201, created.text
@@ -306,7 +328,7 @@ async def test_customers_see_and_cancel_only_their_own_reservations(
     first = await sign_in(site, sms_gateway, "09121111111")
     mine = await site.post(
         "/api/v1/reservations",
-        json={"date": "2026-01-04", "time": "19:00", "single_count": 1, "double_count": 0},
+        json={"date": "2026-01-04", "time": "19:00", "single_count": 1, "double_count": 0, "accepted_terms": True},
         headers=first.headers,
     )
     reservation_id = mine.json()["id"]
@@ -328,7 +350,7 @@ async def test_booking_a_closed_day_or_a_bad_time_is_refused(
     for day, at in (("2026-01-08", "18:00"), ("2026-01-03", "18:00"), ("2026-01-04", "18:07")):
         response = await site.post(
             "/api/v1/reservations",
-            json={"date": day, "time": at, "single_count": 1, "double_count": 0},
+            json={"date": day, "time": at, "single_count": 1, "double_count": 0, "accepted_terms": True},
             headers=customer.headers,
         )
         assert response.status_code == 422 and response.json()["code"] == "session_not_bookable"

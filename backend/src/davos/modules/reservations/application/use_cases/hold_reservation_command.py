@@ -14,3 +14,4 @@ class HoldReservationCommand:
     double_count: int
     contact_name: str
     contact_mobile: str
+    terms_accepted: bool = False  # the customer ticked the ages-and-rules pledge; its time is kept on the reservation

@@ -42,6 +42,11 @@ export function SiteFooter({ onBookingHost = false, info = null }: { onBookingHo
                 حساب من و بلیت‌ها
               </Link>
             </li>
+            <li>
+              <Link href={hrefFor("/terms", onBookingHost)} className="transition-colors hover:text-accent">
+                قوانین و حریم خصوصی
+              </Link>
+            </li>
           </ul>
         </nav>
 
