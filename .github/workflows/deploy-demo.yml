@@ -8,7 +8,6 @@ on:
     branches: [feature/semantic-cache]
     paths-ignore:
       - "docs/**"
-      - "admin_app/**"
       - "**.md"
   workflow_dispatch:
 
@@ -68,7 +67,7 @@ jobs:
         run: |
           rsync -az --delete -e ssh \
             --exclude='.git' --exclude='.env' --exclude='node_modules' --exclude='.next' --exclude='load-tests' \
-            --exclude='admin_app' --exclude='__pycache__' --exclude='.venv' --exclude='backend/models' \
+            --exclude='__pycache__' --exclude='.venv' --exclude='backend/models' \
             --exclude='docker-compose.local.yml' --exclude='backups' \
             ./ demo:"$DEMO_DIR"/
           docker save davos-backend:$DAVOS_VERSION davos-api:$DAVOS_VERSION davos-frontend:latest | gzip -1 | ssh demo 'gunzip | docker load'
