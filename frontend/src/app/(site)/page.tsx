@@ -26,7 +26,7 @@ export default async function HomePage() {
           alternateName: site.nameLatin,
           description: site.description,
           url,
-          telephone: site.contact.phone.e164,
+          ...(site.contact.phone ? { telephone: site.contact.phone.e164 } : {}),
           geo: { "@type": "GeoCoordinates", latitude: site.contact.geo.latitude, longitude: site.contact.geo.longitude },
           hasMap: site.contact.map.href,
           openingHoursSpecification: [

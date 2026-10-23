@@ -584,11 +584,13 @@ function FinishStep(props: FinishStepProps) {
     return (
       <div className="space-y-5">
         {props.pass}
-        <a href={site.contact.phone.href} className={buttonClasses("primary", "lg", "w-full")}>
-          <PhoneIcon className="h-5 w-5" />
-          تماس برای رزرو این سانس
-        </a>
-        <p className="text-center text-sm text-fg-muted">پرداخت آنلاین به‌زودی فعال می‌شود؛ فعلاً سانس را تلفنی رزرو کنید.</p>
+        {site.contact.phone && (
+          <a href={site.contact.phone.href} className={buttonClasses("primary", "lg", "w-full")}>
+            <PhoneIcon className="h-5 w-5" />
+            تماس برای رزرو این سانس
+          </a>
+        )}
+        <p className="text-center text-sm text-fg-muted">پرداخت آنلاین به‌زودی فعال می‌شود؛ فعلاً با پشتیبانی تماس بگیرید.</p>
       </div>
     );
   }
@@ -724,11 +726,13 @@ function BookingClosed({ calendar }: { calendar: BookingCalendar }) {
   return (
     <div className="carbon mx-auto max-w-2xl rounded-[2rem] p-8 text-center md:p-12">
       <p className="text-2xl font-black">{reason}</p>
-      <p className="mt-4 text-on-carbon-muted">تا آن موقع می‌توانید تلفنی رزرو کنید؛ همکاران ما سانس خالی را برایتان پیدا می‌کنند.</p>
-      <a href={site.contact.phone.href} className={buttonClasses("primary", "lg", "mt-8")}>
-        <PhoneIcon className="h-5 w-5" />
-        تماس برای رزرو
-      </a>
+      <p className="mt-4 text-on-carbon-muted">برای رزرو با پشتیبانی تماس بگیرید.</p>
+      {site.contact.phone && (
+        <a href={site.contact.phone.href} className={buttonClasses("primary", "lg", "mt-8")}>
+          <PhoneIcon className="h-5 w-5" />
+          تماس برای رزرو
+        </a>
+      )}
       <p className="mt-6 text-sm text-on-carbon-muted">
         <Link href={hrefFor("/faq", SPLIT_HOSTS)} className="underline underline-offset-4">
           سوالات متداول

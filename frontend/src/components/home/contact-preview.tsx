@@ -3,6 +3,7 @@ import { ClockIcon, PhoneIcon, PinIcon } from "@/components/icons";
 import { InfoCard } from "@/components/info-card";
 import { MapLink } from "@/components/map-link";
 import { PhoneLink } from "@/components/phone-link";
+import { site } from "@/content/site";
 import { SectionHeading } from "@/components/section-heading";
 import { WorkingHours } from "@/components/working-hours";
 import type { BookingInfo } from "@/lib/types";
@@ -23,9 +24,11 @@ export function ContactPreview({ info }: { info: BookingInfo | null }) {
         <InfoCard icon={ClockIcon} label="ساعات کاری">
           <WorkingHours info={info} />
         </InfoCard>
-        <InfoCard icon={PhoneIcon} label="تلفن رزرو">
-          <PhoneLink />
-        </InfoCard>
+        {site.contact.phone && (
+          <InfoCard icon={PhoneIcon} label="تلفن رزرو">
+            <PhoneLink />
+          </InfoCard>
+        )}
       </div>
     </section>
   );

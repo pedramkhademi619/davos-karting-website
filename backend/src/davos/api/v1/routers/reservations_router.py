@@ -20,6 +20,7 @@ from davos.composition.adapters.reservation_order_quote_port import ReservationO
 from davos.composition.application_container import ApplicationContainer
 from davos.modules.payments.application.use_cases.start_payment_command import StartPaymentCommand
 from davos.modules.reservations.application.use_cases.hold_reservation_command import HoldReservationCommand
+from davos.modules.reservations.domain.errors.online_payment_paused_error import OnlinePaymentPausedError
 from davos.modules.reservations.domain.errors.reservation_not_found_error import ReservationNotFoundError
 from davos.shared_kernel.domain.errors.validation_error import ValidationError
 
@@ -91,6 +92,8 @@ async def pay_reservation(
     auth: AuthenticatedRequest = Depends(require_customer),
     container: ApplicationContainer = Depends(get_container),
 ) -> StartPaymentResponse:
+    if container.settings.payments_paused:
+        raise OnlinePaymentPausedError
     target = _reservation_id(reservation_id)
     result = await container.start_payment().execute(
         StartPaymentCommand(order_ref=ReservationOrderQuotePort.order_ref_for(target), customer_id=auth.user_id)

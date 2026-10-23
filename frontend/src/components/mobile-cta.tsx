@@ -26,13 +26,15 @@ export function MobileCta({ bookingHref, onBookingHost }: { bookingHref: string;
           <KartIcon className="h-5 w-5" />
           {site.booking.callToAction}
         </Link>
-        <a
-          href={site.contact.phone.href}
-          aria-label={`تماس: ${site.contact.phone.display}`}
-          className="grid h-13 w-13 place-items-center rounded-2xl border border-white/15 text-on-carbon active:scale-95"
-        >
-          <PhoneIcon className="h-5 w-5" />
-        </a>
+        {site.contact.phone && (
+          <a
+            href={site.contact.phone.href}
+            aria-label={`تماس: ${site.contact.phone.display}`}
+            className="grid h-13 w-13 place-items-center rounded-2xl border border-white/15 text-on-carbon active:scale-95"
+          >
+            <PhoneIcon className="h-5 w-5" />
+          </a>
+        )}
       </nav>
     </>
   );

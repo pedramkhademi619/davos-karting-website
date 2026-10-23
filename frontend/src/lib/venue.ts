@@ -3,7 +3,8 @@
  * Compose passes them as NEXT_PUBLIC_* build arguments (frontend/Dockerfile), so they are inlined at build time; the
  * backend reads the same CONTACT_PHONE, so the site and the assistant always quote one number.
  *
- * A missing or malformed value stops the site with a clear message instead of publishing it without a phone number.
+ * CONTACT_PHONE may be left empty (a test copy of the site shows no number at all, so nobody calls the real venue about
+ * it); a malformed number or a missing coordinate still stops the site with a clear message.
  */
 
 import { requiredEnv } from "@/lib/required-env";
@@ -22,17 +23,21 @@ function localPhone(raw: string): string {
   return local;
 }
 
-const local = localPhone(requiredEnv("CONTACT_PHONE", process.env.NEXT_PUBLIC_CONTACT_PHONE));
+const rawPhone = (process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "").trim();
+const local = rawPhone ? localPhone(rawPhone) : null;
 const latitude = coordinate("VENUE_LATITUDE", process.env.NEXT_PUBLIC_VENUE_LATITUDE, 90);
 const longitude = coordinate("VENUE_LONGITUDE", process.env.NEXT_PUBLIC_VENUE_LONGITUDE, 180);
 
 export const venue = {
-  phone: {
-    local, // 09177334894
-    display: `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`, // 0917 733 4894
-    href: `tel:${local}`,
-    e164: `+98${local.slice(1)}`, // +989177334894, for search engines
-  },
+  /** null when no number is published. */
+  phone: local
+    ? {
+        local, // 09177334894
+        display: `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`, // 0917 733 4894
+        href: `tel:${local}`,
+        e164: `+98${local.slice(1)}`, // +989177334894, for search engines
+      }
+    : null,
   geo: { latitude, longitude },
   mapHref: `https://www.google.com/maps?q=${latitude},${longitude}`,
-} as const;
+};

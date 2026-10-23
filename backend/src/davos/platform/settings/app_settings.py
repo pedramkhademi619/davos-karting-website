@@ -140,6 +140,8 @@ class AppSettings(BaseSettings):
     # ---- payments: PAYMENT_PROVIDER picks the gateway; its credentials come only from the environment ----------------
     payment_provider: str  # mellat | zarinpal
     payments_enabled: bool
+    # A test copy of the site: booking runs up to the last step, but starting a payment is refused with a notice.
+    payments_paused: bool
     # Where the bank sends the customer back. Empty = derived from the booking site.
     payment_callback_url: str
     payment_gateway_timeout_seconds: float

@@ -2,6 +2,7 @@ import { site } from "@/content/site";
 
 /** The booking phone number as a tap-to-call link; forced left-to-right so the digits are never reordered inside RTL text. */
 export function PhoneLink({ className = "" }: { className?: string }) {
+  if (!site.contact.phone) return null;
   return (
     <a
       href={site.contact.phone.href}

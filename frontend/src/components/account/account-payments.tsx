@@ -49,7 +49,7 @@ export function AccountPayments({ payments, tickets }: { payments: AccountPaymen
       {pending > 0 && (
         <Alert tone="warning">
           {fa(pending)} پرداخت هنوز نتیجه قطعی ندارد. اگر وجه از حساب شما کسر شده، سیستم خودکار آن را پیگیری می‌کند؛ لازم نیست دوباره پرداخت کنید. اگر
-          تا چند ساعت روشن نشد، با پیست تماس بگیرید ({site.contact.phone.display}).
+          تا چند ساعت روشن نشد، با پیست تماس بگیرید{site.contact.phone ? ` (${site.contact.phone.display})` : ""}.
         </Alert>
       )}
 

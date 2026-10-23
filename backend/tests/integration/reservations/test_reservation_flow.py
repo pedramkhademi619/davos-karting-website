@@ -113,6 +113,22 @@ async def test_a_hold_needs_the_ages_and_rules_pledge_and_keeps_when_it_was_give
     assert stamp is not None
 
 
+async def test_a_test_copy_of_the_site_refuses_to_start_a_payment_with_a_notice(
+    site: httpx.AsyncClient,
+    reservations: ApplicationContainer,
+    sms_gateway: RecordingSmsGateway,
+    gateway: ScriptedPaymentGateway,
+) -> None:
+    customer = await sign_in(site, sms_gateway)
+    body = {"date": "2026-01-04", "time": "18:00", "single_count": 1, "double_count": 0, "accepted_terms": True}
+    held = (await site.post("/api/v1/reservations", json=body, headers=customer.headers)).json()
+    reservations.settings = reservations.settings.model_copy(update={"payments_paused": True})
+    refused = await site.post(f"/api/v1/reservations/{held['id']}/pay", headers=customer.headers)
+    assert refused.status_code == 409 and refused.json()["code"] == "online_payment_paused", refused.text
+    assert "امکان رزرو اینترنتی وجود ندارد" in refused.json()["message"] and "تماس بگیرید" in refused.json()["message"]
+    assert gateway.requests == []  # nothing reached the bank
+
+
 async def test_book_pay_and_get_a_confirmed_ticket_and_an_sms(
     site: httpx.AsyncClient,
     reservations: ApplicationContainer,

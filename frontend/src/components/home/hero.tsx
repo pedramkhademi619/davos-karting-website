@@ -59,9 +59,11 @@ export function Hero({ info }: { info: BookingInfo | null }) {
             <ButtonLink href={site.booking.href} size="lg" className="w-full sm:w-auto">
               {site.booking.callToAction}
             </ButtonLink>
-            <ButtonLink href={site.contact.phone.href} variant="ghost-light" size="lg" arrow={false} className="w-full sm:w-auto">
-              {site.booking.phoneCallToAction}
-            </ButtonLink>
+            {site.contact.phone && (
+              <ButtonLink href={site.contact.phone.href} variant="ghost-light" size="lg" arrow={false} className="w-full sm:w-auto">
+                {site.booking.phoneCallToAction}
+              </ButtonLink>
+            )}
           </div>
 
           <ul className="rise mt-8 flex flex-wrap gap-x-5 gap-y-2.5 text-sm font-bold text-on-carbon-muted" style={stagger(4)}>

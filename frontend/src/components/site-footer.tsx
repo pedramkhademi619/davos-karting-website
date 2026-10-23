@@ -59,9 +59,11 @@ export function SiteFooter({ onBookingHost = false, info = null }: { onBookingHo
             <li>
               <WorkingHours info={info} />
             </li>
-            <li>
-              <PhoneLink className="font-bold text-on-carbon" />
-            </li>
+            {site.contact.phone && (
+              <li>
+                <PhoneLink className="font-bold text-on-carbon" />
+              </li>
+            )}
           </ul>
         </div>
       </div>

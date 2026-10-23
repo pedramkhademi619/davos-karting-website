@@ -30,9 +30,11 @@ export function AccountHelp() {
           <WorkingHours info={info} />
         </p>
         <div className="flex flex-wrap gap-3">
-          <a href={site.contact.phone.href} dir="ltr" className={buttonClasses("dark", "sm")}>
-            {site.contact.phone.display}
-          </a>
+          {site.contact.phone && (
+            <a href={site.contact.phone.href} dir="ltr" className={buttonClasses("dark", "sm")}>
+              {site.contact.phone.display}
+            </a>
+          )}
           <a href={site.contact.map.href} target="_blank" rel="noopener noreferrer" className={buttonClasses("ghost", "sm")}>
             {site.contact.map.label}
           </a>

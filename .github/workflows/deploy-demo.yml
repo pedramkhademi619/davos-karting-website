@@ -60,7 +60,7 @@ jobs:
             --build-arg NEXT_PUBLIC_SITE_URL="$DEMO_URL" \
             --build-arg NEXT_PUBLIC_BOOKING_URL= \
             --build-arg NEXT_PUBLIC_ADMIN_URL= \
-            --build-arg NEXT_PUBLIC_CONTACT_PHONE="$(get CONTACT_PHONE)" \
+            --build-arg NEXT_PUBLIC_CONTACT_PHONE= \
             --build-arg NEXT_PUBLIC_VENUE_LATITUDE="$(get VENUE_LATITUDE)" \
             --build-arg NEXT_PUBLIC_VENUE_LONGITUDE="$(get VENUE_LONGITUDE)" \
             --build-arg NEXT_PUBLIC_GAME_URL="$DEMO_GAME_URL" \

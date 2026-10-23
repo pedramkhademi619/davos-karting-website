@@ -41,9 +41,11 @@ export function MobileMenu({ items, bookingHref }: { items: readonly NavItem[]; 
           <ButtonLink href={bookingHref} size="lg" className="mt-8 w-full">
             {site.booking.callToAction}
           </ButtonLink>
-          <p className="mt-6 text-center text-on-carbon-muted">
-            یا تماس: <PhoneLink className="font-bold text-on-carbon" />
-          </p>
+          {site.contact.phone && (
+            <p className="mt-6 text-center text-on-carbon-muted">
+              یا تماس: <PhoneLink className="font-bold text-on-carbon" />
+            </p>
+          )}
         </nav>
       </div>
     </div>

@@ -155,7 +155,7 @@ export function PaymentResult() {
           پرداخت شما در حال پیگیری خودکار با بانک است. تا چند دقیقه دیگر وضعیت در «حساب من» معلوم می‌شود. اگر مبلغ کم شده ولی رزرو قطعی
           نشد، بانک آن را برمی‌گرداند.
         </p>
-        <Actions primary={{ href: "/account", label: "حساب من" }} secondary={{ href: site.contact.phone.href, label: "تماس با پشتیبانی" }} />
+        <Actions primary={{ href: "/account", label: "حساب من" }} secondary={site.contact.phone ? { href: site.contact.phone.href, label: "تماس با پشتیبانی" } : null} />
       </Panel>
     );
   }
@@ -209,7 +209,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Actions({ primary, secondary }: { primary: { href: string; label: string }; secondary: { href: string; label: string } }) {
+function Actions({ primary, secondary }: { primary: { href: string; label: string }; secondary?: { href: string; label: string } | null }) {
   const link = (href: string, label: string, classes: string) =>
     href.startsWith("/") ? (
       <Link href={href} className={classes}>
@@ -223,7 +223,7 @@ function Actions({ primary, secondary }: { primary: { href: string; label: strin
   return (
     <div className="mt-8 flex flex-wrap justify-center gap-3">
       {link(primary.href, primary.label, buttonClasses("primary", "md"))}
-      {link(secondary.href, secondary.label, buttonClasses("ghost-light", "md"))}
+      {secondary && link(secondary.href, secondary.label, buttonClasses("ghost-light", "md"))}
     </div>
   );
 }

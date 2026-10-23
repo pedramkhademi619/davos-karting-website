@@ -17,7 +17,7 @@ function days(names: readonly string[]): string {
  * answers fall back to wording without numbers.
  */
 export function buildFaq(info: BookingInfo | null): FaqItem[] {
-  const phone = `رزرو تلفنی هم با ${fa(site.contact.phone.local)} انجام می‌شود.`;
+  const phone = site.contact.phone ? `رزرو تلفنی هم با ${fa(site.contact.phone.local)} انجام می‌شود.` : "";
   const hours = openingLines(info).map(({ label, text }) => `${label} از ساعت ${text}`).join("؛ ");
   const junior = juniorHours(info) ?? "شنبه تا چهارشنبه از ساعت ۱۵ تا ۱۸";
   const closed = info ? days(info.closed_weekdays) : "";

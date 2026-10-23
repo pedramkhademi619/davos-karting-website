@@ -35,7 +35,7 @@ export function downloadCalendarEvent(ticket: Reservation): void {
     `DTSTART:${ICS_STAMP(start)}`,
     `DTEND:${ICS_STAMP(end)}`,
     `SUMMARY:${icsText(`کارتینگ داووس - بلیت ${ticket.ticket_number}`)}`,
-    `DESCRIPTION:${icsText(`${karts(ticket.single_count, ticket.double_count)}\nشماره بلیت: ${ticket.ticket_number}\nتلفن: ${venue.phone.display}`)}`,
+    `DESCRIPTION:${icsText(`${karts(ticket.single_count, ticket.double_count)}\nشماره بلیت: ${ticket.ticket_number}${venue.phone ? `\nتلفن: ${venue.phone.display}` : ""}`)}`,
     `LOCATION:${icsText("پیست کارتینگ داووس")}`,
     `GEO:${venue.geo.latitude};${venue.geo.longitude}`,
     "BEGIN:VALARM",

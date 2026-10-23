@@ -22,16 +22,18 @@ export default async function ContactPage() {
       <PageHero eyebrow="ارتباط با ما" title="تماس با ما" lead="برای رزرو، پرسش یا هماهنگی گروهی با ما در ارتباط باشید." />
 
       <section className="container-page py-16 md:py-24">
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className={`grid gap-5 ${site.contact.phone ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
           <InfoCard icon={PinIcon} label="موقعیت پیست">
             <MapLink />
           </InfoCard>
           <InfoCard icon={ClockIcon} label="ساعات کاری">
             <WorkingHours info={info} />
           </InfoCard>
-          <InfoCard icon={PhoneIcon} label="تلفن رزرو">
-            <PhoneLink />
-          </InfoCard>
+          {site.contact.phone && (
+            <InfoCard icon={PhoneIcon} label="تلفن رزرو">
+              <PhoneLink />
+            </InfoCard>
+          )}
         </div>
 
         {/* No contact form on purpose: there is no ticket endpoint yet, and a form that silently does nothing is worse than none. */}
@@ -42,9 +44,11 @@ export default async function ContactPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <ButtonLink href={site.booking.href}>{site.booking.callToAction}</ButtonLink>
-            <ButtonLink href={site.contact.phone.href} variant="ghost-light" arrow={false}>
-              {site.booking.phoneCallToAction}
-            </ButtonLink>
+            {site.contact.phone && (
+              <ButtonLink href={site.contact.phone.href} variant="ghost-light" arrow={false}>
+                {site.booking.phoneCallToAction}
+              </ButtonLink>
+            )}
           </div>
         </div>
       </section>

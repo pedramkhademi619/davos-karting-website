@@ -105,9 +105,11 @@ export function AccountOverview({
                 <PinIcon className="h-4 w-4" />
                 مسیریابی
               </a>
-              <a href={site.contact.phone.href} className={buttonClasses("ghost-light", "sm")}>
-                تماس با پیست
-              </a>
+              {site.contact.phone && (
+                <a href={site.contact.phone.href} className={buttonClasses("ghost-light", "sm")}>
+                  تماس با پیست
+                </a>
+              )}
             </div>
           </div>
         ) : (

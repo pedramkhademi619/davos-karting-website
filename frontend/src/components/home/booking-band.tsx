@@ -20,9 +20,11 @@ export function BookingBand() {
             <ButtonLink href={site.booking.href} size="lg">
               {site.booking.callToAction}
             </ButtonLink>
-            <span className="text-on-carbon-muted">
-              یا تماس: <PhoneLink className="text-xl font-black text-on-carbon" />
-            </span>
+            {site.contact.phone && (
+              <span className="text-on-carbon-muted">
+                یا تماس: <PhoneLink className="text-xl font-black text-on-carbon" />
+              </span>
+            )}
           </div>
         </div>
       </div>
