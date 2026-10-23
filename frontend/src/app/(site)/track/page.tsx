@@ -7,8 +7,8 @@ import { PageHero } from "@/components/page-hero";
 import { site } from "@/content/site";
 
 export const metadata: Metadata = {
-  title: "پیست",
-  description: "نقشه‌ی پیست کارتینگ داووس از نمای بالا، پیچ به پیچ، و مسیریابی تا پیست.",
+  title: "پیست کارتینگ شیراز؛ نقشه و مسیر",
+  description: "نقشه‌ی پیست کارتینگ حرفه‌ای داووس در شیراز از نمای بالا، پیچ به پیچ، با دیواره لاستیکی و مسیریابی تا پیست.",
   alternates: { canonical: "/track" },
 };
 

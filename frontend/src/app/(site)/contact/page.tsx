@@ -10,8 +10,8 @@ import { site } from "@/content/site";
 import { getBookingInfo } from "@/lib/server-api";
 
 export const metadata: Metadata = {
-  title: "تماس با ما",
-  description: "راه‌های ارتباط با کارتینگ داووس: موقعیت پیست، ساعات کاری و تلفن رزرو.",
+  title: "آدرس و تماس با کارتینگ داووس شیراز",
+  description: "موقعیت پیست کارتینگ داووس در شیراز روی نقشه، ساعات کاری و راه‌های ارتباط با ما.",
   alternates: { canonical: "/contact" },
 };
 

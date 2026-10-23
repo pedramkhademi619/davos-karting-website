@@ -1,5 +1,6 @@
 import { BookingBand } from "@/components/home/booking-band";
 import { ContactPreview } from "@/components/home/contact-preview";
+import { AboutTrack } from "@/components/home/about-track";
 import { Experience } from "@/components/home/experience";
 import { FaqPreview } from "@/components/home/faq-preview";
 import { Hero } from "@/components/home/hero";
@@ -25,6 +26,9 @@ export default async function HomePage() {
           name: site.name,
           alternateName: site.nameLatin,
           description: site.description,
+          address: { "@type": "PostalAddress", addressLocality: site.city, addressRegion: site.region, addressCountry: "IR" },
+          areaServed: site.city,
+          sport: "Karting",
           url,
           ...(site.contact.phone ? { telephone: site.contact.phone.e164 } : {}),
           geo: { "@type": "GeoCoordinates", latitude: site.contact.geo.latitude, longitude: site.contact.geo.longitude },
@@ -52,6 +56,7 @@ export default async function HomePage() {
       />
       <Hero info={info} />
       <Marquee words={marqueeWords} />
+      <AboutTrack />
       <Experience />
       <HowItWorks />
       <RidingRules info={info} />

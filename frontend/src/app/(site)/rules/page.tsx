@@ -6,7 +6,7 @@ import { ridingRulesFor } from "@/lib/hours";
 import { getBookingInfo } from "@/lib/server-api";
 
 export const metadata: Metadata = {
-  title: "شرایط سوار شدن",
+  title: "شرایط سنی و قد کارتینگ شیراز",
   description: "چه کسی پشت فرمان می‌نشیند؟ شرایط سن و قد برای خودروهای تک‌نفره و دونفره کارتینگ داووس.",
   alternates: { canonical: "/rules" },
 };

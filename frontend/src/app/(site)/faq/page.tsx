@@ -8,7 +8,7 @@ import { site } from "@/content/site";
 import { getBookingInfo } from "@/lib/server-api";
 
 export const metadata: Metadata = {
-  title: "سوالات متداول",
+  title: "سوالات متداول کارتینگ شیراز",
   description: "رزرو آنلاین، قیمت‌ها، ظرفیت سانس‌ها و شرایط سنی و قد برای خودروهای تک‌نفره و دونفره کارتینگ داووس.",
   alternates: { canonical: "/faq" },
 };

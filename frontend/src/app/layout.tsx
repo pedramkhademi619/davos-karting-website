@@ -10,13 +10,14 @@ const vazir = Vazirmatn({ subsets: ["arabic", "latin"], variable: "--font-vazir"
 // Latin-only display face for the wordmark, race numbers and readouts; Persian text always uses Vazirmatn.
 const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded", display: "swap" });
 
-const title = `${site.name} | ${site.nameLatin}`;
+const title = `کارتینگ ${site.city} | پیست کارتینگ حرفه‌ای داووس`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: { default: title, template: `%s | ${site.name}` },
   description: site.description,
   applicationName: site.name,
+  keywords: ["کارتینگ شیراز", "کارتینگ داووس", "کارتینگ حرفه‌ای", "پیست کارتینگ شیراز", "رزرو کارتینگ", "قیمت کارتینگ شیراز"],
   alternates: { canonical: "/" },
   openGraph: { type: "website", locale: "fa_IR", siteName: site.name, title, description: site.description, url: "/" },
   twitter: { card: "summary", title, description: site.description },

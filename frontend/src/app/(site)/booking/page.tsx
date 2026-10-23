@@ -4,7 +4,7 @@ import { PageHero } from "@/components/page-hero";
 import { BOOKING_HOME } from "@/lib/urls";
 
 export const metadata: Metadata = {
-  title: "رزرو آنلاین سانس",
+  title: "رزرو آنلاین کارتینگ شیراز",
   description: "جای خالی سانس‌های کارتینگ داووس را زنده ببینید، خودروی تک‌نفره یا دونفره انتخاب کنید و از درگاه بانک ملت بپردازید.",
   alternates: { canonical: BOOKING_HOME },
 };

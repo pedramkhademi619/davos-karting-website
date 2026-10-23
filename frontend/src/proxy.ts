@@ -95,6 +95,10 @@ export function proxy(request: NextRequest) {
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  // Google must not list the staff panel (its own host) or the customer's private pages (account, sign-in, payment result).
+  if (onAdminHost || /^\/(account|login|payment)(\/|$)/.test(request.nextUrl.pathname)) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
   return response;
 }
 
