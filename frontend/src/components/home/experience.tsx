@@ -11,10 +11,10 @@ export function Experience() {
         eyebrow="تجربه داووس"
         title={
           <>
-            پشت فرمان، <span className="marker">سه چیز</span> مهم است
+            پشت فرمون، <span className="marker">سه چیز</span> مهمه
           </>
         }
-        lead="کارتینگ ترکیبی از سرعت، دقت و رقابت است و هر سه را از همان دور اول حس می‌کنید."
+        lead="کارتینگ یعنی سرعت، دقت و رقابت؛ هر سه‌تاش رو از همون دور اول حس می‌کنید."
       />
 
       <ol className="mt-14 grid gap-5 md:grid-cols-3">

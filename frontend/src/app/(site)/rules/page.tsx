@@ -20,9 +20,9 @@ export default async function RulesPage() {
     <>
       <JsonLd data={breadcrumbs("شرایط سوار شدن", "/rules")} />
       <PageHero
-        eyebrow="چه کسی پشت فرمان؟"
+        eyebrow="کی می‌تونه پشت فرمون بشینه؟"
         title="شرایط سوار شدن"
-        lead="سن و قد را همین‌جا چک کنید؛ در رزرو هم از شما تأیید می‌گیریم که سن‌ها درست وارد شده است."
+        lead="سن و قد رو همین‌جا چک کنید؛ موقع رزرو هم ازتون می‌خوایم تأیید کنید که سن‌ها رو درست وارد کردید."
       />
 
       <section className="container-page py-16 md:py-24">
@@ -39,10 +39,10 @@ export default async function RulesPage() {
         </ul>
 
         <div className="carbon mt-5 overflow-hidden rounded-[2rem] p-8 md:p-12">
-          <h2 className="text-2xl font-black md:text-3xl">هوا بد شد چه می‌شود؟</h2>
+          <h2 className="text-2xl font-black md:text-3xl">اگه هوا بد بشه چی؟</h2>
           <p className="mt-4 max-w-2xl leading-8 text-on-carbon-muted">
-            پیست روباز است و با بارندگی یا بدی هوا تعطیل می‌شود. در این حالت پولی برگردانده نمی‌شود و رزرو شما به روز دیگری منتقل می‌شود؛ پس پیش از
-            رزرو آب‌وهوا را بررسی کنید.
+            پیست روبازه و با بارون یا هوای بد تعطیل میشه. اون موقع پول برنمی‌گرده و رزروتون به یه روز دیگه منتقل میشه؛ پس قبل از
+            رزرو حتماً هوا رو چک کنید.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <ButtonLink href="/terms">متن کامل قوانین و حریم خصوصی</ButtonLink>

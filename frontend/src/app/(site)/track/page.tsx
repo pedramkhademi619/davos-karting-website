@@ -16,16 +16,16 @@ export const metadata: Metadata = pageMetadata({
 });
 
 const features = [
-  { icon: FlagIcon, title: "خط شروع و پایان", text: "کنار سکوی تماشاگران؛ هر دور از همان‌جا شمرده می‌شود." },
-  { icon: ShieldIcon, title: "دیواره لاستیکی", text: "دور تا دور مسیر با لاستیک‌های زرد و قرمز محافظت شده است." },
-  { icon: PinIcon, title: "مسیریابی", text: "موقعیت دقیق پیست را روی نقشه ببینید." },
+  { icon: FlagIcon, title: "خط شروع و پایان", text: "کنار سکوی تماشاچی‌هاست؛ هر دور از همین‌جا شمرده میشه." },
+  { icon: ShieldIcon, title: "دیواره لاستیکی", text: "دور تا دور مسیر لاستیک‌های زرد و قرمز چیدیم." },
+  { icon: PinIcon, title: "مسیریابی", text: "موقعیت پیست رو روی نقشه ببینید:" },
 ] as const;
 
 export default function TrackPage() {
   return (
     <>
       <JsonLd data={breadcrumbs("پیست", "/track")} />
-      <PageHero eyebrow="پیست" title="پیچ به پیچ، از نمای بالا" lead="نقشه پیست داووس از روی تصویر هوایی؛ دو کارت کوچک روی نقشه مسیر را دور می‌زنند." />
+      <PageHero eyebrow="پیست" title="پیچ به پیچ، از بالا" lead="نقشه‌ی پیست رو از روی عکس هوایی کشیدیم؛ دو تا کارت کوچیک هم روش دارن دور می‌زنن." />
 
       <section className="container-page py-16 md:py-24">
         <div className="grid items-start gap-12 lg:grid-cols-12">

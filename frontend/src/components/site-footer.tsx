@@ -20,7 +20,7 @@ export function SiteFooter({ onBookingHost = false, info = null }: { onBookingHo
         <div className="md:col-span-5">
           <Logo tone="light" />
           <p className="mt-6 max-w-sm text-on-carbon-muted">
-            پیست کارتینگ داووس؛ سرعت، دقت و رقابت. سانس دلخواه را آنلاین رزرو کنید و پشت فرمان بنشینید.
+            پیست کارتینگ داووس، شیراز. سانس‌ها رو آنلاین رزرو کنید و بیاید پشت فرمون.
           </p>
           <ButtonLink href={hrefFor("/booking", onBookingHost)} className="mt-8">
             {site.booking.callToAction}
@@ -75,7 +75,7 @@ export function SiteFooter({ onBookingHost = false, info = null }: { onBookingHo
           </p>
           <p className="flex items-center gap-2">
             <span aria-hidden="true" className="h-2 w-2 rounded-full bg-go" />
-            پرداخت امن از درگاه رسمی بانک ملت (شاپرک)
+            {site.city}، بلوار مهرگان، شهرک بهاران
           </p>
         </div>
       </div>

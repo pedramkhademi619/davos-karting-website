@@ -9,7 +9,7 @@ export const metadata: Metadata = privateMetadata("ورود");
 export default function LoginPage() {
   return (
     <>
-      <PageHero eyebrow="حساب کاربری" title="ورود به داووس" lead="با شماره موبایل و کد پیامکی وارد شوید؛ حساب شما همان‌جا ساخته می‌شود." />
+      <PageHero eyebrow="حساب کاربری" title="ورود به داووس" lead="با شماره موبایل و یه کد تأیید وارد بشید؛ اگه حساب ندارید، همون‌جا ساخته میشه." />
       <section className="container-page py-12 md:py-16">
         <Suspense fallback={null}>
           <LoginPanel />

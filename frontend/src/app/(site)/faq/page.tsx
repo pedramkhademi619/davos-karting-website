@@ -32,16 +32,16 @@ export default async function FaqPage() {
           })),
         }}
       />
-      <PageHero eyebrow="پشتیبانی" title="سوالات متداول" lead="پاسخ رایج‌ترین پرسش‌ها پیش از رزرو سانس." />
+      <PageHero eyebrow="پشتیبانی" title="سوالات متداول" lead="جواب سوال‌هایی که قبل از رزرو زیاد می‌پرسن." />
 
       <section className="container-page py-16 md:py-24">
         <div className="mx-auto max-w-3xl">
           <FaqList items={items} headingLevel={2} />
 
           <div className="carbon mt-16 rounded-[2rem] p-8 text-center md:p-14">
-            <h2 className="text-2xl font-black md:text-3xl">پاسخ خود را پیدا نکردید؟</h2>
+            <h2 className="text-2xl font-black md:text-3xl">جوابتون رو پیدا نکردید؟</h2>
             <p className="mx-auto mt-4 max-w-md text-on-carbon-muted">
-              از دستیار هوشمند پایین صفحه بپرسید؛ شرایط خانواده یا گروهتان را دقیق حساب می‌کند. یا با ما تماس بگیرید.
+              از دستیار پایین صفحه بپرسید یا با ما تماس بگیرید.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <ButtonLink href={site.booking.href}>{site.booking.callToAction}</ButtonLink>

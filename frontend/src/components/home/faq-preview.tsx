@@ -10,11 +10,11 @@ export function FaqPreview({ items }: { items: readonly FaqItem[] }) {
         <div className="lg:col-span-5">
           <SectionHeading
             eyebrow="سوالات متداول"
-            title="پیش از رزرو، این‌ها را بدانید"
-            lead="پاسخ رایج‌ترین پرسش‌ها؛ اگر چیز دیگری می‌خواهید بدانید، از دستیار هوشمند بپرسید یا تماس بگیرید."
+            title="قبل از رزرو، اینا رو بدونید"
+            lead="جواب سوال‌هایی که بیشتر از همه می‌پرسن. اگه سوال دیگه‌ای دارید، از دستیار بپرسید یا زنگ بزنید."
           />
           <ButtonLink href="/faq" variant="ghost" className="mt-10">
-            مشاهده همه سوالات
+            همه‌ی سوال‌ها
           </ButtonLink>
         </div>
         <div className="lg:col-span-7">

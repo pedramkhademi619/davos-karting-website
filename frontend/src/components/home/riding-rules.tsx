@@ -10,9 +10,9 @@ export function RidingRules({ info }: { info: BookingInfo | null }) {
       <div className="container-page">
         <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
           <SectionHeading
-            eyebrow="چه کسی پشت فرمان؟"
+            eyebrow="کی می‌تونه پشت فرمون بشینه؟"
             title="شرایط سوار شدن، خیلی ساده"
-            lead="ایمنی اول است. اگر مطمئن نیستید، از دستیار هوشمند پایین صفحه بپرسید؛ سن، قد، روز و ساعت را برایتان دقیق چک می‌کند."
+            lead="ایمنی برامون از همه چیز مهم‌تره. اگه مطمئن نیستید، از دستیار پایین صفحه بپرسید یا قبل از رزرو باهامون تماس بگیرید."
           />
           <ButtonLink href="/rules" variant="ghost">
             جزئیات کامل

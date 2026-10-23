@@ -23,7 +23,7 @@ export default async function ContactPage() {
   return (
     <>
       <JsonLd data={breadcrumbs("تماس با ما", "/contact")} />
-      <PageHero eyebrow="ارتباط با ما" title="تماس با ما" lead="برای رزرو، پرسش یا هماهنگی گروهی با ما در ارتباط باشید." />
+      <PageHero eyebrow="ارتباط با ما" title="تماس با ما" lead="برای رزرو، سوال یا هماهنگی گروهی با ما در تماس باشید." />
 
       <section className="container-page py-16 md:py-24">
         <div className={`grid gap-5 ${site.contact.phone ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
@@ -44,7 +44,7 @@ export default async function ContactPage() {
         <div className="carbon mt-5 overflow-hidden rounded-[2rem] p-8 md:p-14">
           <h2 className="text-2xl font-black md:text-3xl">سریع‌ترین راه: رزرو آنلاین</h2>
           <p className="mt-4 max-w-xl text-on-carbon-muted">
-            جای خالی همه سانس‌ها را زنده ببینید و همان‌جا بپردازید. برای گروه‌های بزرگ یا هماهنگی ویژه تماس بگیرید.
+            جای خالی همه‌ی سانس‌ها رو زنده ببینید و همون‌جا رزرو کنید. برای گروه‌های بزرگ یا هماهنگی خاص، زنگ بزنید.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <ButtonLink href={site.booking.href}>{site.booking.callToAction}</ButtonLink>

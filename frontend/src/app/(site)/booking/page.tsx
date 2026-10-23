@@ -21,7 +21,7 @@ export default function BookingPage() {
             رزرو <span className="glow-text">سانس</span>
           </>
         }
-        lead="چهار قدم کوتاه: چند نفرید، کدام روز، چه ساعتی، و پرداخت. حدود یک دقیقه."
+        lead="چهار قدم کوتاه: چند نفرید، کدوم روز، چه ساعتی، و ثبت. حدوداً یه دقیقه."
         compact
       />
 

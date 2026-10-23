@@ -43,8 +43,8 @@ export function ridingRulesFor(info: BookingInfo | null): { badge: string; title
   const hours = juniorHours(info);
   return ridingRules.map((rule) => {
     if (!hours) return { ...rule };
-    if (rule.badge === "11–14") return { ...rule, text: `فقط با قد بیشتر از ۱۴۰ سانتی‌متر و فقط ${hours}.` };
-    if (rule.badge === "4–10" && info?.junior_scope === "everyone") return { ...rule, text: `${rule.text} حضور زیر ۱۵ سال فقط ${hours} است.` };
+    if (rule.badge === "11–14") return { ...rule, text: `فقط با قد بالای ۱۴۰ سانت و فقط ${hours}.` };
+    if (rule.badge === "4–10" && info?.junior_scope === "everyone") return { ...rule, text: `${rule.text} زیر ۱۵ سال‌ها فقط ${hours} می‌تونن بیان.` };
     return { ...rule };
   });
 }

@@ -12,9 +12,9 @@ export function ContactPreview({ info }: { info: BookingInfo | null }) {
   return (
     <section className="container-page pb-24 md:pb-32">
       <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-        <SectionHeading eyebrow="تماس با ما" title="تا پیست یک قدم فاصله دارید" />
+        <SectionHeading eyebrow="تماس با ما" title="آدرس و ساعت کاری" />
         <ButtonLink href="/contact" variant="ghost">
-          همه راه‌های ارتباطی
+          راه‌های تماس
         </ButtonLink>
       </div>
       <div className="mt-12 grid gap-5 md:grid-cols-3">

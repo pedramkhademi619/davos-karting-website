@@ -18,9 +18,9 @@ export default function TermsPage() {
     <>
       <JsonLd data={breadcrumbs("قوانین و حریم خصوصی", "/terms")} />
       <PageHero
-        eyebrow="پیش از رزرو بخوانید"
+        eyebrow="قبل از رزرو بخونید"
         title="قوانین و حریم خصوصی"
-        lead="با رزرو آنلاین، شما همین قوانین را می‌پذیرید. مهم‌ترین بخش‌ها سن و قد افراد و هوای بد است."
+        lead="هر کی آنلاین رزرو می‌کنه، همین قوانین رو قبول کرده. مهم‌ترین‌هاش سن و قد آدم‌ها و هوای بده."
       />
 
       <section className="container-page py-16 md:py-24">
