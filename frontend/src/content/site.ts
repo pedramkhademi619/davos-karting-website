@@ -56,6 +56,10 @@ export const site = {
   },
 } as const;
 
+/** The owner's arrival rule (October 2026), shown on every ticket and in the FAQ. */
+export const arrivalRule =
+  "ده دقیقه قبل از شروع سانس توی سالن باشید. اگه دیر برسید و سانس‌تون شروع شده باشه، دیگه نمی‌تونیم سوارتون کنیم؛ نوبت‌تون می‌سوزه و پولش هم برنمی‌گرده.";
+
 export const navigation = [
   { href: "/", label: "خانه" },
   { href: "/track", label: "پیست" },
@@ -94,7 +98,7 @@ export const bookingSteps = [
   { title: "بگید کی میاد", text: "بگید با چند نفر میاید و سن‌شون چنده؛ خود سایت ماشین‌های تک‌نفره و دونفره رو طبق قوانین سن و قد می‌چینه." },
   { title: "روز و ساعت", text: "از روی جدول، روز و سانس رو انتخاب کنید؛ فقط سانس‌هایی روشن می‌مونن که برای همه‌ی گروه جا دارن." },
   { title: "ثبت و پرداخت", text: "دکمه‌ی ثبت رو نگه دارید تا ماشین‌ها چند دقیقه براتون نگه داشته بشن، بعد پرداخت می‌کنید." },
-  { title: "شماره بلیت", text: "شماره بلیت توی «حساب من» هست؛ توی پیست همون رو اعلام کنید." },
+  { title: "شماره بلیت", text: "شماره بلیتتون رو توی صفحه‌ی «حساب من» می‌بینید. ده دقیقه قبل از سانس توی سالن باشید و همون شماره رو به ما بگید." },
 ] as const;
 
 /** Owner's riding rules (not admin settings), summarised for the home page. Kept identical to backend/knowledge. */

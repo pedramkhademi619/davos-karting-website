@@ -8,7 +8,7 @@ import { CheckIcon, CloseIcon } from "@/components/icons";
 import { StartLights } from "@/components/start-lights";
 import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
-import { site } from "@/content/site";
+import { arrivalRule, site } from "@/content/site";
 import { ApiError, api } from "@/lib/api";
 import { fa, jalali, karts, toman } from "@/lib/format";
 import type { PaymentStatus, Reservation } from "@/lib/types";
@@ -106,7 +106,7 @@ export function PaymentResult() {
             <CheckIcon className="h-10 w-10" />
           </span>
           <h1 className="mt-6 text-3xl font-black md:text-4xl">رزرو شما قطعی شد!</h1>
-          <p className="mt-3 text-on-carbon-muted">منتظرتان هستیم! شماره بلیت برایتان پیامک می‌شود؛ همین شماره را در پیست اعلام کنید و اگر می‌شود ۱۵ دقیقه زودتر بیایید تا بی‌عجله آماده شوید.</p>
+          <p className="mt-3 text-on-carbon-muted">منتظرتون هستیم! موقع اومدن، شماره بلیتتون رو به ما بگید.</p>
         </div>
         {r && (
           <div className="ticket mt-8 bg-white/[0.06] p-6 ring-1 ring-white/10">
@@ -121,6 +121,9 @@ export function PaymentResult() {
               <Fact label="خودروها" value={karts(r.single_count, r.double_count)} />
               <Fact label="مبلغ" value={toman(r.amount_toman)} />
             </dl>
+            <p className="mt-6 rounded-2xl bg-accent/15 px-4 py-3 text-center text-sm font-bold leading-7 text-on-carbon ring-1 ring-accent/40">
+              {arrivalRule}
+            </p>
           </div>
         )}
         {view.payment.reference_id && (

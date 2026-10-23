@@ -1,3 +1,4 @@
+import { arrivalRule } from "@/content/site";
 import { dateTime, fa, jalali, karts, toman } from "@/lib/format";
 import { venue } from "@/lib/venue";
 import type { AccountPayment, Reservation } from "@/lib/types";
@@ -83,7 +84,7 @@ export function printTicket(ticket: Reservation): void {
       ["نام", ticket.contact_name || "—"],
       ["مبلغ", toman(ticket.amount_toman)],
     ],
-    "این برگه را همراه داشته باشید یا شماره بلیت را در پیست اعلام کنید.",
+    `این برگه را همراه داشته باشید یا شماره بلیت را در پیست اعلام کنید. ${arrivalRule}`,
   );
 }
 

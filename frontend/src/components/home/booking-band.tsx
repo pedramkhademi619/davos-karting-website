@@ -14,7 +14,7 @@ export function BookingBand() {
           <StartLights />
           <h2 className="mt-8 text-[clamp(2.4rem,6vw,4.6rem)] font-black leading-[1.1]">یه دور بزنیم؟</h2>
           <p className="mt-6 max-w-lg text-lg text-on-carbon-muted">
-            جای خالی سانس‌ها رو همین الان ببینید، ماشینتون رو انتخاب کنید و توی کمتر از یه دقیقه بلیت بگیرید.
+            ببینید کدوم سانس‌ها جا دارن، ماشینتون رو انتخاب کنید و توی کمتر از یه دقیقه بلیت بگیرید.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
             <ButtonLink href={site.booking.href} size="lg">

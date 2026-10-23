@@ -8,7 +8,7 @@ import { CalendarIcon, SearchIcon, TicketIcon } from "@/components/icons";
 import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { site } from "@/content/site";
+import { arrivalRule, site } from "@/content/site";
 import { api, errorMessage } from "@/lib/api";
 import { clock, dateTime, fa, jalali, karts, toLatinDigits, toman } from "@/lib/format";
 import { goToGateway } from "@/lib/gateway";
@@ -192,6 +192,10 @@ export function TicketCard({
           </p>
         </div>
       </div>
+
+      {live && ticket.status === "confirmed" && (
+        <p className="border-t border-carbon-line bg-accent/10 px-6 py-3 text-sm font-bold leading-7 text-on-carbon">{arrivalRule}</p>
+      )}
 
       {held && (
         <div className="space-y-3 border-t border-carbon-line p-6">

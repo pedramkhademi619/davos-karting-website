@@ -44,7 +44,7 @@ export default async function ContactPage() {
         <div className="carbon mt-5 overflow-hidden rounded-[2rem] p-8 md:p-14">
           <h2 className="text-2xl font-black md:text-3xl">سریع‌ترین راه: رزرو آنلاین</h2>
           <p className="mt-4 max-w-xl text-on-carbon-muted">
-            جای خالی همه‌ی سانس‌ها رو زنده ببینید و همون‌جا رزرو کنید. برای گروه‌های بزرگ یا هماهنگی خاص، زنگ بزنید.
+            ببینید کدوم سانس‌ها جا دارن و همون‌جا رزرو کنید. برای گروه‌های بزرگ یا هماهنگی خاص، زنگ بزنید.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <ButtonLink href={site.booking.href}>{site.booking.callToAction}</ButtonLink>

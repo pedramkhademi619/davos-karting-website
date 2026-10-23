@@ -7,9 +7,9 @@ import { stagger } from "@/lib/stagger";
 import type { BookingInfo } from "@/lib/types";
 
 const trust = [
-  { icon: ShieldIcon, text: "دیواره‌ی لاستیکی دور مسیر" },
-  { icon: TicketIcon, text: "بلیت توی حساب شما" },
-  { icon: CalendarIcon, text: "جای خالی زنده" },
+  { icon: ShieldIcon, text: "کلاه ایمنی و بهداشتی رو ما میدیم" },
+  { icon: TicketIcon, text: "دیواره‌ی لاستیکی دور تا دور پیست" },
+  { icon: CalendarIcon, text: "ماشین تک‌نفره و دونفره" },
 ] as const;
 
 /**
@@ -39,7 +39,7 @@ export function Hero({ info }: { info: BookingInfo | null }) {
         <div className="relative z-10 min-w-0 lg:col-span-6">
           <p className="rise glass inline-flex items-center gap-3 rounded-full px-4 py-1.5 text-sm font-bold text-on-carbon-muted" style={stagger(0)}>
             <span className="pulse-dot" aria-hidden="true" />
-            {info?.online_booking_enabled === false ? "فعلاً رزرو فقط تلفنی" : "سانس‌های خالی رو زنده ببینید"}
+            {info?.online_booking_enabled === false ? "فعلاً رزرو فقط تلفنی" : "پیست کارتینگ داووس، شیراز"}
           </p>
 
           <h1 className="rise mt-7 text-[clamp(3.1rem,min(13vw,11.5svh),6.6rem)] font-black leading-[1.02] md:mt-9" style={stagger(1)}>
