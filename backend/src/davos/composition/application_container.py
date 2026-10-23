@@ -266,6 +266,7 @@ class ApplicationContainer:
         self._booking_facts = ScheduleBookingFacts(
             self.schedule_settings,
             cache_seconds=settings.assistant_booking_facts_cache_seconds,
+            contact_phone=settings.contact_phone,
         )
         self._normalizer = PersianTextNormalizer()
         self._assistant_policy = PolicyFactory.assistant(settings)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from dataclasses import replace
 
 from davos.modules.assistant.application.ports.booking_facts_port import BookingFactsPort
 from davos.modules.assistant.domain.value_objects.booking_facts import BookingFacts
@@ -18,16 +19,19 @@ class ScheduleBookingFacts(BookingFactsPort):
     the assistant within that time. Lives in the composition layer so the two modules never import each other.
     """
 
-    def __init__(self, settings: Callable[[], ScheduleSettingsUseCase], *, cache_seconds: float) -> None:
+    def __init__(
+        self, settings: Callable[[], ScheduleSettingsUseCase], *, cache_seconds: float, contact_phone: str = ""
+    ) -> None:
         self._settings = settings
         self._cache_seconds = cache_seconds
+        self._contact_phone = contact_phone
         self._cached: BookingFacts | None = None
         self._read_at = 0.0
 
     async def current(self) -> BookingFacts:
         now = time.monotonic()
         if self._cached is None or now - self._read_at > self._cache_seconds:
-            self._cached = self.from_settings(await self._settings().get())
+            self._cached = replace(self.from_settings(await self._settings().get()), contact_phone=self._contact_phone)
             self._read_at = now
         return self._cached
 

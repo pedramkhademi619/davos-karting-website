@@ -15,11 +15,11 @@ function coordinate(name: string, value: string | undefined, limit: number): num
   return parsed;
 }
 
-/** "09177334894", "+98 917 733 4894" or "989177334894" -> the local form "09177334894". */
+/** "09179190993", "+98 917 919 0993" or "989179190993" -> the local form "09179190993". */
 function localPhone(raw: string): string {
   const digits = raw.replace(/\D/g, "");
   const local = digits.startsWith("98") ? `0${digits.slice(2)}` : digits;
-  if (!/^0\d{10}$/.test(local)) throw new Error("CONTACT_PHONE must be an Iranian number such as 09177334894.");
+  if (!/^0\d{10}$/.test(local)) throw new Error("CONTACT_PHONE must be an Iranian number such as 09179190993.");
   return local;
 }
 
@@ -32,10 +32,10 @@ export const venue = {
   /** null when no number is published. */
   phone: local
     ? {
-        local, // 09177334894
-        display: `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`, // 0917 733 4894
+        local, // 09179190993
+        display: `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`, // 0917 919 0993
         href: `tel:${local}`,
-        e164: `+98${local.slice(1)}`, // +989177334894, for search engines
+        e164: `+98${local.slice(1)}`, // +989179190993, for search engines
       }
     : null,
   geo: { latitude, longitude },

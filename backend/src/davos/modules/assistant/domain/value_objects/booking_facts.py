@@ -34,3 +34,4 @@ class BookingFacts:
     junior_from: time | None = None
     junior_until: time | None = None
     junior_everyone: bool = False
+    contact_phone: str = ""  # the venue's number from CONTACT_PHONE (.env); empty = none is published

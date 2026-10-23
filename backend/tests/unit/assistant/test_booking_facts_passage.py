@@ -73,3 +73,11 @@ def test_the_under_fifteen_hours_follow_the_settings() -> None:
     assert everyone is not None and "هیچ فرد زیر ۱۵ سالی" in everyone
     assert live.passage(booking_facts(junior_weekdays=None)).text.count("\n- ") == 4
     assert "لانچ کنترل" not in live.passage(booking_facts(online_booking_enabled=False)).text
+
+
+def test_the_venue_phone_is_stated_the_persian_way_when_one_is_set() -> None:
+    with_phone = live.passage(booking_facts(contact_phone="09179190993"))
+    assert "شماره تلفن مجموعه برای رزرو تلفنی و پرسش‌ها: ۰۹۱۷ ۹۱۹ ۰۹۹۳" in with_phone.text
+    assert "09179190993" not in with_phone.text  # Persian digits, like the rest of the passage
+    assert live.contact(booking_facts()) == ""  # no number published: nothing is said about one
+    assert "شماره تلفن مجموعه" not in live.passage(booking_facts()).text

@@ -121,6 +121,17 @@ class BookingFactsPassage:
         closed = _days(facts.closed_weekdays)
         return f"{online} {ahead}" + (f" روزهای بدون رزرو: {closed}." if closed else "")
 
+    def contact(self, facts: BookingFacts) -> str:
+        """The venue's phone number, read from CONTACT_PHONE so the site and the assistant always quote the same one."""
+        digits = "".join(ch for ch in facts.contact_phone if ch.isdigit())
+        if len(digits) != 11:
+            return ""
+        number = f"{digits[:4]} {digits[4:7]} {digits[7:]}"
+        return (
+            f"شماره تلفن مجموعه برای رزرو تلفنی و پرسش‌ها: {_fa(number)}. اگر مشتری شماره تماس خواست، یا نیاز به "
+            "هماهنگی خاص داشت، همین شماره را بگو."
+        )
+
     def passage(self, facts: BookingFacts) -> RetrievedPassage:
         lines = [self.capacity(facts), self.prices(facts)]
         if facts.online_booking_enabled:
@@ -129,6 +140,9 @@ class BookingFactsPassage:
         juniors = self.juniors(facts)
         if juniors:
             lines.append(juniors)
+        contact = self.contact(facts)
+        if contact:
+            lines.append(contact)
         text = "\n".join(f"- {line}" for line in lines)
         return RetrievedPassage(
             entry_id=LIVE_ENTRY_ID,

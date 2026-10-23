@@ -46,8 +46,7 @@ def main(host: str) -> None:
         "POSTGRES_MEMORY_LIMIT": "256m",
         "REDIS_MEMORY_LIMIT": "64m",
         "GAME_MEMORY_LIMIT": "128m",
-        # A test copy: no phone number is shown (nobody calls the real venue about it) and nobody can start a payment.
-        "CONTACT_PHONE": "",
+        # Until online payment goes live nobody can start a payment (the phone number stays: it is the real venue's).
         "PAYMENTS_PAUSED": "true",
         "DB_POOL_SIZE": "4",
         "DB_MAX_OVERFLOW": "2",

@@ -33,7 +33,7 @@ Nothing below is claimed as delivered.
     animation, so no honest number exists), Safari/Firefox rendering, screen-reader behaviour, and colour contrast beyond the
     token pairs that were computed.
   * **Content now comes from the owner** (`frontend/src/content/site.ts` and `backend/knowledge/*.txt`, told to the developer in the
-    chat on 2026-09-21 and typed in by hand, so a slip in transcription is possible): booking phone `09177334894`, opening hours
+    chat on 2026-09-21 and typed in by hand, so a slip in transcription is possible): booking phone `09179190993`, opening hours
     (Saturday-Wednesday 15:00-24:00; Thursday, Friday and holidays 15:00-01:00), booking only by phone and only for the next day
     (none for the same day, none for Thursday/Friday), 6 single-seaters + 1 two-seater and 8 people per session, and the age /
     height / licence / weight rules. The placeholder phone, e-mail, "Tehran" address, "minimum age 12", "no licence needed" and
