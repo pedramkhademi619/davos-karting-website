@@ -36,14 +36,14 @@ export function Hero({ info }: { info: BookingInfo | null }) {
       <div className="sheen" aria-hidden="true" />
       <div className="vignette" aria-hidden="true" />
 
-      <div className="container-page grid items-center gap-10 pb-12 pt-8 md:pt-12 lg:min-h-[calc(100svh-76px)] lg:grid-cols-12 lg:gap-8 lg:py-16">
+      <div className="container-page grid items-center gap-10 pb-12 pt-8 md:pt-12 lg:min-h-[calc(100svh-91px)] lg:grid-cols-12 lg:gap-8 lg:py-10">
         <div className="relative z-10 min-w-0 lg:col-span-6">
           <p className="rise glass inline-flex items-center gap-3 rounded-full px-4 py-1.5 text-sm font-bold text-on-carbon-muted" style={stagger(0)}>
             <span className="pulse-dot" aria-hidden="true" />
             {info?.online_booking_enabled === false ? "رزرو تلفنی نوبت" : "رزرو آنلاین سانس فعال است"}
           </p>
 
-          <h1 className="rise mt-7 text-[clamp(3.1rem,13vw,6.6rem)] font-black leading-[1.02] md:mt-9" style={stagger(1)}>
+          <h1 className="rise mt-7 text-[clamp(3.1rem,min(13vw,11.5svh),6.6rem)] font-black leading-[1.02] md:mt-9" style={stagger(1)}>
             <span className="chrome-text block">سرعت را</span>
             <span className="block">
               <span className="glow-text">جدی</span> <span className="chrome-text">بگیرید.</span>
@@ -76,7 +76,11 @@ export function Hero({ info }: { info: BookingInfo | null }) {
           </ul>
         </div>
 
-        <div className="rise relative min-w-0 lg:col-span-6" style={stagger(2)}>
+        {/* On a computer the hero is exactly one screen: 91px is the header (77) and the chequered strip (14), so the
+            strip sits on the screen's bottom edge. The map is sized by the screen's height as well as the column's width
+            (430px is the header, the padding, the start lights, the caption and the readouts; 1.32 is the map's
+            width/height, content/track.ts), and the headline by the height too, so short laptop screens fit. */}
+        <div className="rise relative min-w-0 lg:col-span-6 lg:mx-auto lg:w-[min(100%,max(360px,calc((100svh-430px)*1.32)))]" style={stagger(2)}>
           <div className="relative">
             {/* Floodlight glow under the track. */}
             <div aria-hidden="true" className="absolute inset-[8%] -z-10 rounded-full bg-accent/15 blur-3xl" />
