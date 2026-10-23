@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   description: site.description,
   applicationName: site.name,
   keywords: ["کارتینگ شیراز", "کارتینگ داووس", "کارتینگ حرفه‌ای", "پیست کارتینگ شیراز", "رزرو کارتینگ", "قیمت کارتینگ شیراز"],
-  alternates: { canonical: "/" },
-  openGraph: { type: "website", locale: "fa_IR", siteName: site.name, title, description: site.description, url: "/" },
-  twitter: { card: "summary", title, description: site.description },
+  // No canonical here: each public page states its own (lib/seo.ts), and private pages must not point at the home page.
+  openGraph: { type: "website", locale: "fa_IR", siteName: site.name, title, description: site.description },
+  twitter: { card: "summary_large_image", title, description: site.description },
   formatDetection: { telephone: false },
 };
 

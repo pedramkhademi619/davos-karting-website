@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
+import { breadcrumbs, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 import { ButtonLink } from "@/components/button-link";
 import { PageHero } from "@/components/page-hero";
 import { site } from "@/content/site";
 import { ridingRulesFor } from "@/lib/hours";
 import { getBookingInfo } from "@/lib/server-api";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "شرایط سنی و قد کارتینگ شیراز",
-  description: "چه کسی پشت فرمان می‌نشیند؟ شرایط سن و قد برای خودروهای تک‌نفره و دونفره کارتینگ داووس.",
-  alternates: { canonical: "/rules" },
-};
+  description:
+    "شرایط سنی و قد کارتینگ داووس شیراز: رانندگی تک‌نفره از ۱۵ سال، شرایط نوجوان‌های ۱۱ تا ۱۴ سال، خودروی دونفره با راننده‌ی گواهینامه‌دار و کودکان ۴ تا ۱۴ سال.",
+  path: "/rules",
+});
 
 export default async function RulesPage() {
   const rules = ridingRulesFor(await getBookingInfo());
   return (
     <>
+      <JsonLd data={breadcrumbs("شرایط سوار شدن", "/rules")} />
       <PageHero
         eyebrow="چه کسی پشت فرمان؟"
         title="شرایط سوار شدن"

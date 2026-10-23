@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
+import { breadcrumbs, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 import { ButtonLink } from "@/components/button-link";
 import { PageHero } from "@/components/page-hero";
 import { TermsSections } from "@/components/terms-sections";
 import { site } from "@/content/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "قوانین و حریم خصوصی",
-  description: "قوانین کارتینگ داووس: سن و قد، تعطیلی در بارندگی و بدی هوا، رزرو و پرداخت، ایمنی و حریم خصوصی.",
-  alternates: { canonical: "/terms" },
-};
+  description:
+    "قوانین کارتینگ داووس شیراز پیش از رزرو: سن و قد سواران، تعطیلی در بارندگی و انتقال رزرو، رزرو و پرداخت، ایمنی در پیست و حریم خصوصی اطلاعات شما.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (
     <>
+      <JsonLd data={breadcrumbs("قوانین و حریم خصوصی", "/terms")} />
       <PageHero
         eyebrow="پیش از رزرو بخوانید"
         title="قوانین و حریم خصوصی"

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { BookingWizard } from "@/components/booking/wizard/booking-wizard";
 import { PageHero } from "@/components/page-hero";
 import { BOOKING_HOME } from "@/lib/urls";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "رزرو آنلاین کارتینگ شیراز",
-  description: "جای خالی سانس‌های کارتینگ داووس را زنده ببینید، خودروی تک‌نفره یا دونفره انتخاب کنید و از درگاه بانک ملت بپردازید.",
-  alternates: { canonical: BOOKING_HOME },
-};
+  description:
+    "رزرو آنلاین کارتینگ شیراز: جای خالی سانس‌های پیست داووس را زنده ببینید، خودروی تک‌نفره یا دونفره را انتخاب کنید و بلیت را در یک دقیقه بگیرید.",
+  path: BOOKING_HOME.startsWith("http") ? BOOKING_HOME : "/booking",
+});
 
 export default function BookingPage() {
   return (

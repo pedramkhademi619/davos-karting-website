@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
+import { privateMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import { PaymentResult } from "@/components/booking/payment-result";
 import { PageSkeleton } from "@/components/ui/skeleton";
 
-export const metadata: Metadata = {
-  title: "نتیجه پرداخت",
-  robots: { index: false, follow: false },
-};
+export const metadata: Metadata = privateMetadata("نتیجه پرداخت");
 
 export default function PaymentResultPage() {
   return (

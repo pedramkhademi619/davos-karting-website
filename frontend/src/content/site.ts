@@ -7,8 +7,8 @@ import { venue } from "@/lib/venue";
  * The working hours and the riding rules come from the owner (September 2026) and match backend/knowledge. The phone
  * number and the map location differ per deployment and come from .env (lib/venue.ts). Numbers the owner changes in the
  * admin panel (prices, karts per session, days without booking, hold time) are NOT written here: pages read them from
- * the API (/api/v1/reservations/info), see content/faq.ts. No street address or e-mail is published because none was
- * confirmed.
+ * the API (/api/v1/reservations/info), see content/faq.ts. The street address (October 2026) is in the
+ * structured data; no e-mail is published.
  */
 
 /** Opening hours, written once: the pages show `label: text`, search engines get the schema.org days and times. */
@@ -34,12 +34,18 @@ export const site = {
   nameLatin: "Davos Karting",
   city: "شیراز",
   region: "فارس",
+  /** The track's street address as the owner gave it (October 2026); used in the structured data. */
+  streetAddress: "آرش ۱، جاده شیراز-صدرا، بلوار مهرگان، جوانمردی (شهرک بهاران)",
+  /** Official social profiles (schema.org sameAs). Add a page here only once it really exists. */
+  sameAs: [] as string[],
   description:
     "کارتینگ شیراز؛ پیست کارتینگ حرفه‌ای داووس با خودروهای تک‌نفره و دونفره. جای خالی سانس‌ها را آنلاین ببینید، قیمت و شرایط سنی را بدانید و رزرو کنید.",
   contact: {
     phone: venue.phone,
     openingHours,
     map: { label: "مسیریابی روی نقشه", href: venue.mapHref },
+    /** The owner's pin on Neshan (the map most people in Iran route with). */
+    neshan: { label: "مسیریابی با نشان", href: "https://nshn.ir/b6_bgmLANFsp7u" },
     geo: venue.geo,
   },
   booking: {

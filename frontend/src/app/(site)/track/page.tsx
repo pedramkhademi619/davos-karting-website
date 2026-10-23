@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { breadcrumbs, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 import { ButtonLink } from "@/components/button-link";
 import { FlagIcon, PinIcon, ShieldIcon } from "@/components/icons";
 import { TrackMapLazy } from "@/components/home/track-map-lazy";
@@ -6,11 +8,12 @@ import { MapLink } from "@/components/map-link";
 import { PageHero } from "@/components/page-hero";
 import { site } from "@/content/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "پیست کارتینگ شیراز؛ نقشه و مسیر",
-  description: "نقشه‌ی پیست کارتینگ حرفه‌ای داووس در شیراز از نمای بالا، پیچ به پیچ، با دیواره لاستیکی و مسیریابی تا پیست.",
-  alternates: { canonical: "/track" },
-};
+  description:
+    "نقشه‌ی پیست کارتینگ داووس در شیراز از نمای بالا: پیچ به پیچ مسیر، خط شروع و پایان، دیواره لاستیکی دور تا دور و مسیریابی روی نقشه تا پیست.",
+  path: "/track",
+});
 
 const features = [
   { icon: FlagIcon, title: "خط شروع و پایان", text: "کنار سکوی تماشاگران؛ هر دور از همان‌جا شمرده می‌شود." },
@@ -21,6 +24,7 @@ const features = [
 export default function TrackPage() {
   return (
     <>
+      <JsonLd data={breadcrumbs("پیست", "/track")} />
       <PageHero eyebrow="پیست" title="پیچ به پیچ، از نمای بالا" lead="نقشه پیست داووس از روی تصویر هوایی؛ دو کارت کوچک روی نقشه مسیر را دور می‌زنند." />
 
       <section className="container-page py-16 md:py-24">

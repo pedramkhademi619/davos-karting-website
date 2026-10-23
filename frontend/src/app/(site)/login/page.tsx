@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
+import { privateMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import { LoginPanel } from "@/components/auth/login-panel";
 import { PageHero } from "@/components/page-hero";
 
-export const metadata: Metadata = {
-  title: "ورود",
-  robots: { index: false, follow: false },
-};
+export const metadata: Metadata = privateMetadata("ورود");
 
 export default function LoginPage() {
   return (

@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
+import { privateMetadata } from "@/lib/seo";
 import { AccountApp } from "@/components/account/account-app";
 import { PageHero } from "@/components/page-hero";
 
-export const metadata: Metadata = {
-  title: "حساب من",
-  robots: { index: false, follow: false },
-};
+export const metadata: Metadata = privateMetadata("حساب من");
 
 export default function AccountPage() {
   return (

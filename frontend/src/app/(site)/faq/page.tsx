@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { breadcrumbs, pageMetadata } from "@/lib/seo";
 import { ButtonLink } from "@/components/button-link";
 import { FaqList } from "@/components/faq-list";
 import { JsonLd } from "@/components/json-ld";
@@ -7,17 +8,19 @@ import { buildFaq } from "@/content/faq";
 import { site } from "@/content/site";
 import { getBookingInfo } from "@/lib/server-api";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "سوالات متداول کارتینگ شیراز",
-  description: "رزرو آنلاین، قیمت‌ها، ظرفیت سانس‌ها و شرایط سنی و قد برای خودروهای تک‌نفره و دونفره کارتینگ داووس.",
-  alternates: { canonical: "/faq" },
-};
+  description:
+    "پاسخ پرسش‌های رایج درباره کارتینگ شیراز: قیمت سانس، ساعت کاری، رزرو آنلاین، ظرفیت هر سانس، شرایط سنی و قد و خودروهای تک‌نفره و دونفره داووس.",
+  path: "/faq",
+});
 
 export default async function FaqPage() {
   const items = buildFaq(await getBookingInfo());
 
   return (
     <>
+      <JsonLd data={breadcrumbs("سوالات متداول", "/faq")} />
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -33,7 +36,7 @@ export default async function FaqPage() {
 
       <section className="container-page py-16 md:py-24">
         <div className="mx-auto max-w-3xl">
-          <FaqList items={items} />
+          <FaqList items={items} headingLevel={2} />
 
           <div className="carbon mt-16 rounded-[2rem] p-8 text-center md:p-14">
             <h2 className="text-2xl font-black md:text-3xl">پاسخ خود را پیدا نکردید؟</h2>

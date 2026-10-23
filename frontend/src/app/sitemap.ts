@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/server-api";
-import { BOOKING_HOME } from "@/lib/urls";
+import { BOOKING_HOME, GAME_URL } from "@/lib/urls";
 
 /** Public pages only; the account, payment and admin screens are not for search engines. */
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -14,5 +14,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
     { url: `${base}/faq`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/contact`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
+    ...(GAME_URL ? [{ url: `${GAME_URL}/`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.4 }] : []),
   ];
 }
