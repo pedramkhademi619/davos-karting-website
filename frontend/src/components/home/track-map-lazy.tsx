@@ -16,6 +16,6 @@ const TrackMap = dynamic(() => import("@/components/track-map").then((m) => m.Tr
   ),
 });
 
-export function TrackMapLazy() {
-  return <TrackMap />;
+export function TrackMapLazy({ caption = true }: { caption?: boolean }) {
+  return <TrackMap caption={caption} />;
 }

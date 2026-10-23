@@ -1,15 +1,14 @@
 import { ButtonLink } from "@/components/button-link";
 import { TrackMapLazy } from "@/components/home/track-map-lazy";
 import { CalendarIcon, ShieldIcon, TicketIcon } from "@/components/icons";
-import { StartLights } from "@/components/start-lights";
 import { site } from "@/content/site";
 import { fa } from "@/lib/format";
 import { stagger } from "@/lib/stagger";
 import type { BookingInfo } from "@/lib/types";
 
 const trust = [
-  { icon: ShieldIcon, text: "درگاه رسمی بانک ملت" },
-  { icon: TicketIcon, text: "بلیت و کد پیامکی" },
+  { icon: ShieldIcon, text: "دیواره‌ی لاستیکی دور مسیر" },
+  { icon: TicketIcon, text: "بلیت توی حساب شما" },
   { icon: CalendarIcon, text: "جای خالی زنده" },
 ] as const;
 
@@ -40,7 +39,7 @@ export function Hero({ info }: { info: BookingInfo | null }) {
         <div className="relative z-10 min-w-0 lg:col-span-6">
           <p className="rise glass inline-flex items-center gap-3 rounded-full px-4 py-1.5 text-sm font-bold text-on-carbon-muted" style={stagger(0)}>
             <span className="pulse-dot" aria-hidden="true" />
-            {info?.online_booking_enabled === false ? "رزرو تلفنی نوبت" : "رزرو آنلاین سانس فعال است"}
+            {info?.online_booking_enabled === false ? "فعلاً رزرو فقط تلفنی" : "سانس‌های خالی رو زنده ببینید"}
           </p>
 
           <h1 className="rise mt-7 text-[clamp(3.1rem,min(13vw,11.5svh),6.6rem)] font-black leading-[1.02] md:mt-9" style={stagger(1)}>
@@ -50,9 +49,9 @@ export function Hero({ info }: { info: BookingInfo | null }) {
             </span>
           </h1>
 
-          <p className="rise mt-6 max-w-lg text-[1.05rem] leading-8 text-on-carbon-muted md:mt-8 md:text-xl md:leading-9" style={stagger(2)}>
-            کارتینگ داووس، پیست کارتینگ حرفه‌ای شیراز؛ جایی برای رانندگی، رقابت و لذت سرعت. بگویید چه کسانی می‌آیند، سانس را از روی جدول استارت بردارید و پشت
-            فرمان بنشینید.
+          <p className="rise mt-6 max-w-xl text-[1.05rem] leading-8 text-on-carbon-muted md:mt-8 md:text-xl md:leading-9" style={stagger(2)}>
+            کارتینگ داووس یه پیست کارتینگ حرفه‌ای توی شیرازه. بگید با چند نفر میاید، از روی جدول یه سانس خالی بردارید و بشینید پشت
+            فرمون.
           </p>
 
           <div className="rise mt-8 flex flex-col gap-3 sm:flex-row sm:items-center md:mt-10" style={stagger(3)}>
@@ -66,7 +65,7 @@ export function Hero({ info }: { info: BookingInfo | null }) {
             )}
           </div>
 
-          <ul className="rise mt-8 flex flex-wrap gap-x-5 gap-y-2.5 text-sm font-bold text-on-carbon-muted" style={stagger(4)}>
+          <ul className="rise mt-8 flex flex-wrap gap-x-5 gap-y-2.5 text-sm font-bold text-on-carbon-muted lg:[@media(max-height:720px)]:hidden" style={stagger(4)}>
             {trust.map(({ icon: IconComponent, text }) => (
               <li key={text} className="flex items-center gap-2">
                 <IconComponent className="h-[1.1rem] w-[1.1rem] text-accent" />
@@ -78,16 +77,14 @@ export function Hero({ info }: { info: BookingInfo | null }) {
 
         {/* On a computer the hero is exactly one screen: 91px is the header (77) and the chequered strip (14), so the
             strip sits on the screen's bottom edge. The map is sized by the screen's height as well as the column's width
-            (430px is the header, the padding, the start lights, the caption and the readouts; 1.32 is the map's
-            width/height, content/track.ts), and the headline by the height too, so short laptop screens fit. */}
-        <div className="rise relative min-w-0 lg:col-span-6 lg:mx-auto lg:w-[min(100%,max(360px,calc((100svh-430px)*1.32)))]" style={stagger(2)}>
+            (340px is the header, the padding and the readouts; 1.32 is the map's width/height, content/track.ts), and
+            the headline by the height too, so short laptop screens fit. Just two blocks, map and readouts, one width:
+            the start lights play in the intro already, and the map's caption lives on the track page. */}
+        <div className="rise relative min-w-0 lg:col-span-6 lg:mx-auto lg:w-[min(100%,max(380px,calc((100svh-340px)*1.32)))]" style={stagger(2)}>
           <div className="relative">
             {/* Floodlight glow under the track. */}
             <div aria-hidden="true" className="absolute inset-[8%] -z-10 rounded-full bg-accent/15 blur-3xl" />
-            <div className="glass float-y mb-3 w-fit rounded-2xl px-3 py-2 sm:px-4 sm:py-3">
-              <StartLights />
-            </div>
-            <TrackMapLazy />
+            <TrackMapLazy caption={false} />
           </div>
 
           <dl className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">

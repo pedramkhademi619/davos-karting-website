@@ -169,13 +169,13 @@ export function TrackMapSvg() {
 export const TRACK_MAP_SIZE = { width: TRACK_VIEWBOX.width, height: TRACK_VIEWBOX.height };
 
 /** The map in the site's frame, with a caption. Rendered in the browser only (see home/track-map-lazy.tsx). */
-export function TrackMap({ className }: { className?: string }) {
+export function TrackMap({ className, caption = true }: { className?: string; caption?: boolean }) {
   return (
     <figure className={className}>
       <div className="overflow-hidden rounded-[2rem] bg-surface-2 shadow-[0_1px_0_rgb(17_17_20/0.04),0_44px_80px_-36px_rgb(90_65_10/0.45)] ring-1 ring-black/5 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">
         <TrackMapSvg />
       </div>
-      <figcaption className="mt-3 text-sm text-fg-subtle">نقشه پیست بر پایه تصویر هوایی؛ جزئیات اطراف پیست تقریبی است.</figcaption>
+      {caption && <figcaption className="mt-3 text-sm text-fg-subtle">نقشه پیست بر پایه تصویر هوایی؛ جزئیات اطراف پیست تقریبی است.</figcaption>}
     </figure>
   );
 }
