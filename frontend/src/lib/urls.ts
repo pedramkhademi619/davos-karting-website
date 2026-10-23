@@ -14,6 +14,8 @@ const trim = (url: string | undefined) => (url ?? "").trim().replace(/\/+$/, "")
 export const SITE_URL = trim(requiredEnv("PUBLIC_BASE_URL", process.env.NEXT_PUBLIC_SITE_URL));
 export const BOOKING_URL = trim(process.env.NEXT_PUBLIC_BOOKING_URL);
 export const ADMIN_URL = trim(process.env.NEXT_PUBLIC_ADMIN_URL);
+/** The karting game lives on its own host (game.<domain>); empty means it is not linked from the site. */
+export const GAME_URL = trim(process.env.NEXT_PUBLIC_GAME_URL);
 
 function hostnameOf(url: string): string {
   try {
@@ -55,7 +57,7 @@ export function bookingHostPath(path: string): string {
  * absolute when it lives on the other one.
  */
 export function hrefFor(path: string, onBookingHost: boolean): string {
-  if (!SPLIT_HOSTS) return path;
+  if (!SPLIT_HOSTS || /^https?:\/\//.test(path)) return path; // an address of another host is already complete
   const [pathname, query = ""] = path.split("?");
   const suffix = query ? `?${query}` : "";
   if (isBookingPath(pathname)) {

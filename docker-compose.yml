@@ -64,6 +64,7 @@ services:
         NEXT_PUBLIC_CONTACT_PHONE: ${CONTACT_PHONE:?set CONTACT_PHONE in .env}
         NEXT_PUBLIC_VENUE_LATITUDE: ${VENUE_LATITUDE:?set VENUE_LATITUDE in .env}
         NEXT_PUBLIC_VENUE_LONGITUDE: ${VENUE_LONGITUDE:?set VENUE_LONGITUDE in .env}
+        NEXT_PUBLIC_GAME_URL: ${GAME_BASE_URL:-}  # empty = no game tab in the header
     environment:
       NODE_ENV: production
       API_INTERNAL_URL: http://api:8000
@@ -169,8 +170,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+      GAME_DB_PASSWORD: ${GAME_DB_PASSWORD:?set GAME_DB_PASSWORD in .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Creates the game's own database and login on a fresh volume (see the script for an existing one).
+      - ./postgres/init-game-db.sh:/docker-entrypoint-initdb.d/20-game-db.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -197,8 +201,9 @@ services:
     restart: unless-stopped
     mem_limit: ${REDIS_MEMORY_LIMIT:?set REDIS_MEMORY_LIMIT in .env}
 
-  # The karting game on its own host (game.<domain>), routed there by nginx. Self-contained: its own sqlite leaderboard
-  # on a volume, a single worker (its anti-cheat state is in memory), no route in from the internet except via nginx.
+  # The karting game on its own host (game.<domain>), routed there by nginx. Its leaderboard is a database of its own
+  # (davos_game, login "game") inside the same PostgreSQL, a single worker (its anti-cheat state is in memory), no route in
+  # from the internet except via nginx.
   game:
     build:
       context: ./game
@@ -206,9 +211,10 @@ services:
         PIP_INDEX_URL: ${GAME_PIP_INDEX_URL:-https://pypi.org/simple}
     image: davos-game:${DAVOS_VERSION:?set DAVOS_VERSION in .env}
     environment:
-      LANDING_DATABASE_URL: sqlite:////data/landing.db
-    volumes:
-      - gamedata:/data
+      LANDING_DATABASE_URL: postgresql+psycopg2://game:${GAME_DB_PASSWORD:?set GAME_DB_PASSWORD in .env}@postgres:5432/davos_game
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks: [edge, backend]
     restart: unless-stopped
     cap_drop: [ALL]
@@ -224,4 +230,3 @@ networks:
 volumes:
   pgdata:
   redisdata:
-  gamedata:

@@ -22,6 +22,8 @@ concurrency:
 env:
   DEMO_HOST: 185.141.107.140
   DEMO_URL: https://test.davoskarting.ir
+  # The game tab in the header points here; empty until the demo has a host for the game (deploy/demo/README.md).
+  DEMO_GAME_URL: ""
   DEMO_DIR: /var/www/davos-karting-website
   DAVOS_VERSION: demo
   # The server's public SSH host key (not a secret): the connection is refused if the server presents any other.
@@ -61,6 +63,7 @@ jobs:
             --build-arg NEXT_PUBLIC_CONTACT_PHONE="$(get CONTACT_PHONE)" \
             --build-arg NEXT_PUBLIC_VENUE_LATITUDE="$(get VENUE_LATITUDE)" \
             --build-arg NEXT_PUBLIC_VENUE_LONGITUDE="$(get VENUE_LONGITUDE)" \
+            --build-arg NEXT_PUBLIC_GAME_URL="$DEMO_GAME_URL" \
             ./frontend
 
       - name: Send the code and the images to the server

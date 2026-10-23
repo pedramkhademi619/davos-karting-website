@@ -47,6 +47,7 @@ def main(host: str) -> None:
         "DB_POOL_SIZE": "4",
         "DB_MAX_OVERFLOW": "2",
         "POSTGRES_PASSWORD": secrets.token_hex(24),
+        "GAME_DB_PASSWORD": secrets.token_hex(24),
         "REDIS_PASSWORD": secrets.token_hex(24),
         "OTP_HMAC_SECRET": secrets.token_hex(32),
         "SESSION_CSRF_SECRET": secrets.token_hex(32),

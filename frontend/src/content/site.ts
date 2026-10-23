@@ -1,4 +1,4 @@
-import { BOOKING_HOME } from "@/lib/urls";
+import { BOOKING_HOME, GAME_URL } from "@/lib/urls";
 import { venue } from "@/lib/venue";
 
 /**
@@ -53,6 +53,7 @@ export const navigation = [
   { href: "/track", label: "پیست" },
   { href: "/rules", label: "شرایط سوار شدن" },
   { href: "/booking", label: "رزرو سانس" },
+  ...(GAME_URL ? [{ href: GAME_URL, label: "بازی" }] : []),
   { href: "/faq", label: "سوالات متداول" },
   { href: "/contact", label: "تماس با ما" },
 ] as const;
