@@ -1,9 +1,9 @@
-"""Writes .env for the client demo from .env.example: a small footprint (1 GB server), the site served over HTTPS at one
-host (main site, booking at /booking and the panel at /admin), fresh random secrets, and a sign-in code shown on the
+"""Writes .env for the client demo from .env.example: a small footprint (1 GB server), the site served over HTTPS on the main
+domain with booking., admin. and game. subdomains, fresh random secrets, and a sign-in code shown on the
 page because SMS is not live yet. Nothing here prints a secret; read the panel password with
 ``grep ADMIN_BOOTSTRAP_PASSWORD .env`` on the server.
 
-    python3 deploy/demo/make_env.py test.davoskarting.ir
+    python3 deploy/demo/make_env.py davoskarting.ir
 """
 
 from __future__ import annotations
@@ -21,12 +21,14 @@ def main(host: str) -> None:
     if target.exists():
         raise SystemExit(".env already exists; remove it first if you really want a new one (it holds the database password).")
     url = f"https://{host}"
+    booking, admin, game = (f"https://{name}.{host}" for name in ("booking", "admin", "game"))
     values = {
         "APP_ENV": "development",  # not production: allows the on-screen sign-in code below
         "PUBLIC_BASE_URL": url,
-        "BOOKING_BASE_URL": "",
-        "ADMIN_BASE_URL": "",
-        "CORS_ALLOWED_ORIGINS": f'["{url}"]',
+        "BOOKING_BASE_URL": booking,
+        "ADMIN_BASE_URL": admin,
+        "GAME_BASE_URL": game,
+        "CORS_ALLOWED_ORIGINS": f'["{url}", "{booking}", "{admin}"]',
         "COOKIE_SECURE": "true",
         "DEV_SMS_ECHO_ENABLED": "true",
         "SMS_PROVIDER": "recording",
