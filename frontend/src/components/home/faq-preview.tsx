@@ -11,7 +11,6 @@ export function FaqPreview({ items }: { items: readonly FaqItem[] }) {
           <SectionHeading
             eyebrow="سوالات متداول"
             title="قبل از رزرو، اینا رو بدونید"
-            lead="جواب سوال‌هایی که بیشتر از همه می‌پرسن. اگه سوال دیگه‌ای دارید، از دستیار بپرسید یا زنگ بزنید."
           />
           <ButtonLink href="/faq" variant="ghost" className="mt-10">
             همه‌ی سوال‌ها

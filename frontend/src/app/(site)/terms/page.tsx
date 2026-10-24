@@ -20,7 +20,7 @@ export default function TermsPage() {
       <PageHero
         eyebrow="قبل از رزرو بخونید"
         title="قوانین و حریم خصوصی"
-        lead="هر کی آنلاین رزرو می‌کنه، همین قوانین رو قبول کرده. مهم‌ترین‌هاش سن و قد آدم‌ها و هوای بده."
+        lead="هر کی آنلاین رزرو می‌کنه، این قوانین رو قبول کرده."
       />
 
       <section className="container-page py-16 md:py-24">

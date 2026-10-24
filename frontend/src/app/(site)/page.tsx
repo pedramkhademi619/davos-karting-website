@@ -1,7 +1,6 @@
 import { BookingBand } from "@/components/home/booking-band";
 import { ContactPreview } from "@/components/home/contact-preview";
 import { AboutTrack } from "@/components/home/about-track";
-import { Experience } from "@/components/home/experience";
 import { FaqPreview } from "@/components/home/faq-preview";
 import { Hero } from "@/components/home/hero";
 import { HowItWorks } from "@/components/home/how-it-works";
@@ -133,7 +132,6 @@ export default async function HomePage() {
       <Hero info={info} />
       <Marquee words={marqueeWords} />
       <AboutTrack />
-      <Experience />
       <HowItWorks />
       <RidingRules info={info} />
       <FaqPreview items={buildFaq(info)} />

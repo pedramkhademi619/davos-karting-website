@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/button-link";
+import { EnamadSeal } from "@/components/enamad-seal";
 import { Logo } from "@/components/logo";
 import { MapLink } from "@/components/map-link";
 import { PhoneLink } from "@/components/phone-link";
@@ -20,7 +21,7 @@ export function SiteFooter({ onBookingHost = false, info = null }: { onBookingHo
         <div className="md:col-span-5">
           <Logo tone="light" />
           <p className="mt-6 max-w-sm text-on-carbon-muted">
-            پیست کارتینگ داووس، شیراز. سانس‌ها رو آنلاین رزرو کنید و بیاید پشت فرمون.
+            پیست کارتینگ داووس، شیراز.
           </p>
           <ButtonLink href={hrefFor("/booking", onBookingHost)} className="mt-8">
             {site.booking.callToAction}
@@ -77,6 +78,9 @@ export function SiteFooter({ onBookingHost = false, info = null }: { onBookingHo
             <span aria-hidden="true" className="h-2 w-2 rounded-full bg-go" />
             {site.city}، بلوار مهرگان، شهرک بهاران
           </p>
+        </div>
+        <div className="container-page flex justify-center pb-8 sm:justify-start">
+          <EnamadSeal />
         </div>
       </div>
     </footer>

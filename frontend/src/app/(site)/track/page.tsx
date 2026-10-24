@@ -25,7 +25,7 @@ export default function TrackPage() {
   return (
     <>
       <JsonLd data={breadcrumbs("پیست", "/track")} />
-      <PageHero eyebrow="پیست" title="پیچ به پیچ، از بالا" lead="نقشه‌ی پیست رو از روی عکس هوایی کشیدیم؛ دو تا کارت کوچیک هم روش دارن دور می‌زنن." />
+      <PageHero eyebrow="پیست" title="پیچ به پیچ، از بالا" />
 
       <section className="container-page py-16 md:py-24">
         <div className="grid items-start gap-12 lg:grid-cols-12">

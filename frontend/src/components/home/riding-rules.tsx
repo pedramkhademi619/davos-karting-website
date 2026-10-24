@@ -12,7 +12,6 @@ export function RidingRules({ info }: { info: BookingInfo | null }) {
           <SectionHeading
             eyebrow="کی می‌تونه پشت فرمون بشینه؟"
             title="شرایط سوار شدن، خیلی ساده"
-            lead="ایمنی برامون از همه چیز مهم‌تره. اگه مطمئن نیستید، از دستیار پایین صفحه بپرسید یا قبل از رزرو باهامون تماس بگیرید."
           />
           <ButtonLink href="/rules" variant="ghost">
             جزئیات کامل

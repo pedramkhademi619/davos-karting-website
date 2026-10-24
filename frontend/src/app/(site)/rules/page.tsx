@@ -22,7 +22,6 @@ export default async function RulesPage() {
       <PageHero
         eyebrow="کی می‌تونه پشت فرمون بشینه؟"
         title="شرایط سوار شدن"
-        lead="سن و قد رو همین‌جا چک کنید؛ موقع رزرو هم ازتون می‌خوایم تأیید کنید که سن‌ها رو درست وارد کردید."
       />
 
       <section className="container-page py-16 md:py-24">

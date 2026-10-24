@@ -50,8 +50,7 @@ export function Hero({ info }: { info: BookingInfo | null }) {
           </h1>
 
           <p className="rise mt-6 max-w-xl text-[1.05rem] leading-8 text-on-carbon-muted md:mt-8 md:text-xl md:leading-9" style={stagger(2)}>
-            کارتینگ داووس یه پیست کارتینگ حرفه‌ای توی شیرازه. بگید با چند نفر میاید، از روی جدول یه سانس خالی بردارید و بشینید پشت
-            فرمون.
+            کارتینگ داووس، پیست کارتینگ حرفه‌ای در شیراز.
           </p>
 
           <div className="rise mt-8 flex flex-col gap-3 sm:flex-row sm:items-center md:mt-10" style={stagger(3)}>

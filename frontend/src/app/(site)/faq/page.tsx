@@ -32,7 +32,7 @@ export default async function FaqPage() {
           })),
         }}
       />
-      <PageHero eyebrow="پشتیبانی" title="سوالات متداول" lead="جواب سوال‌هایی که قبل از رزرو زیاد می‌پرسن." />
+      <PageHero eyebrow="پشتیبانی" title="سوالات متداول" />
 
       <section className="container-page py-16 md:py-24">
         <div className="mx-auto max-w-3xl">
